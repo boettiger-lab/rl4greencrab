@@ -11,6 +11,8 @@ version = "1.0.0"
 # dependencies = ["gymnasium", "numpy", "scipy", "stable-baselines3", "sb3-contrib", "pyyaml"]
 dependencies = ["gymnasium",
                 "numpy",
+                "pandas",
+                "scipy",
                 "matplotlib",
                 "typing"]
 
