@@ -9,3 +9,4 @@ name = "rl4greencrab"  # rename this if you plan to publish to test PyPI
 version = "1.0.0"
 
 dependencies = ["gymnasium", "numpy", "scipy", "stable-baselines3", "sb3-contrib", "pyyaml"]
+
