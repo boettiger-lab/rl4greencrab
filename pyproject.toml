@@ -1,0 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rl4greencrab"  # rename this if you plan to publish to test PyPI
+# Here you add the package version manually.
+# You will learn how to setup dynamic versioning in a followup tutorial.
+version = "1.0.0"
+
+dependencies = ["gymnasium"]

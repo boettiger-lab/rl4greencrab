@@ -1,0 +1,3 @@
+European green crabs are prolific predators known to cause considerable perturbations to the ecosystems they colonize. This has had a damaging economic effect, particularly for shellfisheries in the western american coast.
+
+This project approaches this management problem from the point of view of Reinforcement Learning (RL). RL allows us to optimize management responses in highly complex quantitative models of the system. 
