@@ -8,5 +8,11 @@ name = "rl4greencrab"  # rename this if you plan to publish to test PyPI
 # You will learn how to setup dynamic versioning in a followup tutorial.
 version = "1.0.0"
 
-dependencies = ["gymnasium", "numpy", "scipy", "stable-baselines3", "sb3-contrib", "pyyaml"]
+# dependencies = ["gymnasium", "numpy", "scipy", "stable-baselines3", "sb3-contrib", "pyyaml"]
+dependencies = ["gymnasium",
+                "numpy",
+                "matplotlib",
+                "typing"]
 
+[project.optional-dependencies]
+tests = ["pytest", "pytest-cov", "stable_baselines3"]
