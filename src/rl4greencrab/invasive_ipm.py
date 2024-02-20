@@ -282,13 +282,14 @@ class invasive_IPM_v2(invasive_IPM):
             np.float32(scaled_action)
         )
         normalized_cpue = 2 * self.cpue_2(obs, scaled_action) - 1
-        return np.append(normalized_cpue, action), rew, term, trunc, info
+        observation = np.float32(np.append(normalized_cpue, action))
+        return observation, rew, term, trunc, info
 
     def reset(self, seed=42, options=None):
         _, info = super().reset(seed=seed, options=options)
 
         # completely new  obs
-        return - np.ones(shape=self.observation_space.shape), info
+        return - np.ones(shape=self.observation_space.shape, dtype=np.float32), info
 
     def cpue_2(self, obs, scaled_action):
         if any(scaled_action <= 0):
