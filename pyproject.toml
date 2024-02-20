@@ -14,7 +14,8 @@ dependencies = ["gymnasium",
                 "pandas",
                 "scipy",
                 "matplotlib",
-                "typing"]
+                "typing",
+                "pyyaml"]
 
 [project.optional-dependencies]
 tests = ["pytest", "pytest-cov", "stable_baselines3"]
