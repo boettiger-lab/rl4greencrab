@@ -44,7 +44,8 @@ def sb3_train(config_file):
         use_sde=options["use_sde"],
     )
 
-    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=True)
+    progress_bar = options.get("progress_bar", False)
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 
     os.makedirs(options["save_path"], exist_ok=True)
     model.save(save_id)
@@ -69,7 +70,8 @@ def sb3_train_v2(options = dict):
         tensorboard_log=options["tensorboard"],
         use_sde=options["use_sde"],
     )
-    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=True)
+    progress_bar = options.get("progress_bar", False)
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 
     model.save(model_id)
     path = model_id + ".zip"
@@ -107,7 +109,8 @@ def sb3_train_metaenv(config_file):
         tensorboard_log=options["tensorboard"],
         use_sde=options["use_sde"],
     )
-    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=True)
+    progress_bar = options.get("progress_bar", False)
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 
     model.save(save_id)
     # path = model_id + ".zip"
