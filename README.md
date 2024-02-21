@@ -26,7 +26,9 @@ However, the data collected in our problem is naturally high dimensional: each m
 So that is our setting: how do we efficiently use these high dimensional observations? 
 
 Here RL offers an edge over traditional methods: RL is naturally suited for problems with high dimensional observations.
-(Think of chess, for instance, where an observation has 32 components---the location of each individual piece on the board.) 
+(Think of chess, for instance, where an observation has 32 components---the location of each individual piece on the board.)
+
+Our project aims to use this advantage in order to generate new, more responsive, quantitative policy rules that could complement traditional management approaches.
 
 # Installation
 
