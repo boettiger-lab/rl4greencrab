@@ -51,3 +51,4 @@ Coming soon: a more detailed explanation of the integral projection model used!
 We use YAML files to specify training instances, examples of these files can be found on `hyperpars`. 
 Key components there are: specifying the RL algorithm (e.g. PPO or TQC), specifying the environment trained on (e.g. `GreenCrab-v2`) and the training duration (6M time steps in our examples).
 To train using this framework, use the command `python scripts/train.py path/to/file.yml`.
+
