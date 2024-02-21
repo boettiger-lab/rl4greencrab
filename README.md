@@ -30,6 +30,14 @@ Here RL offers an edge over traditional methods: RL is naturally suited for prob
 
 Our project aims to use this advantage in order to generate new, more responsive, quantitative policy rules that could complement traditional management approaches.
 
+## Model used
+
+The agent trains by interacting with an *integral projection model* which describes the population dynamics of green crabs together with the agent's observation process.
+In short, the agent's actions correspond to numbers of cages used to trap crabs. 
+This action hampers the growth of the crab population, and produces an observation of number of crabs caught per cage used.
+
+Coming soon: a more detailed explanation of the integral projection model used!
+
 # Installation
 
 1. `git clone https://github.com/boettiger-lab/rl4greencrab.git`
@@ -37,3 +45,9 @@ Our project aims to use this advantage in order to generate new, more responsive
 3. `pip install .`
 
 (Coming soon: publishing our tools on PyPI in order to provide an easier installation!)
+
+# Training
+
+We use YAML files to specify training instances, examples of these files can be found on `hyperpars`. 
+Key components there are: specifying the RL algorithm (e.g. PPO or TQC), specifying the environment trained on (e.g. `GreenCrab-v2`) and the training duration (6M time steps in our examples).
+To train using this framework, use the command `python scripts/train.py path/to/file.yml`.
