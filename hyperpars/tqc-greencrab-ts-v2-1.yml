@@ -2,13 +2,13 @@
 
 algo: "TQC"
 meta_env_id: "TimeSeries-v2"
-meta_env_kwargs: {N_mem: 3}
+meta_env_kwargs: {N_mem: 2}
 base_env_id: "GreenCrab-v2"
 base_env_cfg: {r: 0.5, imm: 2000, problem_scale: 2000, action_reward_scale: 0.5, env_stoch: 0.1}
 n_envs: 12
 tensorboard: "/home/rstudio/logs"
 total_timesteps: 6000000
 use_sde: True
-id: "N_mem_3"
+id: "N_mem_2"
 repo: "cboettig/rl-ecology"
 save_path: "/home/rstudio/saved_agents"
