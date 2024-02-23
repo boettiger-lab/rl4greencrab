@@ -55,8 +55,8 @@ class greenCrabEnv(gym.Env):
         
         self.w_mort_scale = config.get("w_mort_scale", 5)
         self.K = config.get("K", 25000) #carrying capacity
-        self.imm = config.get("imm", 2) #colonization/immigration rate
-        self.r = config.get("r", 2) #intrinsic rate of growth
+        self.imm = config.get("imm", 1000) #colonization/immigration rate
+        self.r = config.get("r", 0.5) #intrinsic rate of growth
 
         self.max_action = config.get("max_action", 2000)
         self.max_obs = config.get("max_obs", 2000)
@@ -73,7 +73,7 @@ class greenCrabEnv(gym.Env):
         
         self.delta_t = config.get("delta_t", 1/12)
         self.env_stoch = config.get("env_stoch", 0.1)
-        self.action_reward_scale = config.get("action_reward_scale", 0.001)
+        self.action_reward_scale = config.get("action_reward_scale", 0.5)
         self.config = config
 
         # Preserve these for reset
@@ -274,17 +274,15 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
             np.float32([1]),
             dtype=np.float32,
         )
-        # self.r = 0.5
-        # self.imm = 1
-        # self.K=25_000
-        self.problem_scale = config.get('problem_scale', 50) # ad hoc based on previous values
+        self.max_action = config.get('max_action', 2000) # ad hoc based on previous values
+        self.cpue_normalization = config.get('cpue_normalization', 100)
         
     def step(self, action):
-        scaled_action = np.maximum( self.problem_scale * (1 + action)/2 , 0.)
+        action_natural_units = np.maximum( self.max_action * (1 + action)/2 , 0.)
         obs, rew, term, trunc, info = super().step(
-            np.float32(scaled_action)
+            np.float32(action_natural_units)
         )
-        normalized_cpue = 2 * self.cpue_2(obs, scaled_action) - 1
+        normalized_cpue = 2 * self.cpue_2(obs, action_natural_units) - 1
         observation = np.float32(np.append(normalized_cpue, action))
         return observation, rew, term, trunc, info
 
@@ -294,12 +292,12 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
         # completely new  obs
         return - np.ones(shape=self.observation_space.shape, dtype=np.float32), info
 
-    def cpue_2(self, obs, scaled_action):
+    def cpue_2(self, obs, action_natural_units):
         if any(scaled_action <= 0):
             return np.float32([0,0])
         cpue_2 = np.float32([
-            np.sum(obs[0:5]) / (100 * scaled_action[0]),
-            np.sum(obs[5:]) / (100 * scaled_action[0])
+            np.sum(obs[0:5]) / (self.cpue_normalization * action_natural_units[0]),
+            np.sum(obs[5:]) / (self.cpue_normalization * action_natural_units[0])
         ])
         return cpue_2
         
