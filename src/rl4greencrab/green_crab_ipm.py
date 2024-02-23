@@ -12,7 +12,7 @@ Taken from IPM_202040117.ipynb, modified minor aspects to be able to interface
 with ts_model.py
 """
 
-class invasive_IPM(gym.Env):
+class greenCrabEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
@@ -257,8 +257,8 @@ class invasive_IPM(gym.Env):
         return reward
 
 
-class invasive_IPM_v2(invasive_IPM):
-    """ like invasive_IPM but with simplified observations. """
+class greenCrabSimplifiedEnv(greenCrabEnv):
+    """ like invasive_IPM but with simplified observations and normalized to -1, 1 space. """
     def __init__(self, config={}):
         super().__init__(config=config)
         self.observation_space = spaces.Box(
