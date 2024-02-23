@@ -57,6 +57,9 @@ class greenCrabEnv(gym.Env):
         self.K = config.get("K", 25000) #carrying capacity
         self.imm = config.get("imm", 2) #colonization/immigration rate
         self.r = config.get("r", 2) #intrinsic rate of growth
+
+        self.max_action = config.get("max_action", 2000)
+        self.max_obs = config.get("max_obs", 2000)
         
         self.area = config.get("area", 4000)
         self.loss_a = config.get("loss_a", 0.265)
@@ -74,7 +77,7 @@ class greenCrabEnv(gym.Env):
         self.config = config
 
         # Preserve these for reset
-        self.observations = np.array([0,0,0,0,0,0,0,0,0], dtype=np.float32)
+        self.observations = np.zeros(shape=9, dtype=np.float32)
         self.reward = 0
         self.years_passed = 0
         self.Tmax = config.get("Tmax", 100)
@@ -92,14 +95,14 @@ class greenCrabEnv(gym.Env):
         # action -- # traps per month
         self.action_space = spaces.Box(
             np.array([0], dtype=np.float32),
-            np.array([2000], dtype=np.float32),
+            np.array([self.max_action], dtype=np.float32),
             dtype=np.float32,
         )
         
         # Observation space
         self.observation_space = spaces.Box(
-            np.array([0,0,0,0,0,0,0,0,0], dtype=np.float32),
-            np.array([2000,2000,2000,2000,2000,2000,2000,2000,2000], dtype=np.float32),
+            np.zeros(shape=9, dtype=np.float32),
+            self.max_obs * np.ones(shape=9, dtype=np.float32),
             dtype=np.float32,
         )
         
