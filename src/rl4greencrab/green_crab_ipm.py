@@ -256,7 +256,7 @@ class greenCrabEnv(gym.Env):
     # 1. impact on environment (function of crab density)
     # 2. penalty for how much effort we expended (function of action)
     def reward_func(self,action):
-        reward = -self.loss_a/(1+np.exp(-self.loss_b*(np.sum(self.state)/self.area-self.loss_c)))-self.action_reward_scale*action/2000
+        reward = -self.loss_a/(1+np.exp(-self.loss_b*(np.sum(self.state)/self.area-self.loss_c)))-self.action_reward_scale*action/self.max_action
         return reward
 
 
