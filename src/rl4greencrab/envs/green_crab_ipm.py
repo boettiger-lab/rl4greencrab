@@ -144,7 +144,7 @@ class greenCrabEnv(gym.Env):
             size_freq[:,j+1] = [np.random.binomial(n=n_j[k], p=self.pmort) for k in range(self.nsize)]
             removed[:,j+1] = [np.random.binomial(size_freq[k,j+1], harvest_rate[k]) for k in range(self.nsize)]
             
-        self.observations = np.array([np.sum(removed[:,j]) for j in range(self.ntime)])
+        self.observations = np.array([np.sum(removed[:,j]) for j in range(self.ntime)], dtype = np.float32)
             
             # for k in range(21):
             #     #project to next size frequency
