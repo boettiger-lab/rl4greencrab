@@ -293,7 +293,7 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
         return - np.ones(shape=self.observation_space.shape, dtype=np.float32), info
 
     def cpue_2(self, obs, action_natural_units):
-        if any(scaled_action <= 0):
+        if any(action_natural_units <= 0):
             return np.float32([0,0])
         cpue_2 = np.float32([
             np.sum(obs[0:5]) / (self.cpue_normalization * action_natural_units[0]),
