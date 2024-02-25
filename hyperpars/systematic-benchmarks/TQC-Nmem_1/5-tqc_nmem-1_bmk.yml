@@ -4,9 +4,10 @@ algo: "TQC"
 env_id: "GreenCrab-v2"
 n_envs: 12
 tensorboard: "/home/rstudio/logs"
-total_timesteps: 6000000
-config: {r: 0.5, imm: 125, problem_scale: 2000, action_reward_scale: 0.5, env_stoch: 0.1}
+total_timesteps: 1000000
+config: {r: 0.5, imm: 500, problem_scale: 2000, action_reward_scale: 0.5, env_stoch: 0.25}
 use_sde: True
 id: "bmk-5"
 repo: "cboettig/rl-ecology"
 save_path: "/home/rstudio/saved_agents"
+progress_bar: False

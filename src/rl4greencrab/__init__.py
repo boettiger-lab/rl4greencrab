@@ -1,9 +1,19 @@
-from rl4greencrab.invasive_ipm import invasive_IPM, invasive_IPM_v2
-from rl4greencrab.ts_model import ts_env_v1, ts_env_v2
-from rl4greencrab.util import sb3_train, sb3_train_v2, sb3_train_metaenv
+from rl4greencrab.envs.green_crab_ipm import greenCrabEnv, greenCrabSimplifiedEnv
+from rl4greencrab.envs.time_series import timeSeriesEnv
+from rl4greencrab.agents.const_action import constAction
+from rl4greencrab.agents.const_escapement import constEsc
+# from envs.util import sb3_train, sb3_train_v2, sb3_train_metaenv
 
 from gymnasium.envs.registration import register
-register(id="GreenCrab-v1", entry_point="rl4greencrab.invasive_ipm:invasive_IPM")
-register(id="GreenCrab-v2", entry_point="rl4greencrab.invasive_ipm:invasive_IPM_v2")
-register(id="TimeSeries-v1", entry_point="rl4greencrab.ts_model:ts_env_v1")
-register(id="TimeSeries-v2", entry_point="rl4greencrab.ts_model:ts_env_v2")
+register(
+    id="GreenCrab", 
+    entry_point="rl4greencrab.green_crab_ipm:greenCrabEnv",
+)
+register(
+    id="GreenCrabSimpl", 
+    entry_point="rl4greencrab.green_crab_ipm:greenCrabSimplifiedEnv"
+)
+register(
+    id="TimeSeries", 
+    entry_point="rl4greencrab.time_series:TimeSeriesEnv",
+)

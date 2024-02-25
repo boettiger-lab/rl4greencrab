@@ -12,7 +12,7 @@ Taken from IPM_202040117.ipynb, modified minor aspects to be able to interface
 with ts_model.py
 """
 
-class invasive_IPM(gym.Env):
+class greenCrabEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
@@ -55,8 +55,11 @@ class invasive_IPM(gym.Env):
         
         self.w_mort_scale = config.get("w_mort_scale", 5)
         self.K = config.get("K", 25000) #carrying capacity
-        self.imm = config.get("imm", 2) #colonization/immigration rate
-        self.r = config.get("r", 2) #intrinsic rate of growth
+        self.imm = config.get("imm", 1000) #colonization/immigration rate
+        self.r = config.get("r", 0.5) #intrinsic rate of growth
+
+        self.max_action = config.get("max_action", 2000)
+        self.max_obs = config.get("max_obs", 2000)
         
         self.area = config.get("area", 4000)
         self.loss_a = config.get("loss_a", 0.265)
@@ -70,11 +73,11 @@ class invasive_IPM(gym.Env):
         
         self.delta_t = config.get("delta_t", 1/12)
         self.env_stoch = config.get("env_stoch", 0.1)
-        self.action_reward_scale = config.get("action_reward_scale", 0.001)
+        self.action_reward_scale = config.get("action_reward_scale", 0.5)
         self.config = config
 
         # Preserve these for reset
-        self.observations = np.array([0,0,0,0,0,0,0,0,0], dtype=np.float32)
+        self.observations = np.zeros(shape=9, dtype=np.float32)
         self.reward = 0
         self.years_passed = 0
         self.Tmax = config.get("Tmax", 100)
@@ -92,14 +95,14 @@ class invasive_IPM(gym.Env):
         # action -- # traps per month
         self.action_space = spaces.Box(
             np.array([0], dtype=np.float32),
-            np.array([2000], dtype=np.float32),
+            np.array([self.max_action], dtype=np.float32),
             dtype=np.float32,
         )
         
         # Observation space
         self.observation_space = spaces.Box(
-            np.array([0,0,0,0,0,0,0,0,0], dtype=np.float32),
-            np.array([2000,2000,2000,2000,2000,2000,2000,2000,2000], dtype=np.float32),
+            np.zeros(shape=9, dtype=np.float32),
+            self.max_obs * np.ones(shape=9, dtype=np.float32),
             dtype=np.float32,
         )
         
@@ -141,7 +144,7 @@ class invasive_IPM(gym.Env):
             size_freq[:,j+1] = [np.random.binomial(n=n_j[k], p=self.pmort) for k in range(self.nsize)]
             removed[:,j+1] = [np.random.binomial(size_freq[k,j+1], harvest_rate[k]) for k in range(self.nsize)]
             
-        self.observations = np.array([np.sum(removed[:,j]) for j in range(self.ntime)])
+        self.observations = np.array([np.sum(removed[:,j]) for j in range(self.ntime)], dtype = np.float32)
             
             # for k in range(21):
             #     #project to next size frequency
@@ -186,7 +189,7 @@ class invasive_IPM(gym.Env):
 
         return self.observations, self.reward, done, done, {}
         
-    def reset(self, seed=42, options=None):
+    def reset(self, *, seed=42, options=None):
         self.state = self.init_state()
         self.years_passed = 0
 
@@ -194,7 +197,7 @@ class invasive_IPM(gym.Env):
         self.reward = 0
 
         # self.observations = np.zeros(shape=self.ntime)
-        self.observations = np.random.randint(0,100, size=self.ntime)
+        self.observations = np.float32(np.random.randint(0,100, size=self.ntime))
 
         return self.observations, {}
 
@@ -253,12 +256,12 @@ class invasive_IPM(gym.Env):
     # 1. impact on environment (function of crab density)
     # 2. penalty for how much effort we expended (function of action)
     def reward_func(self,action):
-        reward = -self.loss_a/(1+np.exp(-self.loss_b*(np.sum(self.state)/self.area-self.loss_c)))-self.action_reward_scale*action/2000
+        reward = -self.loss_a/(1+np.exp(-self.loss_b*(np.sum(self.state)/self.area-self.loss_c)))-self.action_reward_scale*action/self.max_action
         return reward
 
 
-class invasive_IPM_v2(invasive_IPM):
-    """ like invasive_IPM but with simplified observations. """
+class greenCrabSimplifiedEnv(greenCrabEnv):
+    """ like invasive_IPM but with simplified observations and normalized to -1, 1 space. """
     def __init__(self, config={}):
         super().__init__(config=config)
         self.observation_space = spaces.Box(
@@ -271,32 +274,30 @@ class invasive_IPM_v2(invasive_IPM):
             np.float32([1]),
             dtype=np.float32,
         )
-        # self.r = 0.5
-        # self.imm = 1
-        # self.K=25_000
-        self.problem_scale = config.get('problem_scale', 50) # ad hoc based on previous values
+        self.max_action = config.get('max_action', 2000) # ad hoc based on previous values
+        self.cpue_normalization = config.get('cpue_normalization', 100)
         
     def step(self, action):
-        scaled_action = np.maximum( self.problem_scale * (1 + action)/2 , 0.)
+        action_natural_units = np.maximum( self.max_action * (1 + action)/2 , 0.)
         obs, rew, term, trunc, info = super().step(
-            np.float32(scaled_action)
+            np.float32(action_natural_units)
         )
-        normalized_cpue = 2 * self.cpue_2(obs, scaled_action) - 1
+        normalized_cpue = 2 * self.cpue_2(obs, action_natural_units) - 1
         observation = np.float32(np.append(normalized_cpue, action))
         return observation, rew, term, trunc, info
 
-    def reset(self, seed=42, options=None):
+    def reset(self, *, seed=42, options=None):
         _, info = super().reset(seed=seed, options=options)
 
         # completely new  obs
         return - np.ones(shape=self.observation_space.shape, dtype=np.float32), info
 
-    def cpue_2(self, obs, scaled_action):
-        if any(scaled_action <= 0):
+    def cpue_2(self, obs, action_natural_units):
+        if any(action_natural_units <= 0):
             return np.float32([0,0])
         cpue_2 = np.float32([
-            np.sum(obs[0:5]) / (100 * scaled_action[0]),
-            np.sum(obs[5:]) / (100 * scaled_action[0])
+            np.sum(obs[0:5]) / (self.cpue_normalization * action_natural_units[0]),
+            np.sum(obs[5:]) / (self.cpue_normalization * action_natural_units[0])
         ])
         return cpue_2
         

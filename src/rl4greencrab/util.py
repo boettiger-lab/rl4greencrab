@@ -44,7 +44,8 @@ def sb3_train(config_file):
         use_sde=options["use_sde"],
     )
 
-    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=True)
+    progress_bar = options.get("progress_bar", False)
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 
     os.makedirs(options["save_path"], exist_ok=True)
     model.save(save_id)
@@ -54,6 +55,18 @@ def sb3_train(config_file):
         deploy_model(config_file, "sb3/"+config_file, repo=options["repo"])
     except:
         print("Could not deploy model to hugging face :(.")
+
+def deploy_model(path, path_in_repo, repo, clean=False):
+    api = HfApi()
+    if path_in_repo is None:
+        path_in_repo = basename(path)
+    api.upload_file(
+        path_or_fileobj=path,
+        path_in_repo=path_in_repo,
+        repo_id=repo,
+        repo_type="model")
+    if clean:
+        pathlib.Path(path).unlink()
 
 def sb3_train_v2(options = dict):
     vec_env = make_vec_env(
@@ -69,7 +82,8 @@ def sb3_train_v2(options = dict):
         tensorboard_log=options["tensorboard"],
         use_sde=options["use_sde"],
     )
-    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=True)
+    progress_bar = options.get("progress_bar", False)
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 
     model.save(model_id)
     path = model_id + ".zip"
@@ -107,7 +121,8 @@ def sb3_train_metaenv(config_file):
         tensorboard_log=options["tensorboard"],
         use_sde=options["use_sde"],
     )
-    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=True)
+    progress_bar = options.get("progress_bar", False)
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 
     model.save(save_id)
     # path = model_id + ".zip"
