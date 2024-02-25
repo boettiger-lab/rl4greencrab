@@ -56,6 +56,18 @@ def sb3_train(config_file):
     except:
         print("Could not deploy model to hugging face :(.")
 
+def deploy_model(path, path_in_repo, repo, clean=False):
+    api = HfApi()
+    if path_in_repo is None:
+        path_in_repo = basename(path)
+    api.upload_file(
+        path_or_fileobj=path,
+        path_in_repo=path_in_repo,
+        repo_id=repo,
+        repo_type="model")
+    if clean:
+        pathlib.Path(path).unlink()
+
 def sb3_train_v2(options = dict):
     vec_env = make_vec_env(
         options["env_id"], options["n_envs"], env_kwargs={"config": options["config"]}

@@ -197,7 +197,7 @@ class greenCrabEnv(gym.Env):
         self.reward = 0
 
         # self.observations = np.zeros(shape=self.ntime)
-        self.observations = np.random.randint(0,100, size=self.ntime, dtype = np.float32)
+        self.observations = np.float32(np.random.randint(0,100, size=self.ntime))
 
         return self.observations, {}
 
