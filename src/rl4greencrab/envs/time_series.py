@@ -18,7 +18,7 @@ class timeSeriesEnv(gym.Env):
     
         self.action_space = self.base_env.action_space
         ones_shape = np.ones(
-            shape = (self.N_mem, self.base_env.observation_space.shape), 
+            shape = (self.N_mem, *self.base_env.observation_space.shape), 
             dtype=np.float32,
         )
         self.observation_space = spaces.Box(-ones_shape, +ones_shape)
