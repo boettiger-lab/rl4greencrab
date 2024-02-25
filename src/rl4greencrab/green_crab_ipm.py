@@ -189,7 +189,7 @@ class greenCrabEnv(gym.Env):
 
         return self.observations, self.reward, done, done, {}
         
-    def reset(self, seed=42, options=None):
+    def reset(self, *, seed=42, options=None):
         self.state = self.init_state()
         self.years_passed = 0
 
@@ -286,7 +286,7 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
         observation = np.float32(np.append(normalized_cpue, action))
         return observation, rew, term, trunc, info
 
-    def reset(self, seed=42, options=None):
+    def reset(self, *, seed=42, options=None):
         _, info = super().reset(seed=seed, options=options)
 
         # completely new  obs
