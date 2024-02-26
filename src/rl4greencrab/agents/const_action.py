@@ -4,8 +4,8 @@ class constAction:
         self.action = 2 * self.mortality - 1
         self.env = env
 
-    def predict(self, observation):
-        return self.action
+    def predict(self, observation, **kwargs):
+        return self.action, {}
 
 
         

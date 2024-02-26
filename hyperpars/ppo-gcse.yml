@@ -1,0 +1,15 @@
+# stable-baselines3 configuration template. 
+#
+# env_id strings are found at src/rl4greencrab/__init__.py
+# config is passed as an input to the env initialization.
+
+algo: "PPO"
+env_id: "gcsenv"
+n_envs: 12
+tensorboard: "/home/rstudio/logs"
+total_timesteps: 1000000
+config: {}
+use_sde: True
+id: "1"
+repo: "cboettig/rl-ecology"
+save_path: "/home/rstudio/rl4greencrab/saved_agents"

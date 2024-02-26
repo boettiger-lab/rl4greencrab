@@ -73,7 +73,7 @@ class greenCrabEnv(gym.Env):
         
         self.delta_t = config.get("delta_t", 1/12)
         self.env_stoch = config.get("env_stoch", 0.1)
-        self.action_reward_scale = config.get("action_reward_scale", 0.5)
+        self.action_reward_scale = config.get("action_reward_scale", 0.000001)
         self.config = config
 
         # Preserve these for reset
