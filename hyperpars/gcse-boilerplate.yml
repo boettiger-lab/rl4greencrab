@@ -2,7 +2,6 @@
 
 env_id: "gcsenv"
 config: {}
-n_envs: 12
 tensorboard: "/home/rstudio/logs"
 use_sde: True
 id: "1"
