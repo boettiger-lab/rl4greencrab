@@ -25,9 +25,11 @@ def algorithm(algo):
     }
     return algos[algo]
 
-def sb3_train(config_file):
+def sb3_train(config_file, **kwargs):
     with open(config_file, "r") as stream:
         options = yaml.safe_load(stream)
+        options = {**options, **kwargs}
+        # updates / expands on yaml options with optional user-provided input
 
     vec_env = make_vec_env(
         options["env_id"], options["n_envs"], env_kwargs={"config": options["config"]}
