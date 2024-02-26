@@ -3,7 +3,7 @@ import os
 
 import gymnasium as gym
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3 import PPO, A2C, DQN, SAC, TD3, HER
+from stable_baselines3 import PPO, A2C, DQN, SAC, TD3, HER, DDPG
 from sb3_contrib import TQC, ARS, RecurrentPPO
 
 def algorithm(algo):
@@ -55,7 +55,7 @@ def sb3_train(config_file, **kwargs):
 
     model = ALGO(
         "MlpPolicy",
-        vec_env,
+        env,
         verbose=0,
         tensorboard_log=options["tensorboard"],
         use_sde=options["use_sde"],

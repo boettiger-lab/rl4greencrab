@@ -3,7 +3,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--algo", help="Algo to train", type=str, 
                     choices=[
-                        'PPO', 'RecurrentPPO', 'ppo', 'recurrentppo',
+                        'PPO', 'RecurrentPPO', 'ppo', 'recurrentppo', 'RPPO', 'rppo',
                         'ARS', 'A2C', 'ars', 'a2c',
                         'DDPG', 'ddpg',
                         'HER', 'her',
@@ -27,7 +27,7 @@ manual_kwargs = {}
 if args.algo:
     manual_kwargs['algo'] = args.algo
 if args.time_steps:
-    manual_kwargs['time_steps'] = args.time_steps
+    manual_kwargs['total_timesteps'] = args.time_steps
 if args.n_envs:
     manual_kwargs['n_envs'] = args.n_envs
 
@@ -36,6 +36,6 @@ boilerplate_cfg = os.path.join("..", "hyperpars", "gcse-boilerplate.yml")
 
 
 import rl4greencrab
-from rl4greencrab import sb3_train 
+from rl4greencrab.utils.sb3 import sb3_train 
 
 sb3_train(boilerplate_cfg, **manual_kwargs)
