@@ -6,14 +6,14 @@ from rl4greencrab.utils.simulate import simulator
 
 from gymnasium.envs.registration import register
 register(
-    id="GreenCrab", 
+    id="gcenv", 
     entry_point="rl4greencrab.green_crab_ipm:greenCrabEnv",
 )
 register(
-    id="GreenCrabSimpl", 
+    id="gcsenv", 
     entry_point="rl4greencrab.green_crab_ipm:greenCrabSimplifiedEnv"
 )
 register(
-    id="TimeSeries", 
+    id="tsenv", 
     entry_point="rl4greencrab.time_series:TimeSeriesEnv",
 )
