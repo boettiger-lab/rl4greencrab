@@ -1,0 +1,10 @@
+# stable-baselines3 configuration.
+
+env_id: "gcsenv"
+config: {}
+n_envs: 12
+tensorboard: "/home/rstudio/logs"
+use_sde: True
+id: "1"
+repo: "cboettig/rl-ecology"
+save_path: "/home/rstudio/rl4greencrab/saved_agents"
