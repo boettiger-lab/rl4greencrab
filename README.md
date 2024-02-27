@@ -38,6 +38,12 @@ This action hampers the growth of the crab population, and produces an observati
 
 Coming soon: a more detailed explanation of the integral projection model used!
 
+## Technical Intro
+
+`notebooks/intro_pt1.ipynb`
+
+`notebooks/intro_pt2.ipynb`
+
 # Installation
 
 1. `git clone https://github.com/boettiger-lab/rl4greencrab.git`
