@@ -101,8 +101,8 @@ class greenCrabEnv(gym.Env):
         
         # Observation space
         self.observation_space = spaces.Box(
-            np.zeros(shape=9, dtype=np.float32),
-            self.max_obs * np.ones(shape=9, dtype=np.float32),
+            np.zeros(shape=self.ntime, dtype=np.float32),
+            self.max_obs * np.ones(shape=self.ntime, dtype=np.float32),
             dtype=np.float32,
         )
         
@@ -196,7 +196,7 @@ class greenCrabEnv(gym.Env):
         # for tracking only
         self.reward = 0
 
-        self.observations = np.zeros(shape=self.ntime)
+        self.observations = np.zeros(shape=self.ntime, dtype=np.float32)
 
         return self.observations, {}
 
