@@ -50,8 +50,8 @@ class greenCrabEnv(gym.Env):
         self.init_sd_recruit = config.get("init_sd_recruit", 1.5)
         self.init_mean_adult = config.get("init_mean_adult", 65)
         self.init_sd_adult = config.get("init_sd_adult", 8)
-        self.init_n_recruit = config.get("init_n_recruit", 1000)
-        self.init_n_adult = config.get("init_n_adult", 1000)
+        self.init_n_recruit = config.get("init_n_recruit", 0)
+        self.init_n_adult = config.get("init_n_adult", 0)
         
         self.w_mort_scale = config.get("w_mort_scale", 5)
         self.K = config.get("K", 25000) #carrying capacity
