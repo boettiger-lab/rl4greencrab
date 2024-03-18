@@ -196,8 +196,7 @@ class greenCrabEnv(gym.Env):
         # for tracking only
         self.reward = 0
 
-        # self.observations = np.zeros(shape=self.ntime)
-        self.observations = np.float32(np.random.randint(0,100, size=self.ntime))
+        self.observations = np.zeros(shape=self.ntime)
 
         return self.observations, {}
 
