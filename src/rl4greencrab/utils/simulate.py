@@ -89,19 +89,3 @@ class simulator:
                 if terminated or done:
                     break
         return data
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        
-
-    
