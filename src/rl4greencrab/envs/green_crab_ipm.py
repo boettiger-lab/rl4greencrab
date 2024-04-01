@@ -56,7 +56,7 @@ class greenCrabEnv(gym.Env):
         self.w_mort_scale = config.get("w_mort_scale", 5)
         self.K = config.get("K", 25000) #carrying capacity
         self.imm = config.get("imm", 1000) #colonization/immigration rate
-        self.r = config.get("r", 0.5) #intrinsic rate of growth
+        self.r = config.get("r", 1) #intrinsic rate of growth
 
         self.max_action = config.get("max_action", 2000)
         self.max_obs = config.get("max_obs", 2000)
@@ -73,7 +73,7 @@ class greenCrabEnv(gym.Env):
         
         self.delta_t = config.get("delta_t", 1/12)
         self.env_stoch = config.get("env_stoch", 0.1)
-        self.action_reward_scale = config.get("action_reward_scale", 0.000001)
+        self.action_reward_scale = config.get("action_reward_scale", 1e-8)
         self.config = config
 
         # Preserve these for reset
