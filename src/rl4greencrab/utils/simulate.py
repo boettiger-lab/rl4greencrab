@@ -3,7 +3,7 @@ class simulator:
         self.env = env
         self.agent = agent
 
-    def simulate(self, reps=10):
+    def simulate(self, reps=1):
         self.results = []
         env = self.env
         agent = self.agent
@@ -12,8 +12,7 @@ class simulator:
             observation, _ = env.reset()
             for t in range(env.Tmax):
                 action, _ = agent.predict(observation, deterministic=True)
-                observation, reward, terminated, done, info = env.step(self.unnormalize_action(action))
-                observation = self.normalize_observation(observation)
+                observation, reward, terminated, done, info = env.step(action)
                 episode_reward += reward
                 if terminated or done:
                     break
@@ -34,9 +33,7 @@ class simulator:
             observation, _ = env.reset()
             for t in range(env.Tmax):
                 action, _ = agent.predict(observation, deterministic=True)
-                action = self.unnormalize_action(action)
                 observation, reward, terminated, done, info = env.step(action)
-                observation = self.normalize_observation(observation)
                 episode_reward += reward
                 #
                 observation_list.append(observation)
@@ -54,16 +51,6 @@ class simulator:
             'rew': ep_rew_list,
             'rep': reps_list,
         }
-
-    def unnormalize_action(self, action):
-        min_act = self.env.action_space.low
-        act_width = self.env.action_space.high - self.env.action_space.low
-        return min_act + act_width * (action + 1) / 2
-
-    def normalize_observation(self, observation):
-        min_obs = self.env.observation_space.low
-        obs_width = self.env.observation_space.high - self.env.observation_space.low   
-        return -1 + 2 * (observation - min_obs) / obs_width 
         
 
     
