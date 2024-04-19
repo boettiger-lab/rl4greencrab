@@ -18,4 +18,11 @@ dependencies = ["gymnasium",
                 "pyyaml"]
 
 [project.optional-dependencies]
-tests = ["pytest", "pytest-cov", "stable_baselines3", "sb3-contrib"]
+tests = [
+         "pytest",
+         "pytest-cov",
+         "stable_baselines3",
+         "sb3-contrib",
+         "ray"
+         ]
+         
