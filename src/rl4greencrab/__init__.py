@@ -16,7 +16,7 @@ register(
 )
 register(
     id="gcnm", 
-    entry_point="rl4greencrab.envs.green_crab_ipm:greenCrabSimplifiedEnv"
+    entry_point="rl4greencrab.envs.green_crab_nine_month:greenCrabNineMonth"
 )
 register(
     id="tsenv", 
