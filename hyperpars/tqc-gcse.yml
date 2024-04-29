@@ -1,17 +1,11 @@
 # stable-baselines3 configuration.
 
 algo: "TQC"
-env_id: "gcsenv"
+env_id: "gcnm"
 n_envs: 12
 tensorboard: "/home/rstudio/logs"
 total_timesteps: 1000000
-config:
-    'action_reward_scale': [0.08, 0.08, 0.4]
-    'max_action': 3000
-    'trapm_pmax': 0.0000275 #2.26e-6,
-    'trapf_pmax': 0.00000825 #8.3e-7,
-    'traps_pmax': 0.000275 #2.75e-5,
-    'action_reward_exponent': 10
+config: {}
 use_sde: True
 id: "1"
 repo: "cboettig/rl-ecology"
