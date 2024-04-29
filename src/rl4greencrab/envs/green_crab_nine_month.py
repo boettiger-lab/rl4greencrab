@@ -18,7 +18,7 @@ class greenCrabNineMonth(greenCrabEnv):
         self.action_reward_scale = config.get("action_reward_scale", 0.05)
         self.max_action = 10_000
 
-    def reset(self):
+    def reset(self, *, seed=42, options=None):
         unnorm_obs, info = super().reset()
         norm_obs = 2 * unnorm_obs / self.max_obs - 1
         return norm_obs, info
