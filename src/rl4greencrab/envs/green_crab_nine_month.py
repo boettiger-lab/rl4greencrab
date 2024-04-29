@@ -24,7 +24,7 @@ class greenCrabNineMonth(greenCrabEnv):
                         self.traps_pmax, 
                         self.traps_midpoint, 
                         self.traps_k
-                    ) * (1+action[i]) / 2
+                    ) * self.max_action * (1+action[i]) / 2
                 ))
                 for i in range(self.ntime)
             ]
@@ -76,9 +76,6 @@ class greenCrabNineMonth(greenCrabEnv):
         self.years_passed += 1
 
         done = bool(self.years_passed > self.Tmax)
-
-        # if np.sum(self.state) <= 0.001:
-        #     done = True
 
         return self.observations, self.reward, done, done, {}
         

@@ -333,5 +333,3 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
             np.sum(obs[5:]) / (self.cpue_normalization * action_natural_units[0])
         ])
         return cpue_2
-        
-        
