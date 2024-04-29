@@ -114,7 +114,7 @@ class greenCrabNineMonth(greenCrabEnv):
         )
         
         reward = - ecological_damage - total_cost
-        print(f"eco: {ecological_damage:.5f}, cost: {total_cost:.5f}")
+        # print(f"eco: {ecological_damage:.5f}, cost: {total_cost:.5f}")
         return reward
         
         
