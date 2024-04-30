@@ -2,7 +2,7 @@
 
 # algo overall
 algo: "RPPO"
-total_timesteps: 35000000
+total_timesteps: 5000000
 
 additional_imports: ["torch"]
 

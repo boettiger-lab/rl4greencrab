@@ -4,7 +4,7 @@ total_timesteps: 1000000
 algo_config:
     tensorboard_log: "../../../logs"
     policy: 'MlpPolicy'
-    learning_rate: 0.0001
+    learning_rate: 0.00007
     learning_starts: 10000
     batch_size: 512
     use_sde: True
