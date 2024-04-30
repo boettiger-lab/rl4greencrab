@@ -9,7 +9,7 @@ args = parser.parse_args()
 
 # imports
 import rl4greencrab
-from rl4greencrab.utils import sb3_train
+from rl4greencrab import sb3_train
 
 import os
 

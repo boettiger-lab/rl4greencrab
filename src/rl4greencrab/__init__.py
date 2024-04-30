@@ -4,6 +4,7 @@ from rl4greencrab.envs.time_series import timeSeriesEnv
 from rl4greencrab.agents.const_action import constAction, constActionNatUnits, multiConstAction
 from rl4greencrab.agents.const_escapement import constEsc
 from rl4greencrab.utils.simulate import simulator, get_simulator, evaluate_agent
+from rl4greencrab.utils.sb3 import sb3_train
 
 from gymnasium.envs.registration import register
 register(
