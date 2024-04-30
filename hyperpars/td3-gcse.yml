@@ -1,12 +1,19 @@
-# stable-baselines3 configuration.
-
+# algo 
 algo: "TD3"
-env_id: "gcnm"
-n_envs: 12
-tensorboard: "/home/rstudio/logs"
 total_timesteps: 1000000
+algo_config:
+    tensorboard_log: "../../../logs"
+    policy: 'MlpPolicy'
+
+# env
+env_id: "gcnm"
 config: {}
-use_sde: True
-id: "1"
+n_envs: 12
+
+# io
 repo: "cboettig/rl-ecology"
-save_path: "/home/rstudio/rl4greencrab/saved_agents"
+save_path: "../saved_agents"
+
+# misc
+id: "1"
+additional_imports: []
