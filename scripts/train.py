@@ -8,8 +8,8 @@ parser.add_argument("-pb", "--progress_bar", help="Use  progress bar for trainin
 args = parser.parse_args()
 
 # imports
-import rl4fisheries
-from rl4fisheries.utils import sb3_train
+import rl4greencrab
+from rl4greencrab.utils import sb3_train
 
 import os
 
