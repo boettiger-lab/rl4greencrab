@@ -17,6 +17,7 @@ class greenCrabNineMonth(greenCrabEnv):
         )
         self.action_reward_scale = config.get("action_reward_scale", 0.05)
         self.max_action = 10_000
+        self.imm_self_corr = config.get('imm_self_corr', 0.05)
 
     def reset(self, *, seed=None, options=None):
         unnorm_obs, info = super().reset()
@@ -77,6 +78,12 @@ class greenCrabNineMonth(greenCrabEnv):
         ) * (
             1-np.sum(size_freq[:,self.ntime-1]) / self.K
         )
+        if self.years_passed > 0:
+            nonlocal_recruits = (
+                (1-self.imm_self_corr) * nonlocal_recruits 
+                + self.imm_self_corr * self.prev_non_local_rec
+            )
+        self.prev_non_local_rec = nonlocal_recruits    
         recruit_total = local_recruits + nonlocal_recruits
 
         #get sizes of recruits
@@ -135,7 +142,8 @@ class greenCrabNineMonth(greenCrabEnv):
         return reward
 
     def imm_rate(self, years_passed):
-        return self.imm * 0.5 * (1 + years_passed/self.Tmax)
+        return self.imm
+        # return self.imm * 0.5 * (1 + years_passed/self.Tmax)
         # return max(
         #     self.imm * years_passed/self.Tmax + 100 * np.sin(2 * np.pi * years_passed / (10 * self.Tmax)),
         #     0,

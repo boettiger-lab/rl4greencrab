@@ -80,7 +80,7 @@ class simulator:
             self.results.append(episode_reward)      
         return self.results
 
-    def simulate_full(self, reps=10):
+    def simulate_full(self, reps=10, seed=None):
         observation_list = []
         action_list = []
         ep_rew_list = []
@@ -91,14 +91,14 @@ class simulator:
         agent = self.agent
         for rep in range(reps): # try score as average of 100 replicates, still a noisy measure
             episode_reward = 0.0
-            observation, _ = env.reset()
+            observation, _ = env.reset(seed=seed)
             for t in range(env.Tmax):
                 action, _ = agent.predict(observation, deterministic=True)
                 observation, reward, terminated, done, info = env.step(action)
                 episode_reward += reward
                 #
-                observation_list.append(observation)
-                action_list.append(action)
+                observation_list.append(list(observation))
+                action_list.append(list(action))
                 ep_rew_list.append(episode_reward)
                 reps_list.append(rep)
                 t_list.append(t)
