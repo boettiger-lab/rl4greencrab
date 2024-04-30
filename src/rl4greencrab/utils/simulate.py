@@ -14,6 +14,8 @@ class evaluate_agent:
                 self.simulator.remote(env=self.env, agent=self.agent) 
                 for _ in range(n_eval_episodes)
             ])
+            if ray.is_initialized():
+                ray.shutdown()
         else:
             rewards = [
                 self.simulator.remote(env=self.env, agent=self.agent) 

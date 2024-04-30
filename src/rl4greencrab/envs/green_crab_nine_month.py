@@ -67,16 +67,33 @@ class greenCrabNineMonth(greenCrabEnv):
 
 
         #calculate new adult population after overwinter mortality
-        new_adults = [ np.random.binomial(size_freq[k,8],self.w_mort_exp[k]) for k in range(self.nsize) ]
+        new_adults = [ np.random.binomial(size_freq[k,8] - removed[k,8],self.w_mort_exp[k]) for k in range(self.nsize) ]
 
         #simulate new recruits
         local_recruits = np.random.normal(self.dd_growth(size_freq[:,self.ntime-1]),self.env_stoch)
-        nonlocal_recruits = np.random.poisson(self.imm)*(1-np.sum(size_freq[:,self.ntime-1])/self.K)
+        nonlocal_recruits = np.random.poisson(
+            # self.imm
+            self.imm_rate(self.years_passed)
+        ) * (
+            1-np.sum(size_freq[:,self.ntime-1]) / self.K
+        )
         recruit_total = local_recruits + nonlocal_recruits
 
         #get sizes of recruits
-        recruit_sizes = (norm.cdf(self.bndry[1:(self.nsize+1)],self.init_mean_recruit,self.init_sd_recruit)-\
-         norm.cdf(self.bndry[0:self.nsize],self.init_mean_recruit,self.init_sd_recruit))*recruit_total
+        recruit_sizes = (
+            (
+                norm.cdf(
+                    self.bndry[1:(self.nsize+1)],
+                    self.init_mean_recruit,
+                    self.init_sd_recruit,
+                )
+                -norm.cdf(
+                    self.bndry[0:self.nsize],
+                    self.init_mean_recruit,
+                    self.init_sd_recruit
+                )
+            )*recruit_total
+        )
 
         #store new population size (and cap off at zero pop)
         self.state = np.maximum(recruit_sizes + new_adults, 0)
@@ -116,5 +133,12 @@ class greenCrabNineMonth(greenCrabEnv):
         reward = - ecological_damage - total_cost
         # print(f"eco: {ecological_damage:.5f}, cost: {total_cost:.5f}")
         return reward
+
+    def imm_rate(self, years_passed):
+        return self.imm * 0.5 * (1 + years_passed/self.Tmax)
+        # return max(
+        #     self.imm * years_passed/self.Tmax + 100 * np.sin(2 * np.pi * years_passed / (10 * self.Tmax)),
+        #     0,
+        # )
         
         
