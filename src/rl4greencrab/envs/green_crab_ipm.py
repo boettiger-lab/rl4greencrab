@@ -34,17 +34,22 @@ class greenCrabEnv(gym.Env):
         config=config or {}
         
         # parameters
-        self.growth_k = config.get("growth_k", 0.43)
-        self.growth_xinf = config.get("growth_xinf", 109)
-        self.growth_sd = config.get("growth_sd", 2.5)
-        self.nmortality = config.get("nmortality", 0.03)
+        self.growth_k = np.float32(config.get("growth_k", 0.43))
+        self.growth_xinf = np.float32(config.get("growth_xinf", 109))
+        self.growth_sd = np.float32(config.get("growth_sd", 2.5))
+        self.nmortality = np.float32(config.get("nmortality", 0.03))
         
-        self.trapm_sigma = config.get("trapm_sigma", 0.15)
-        self.trapm_xmax = config.get("trapm_xmax", 44)
-        self.trapm_pmax = config.get("trapm_pmax", 0.0005)
-        self.trapf_pmax = config.get("trapf_pmax", 0.0008)
-        self.trapf_k = config.get("trapf_k", 0.5)
-        self.trapf_midpoint = config.get("trapf_midpoint", 45)
+        self.trapm_sigma = np.float32(config.get("trapm_sigma", 6))
+        self.trapm_xmax = np.float32(config.get("trapm_xmax", 47))
+        self.trapm_pmax = np.float32(config.get("trapm_pmax", 2.26e-6))
+        #
+        self.trapf_pmax = np.float32(config.get("trapf_pmax", 8.3e-7))
+        self.trapf_k = np.float32(config.get("trapf_k", 0.4))
+        self.trapf_midpoint = np.float32(config.get("trapf_midpoint", 41))
+        #
+        self.traps_pmax = np.float32(config.get("traps_pmax", 2.75e-5))
+        self.traps_k = np.float32(config.get("traps_k", 0.4))
+        self.traps_midpoint = np.float32(config.get("traps_midpoint", 45))
         
         self.init_mean_recruit = config.get("init_mean_recruit", 15)
         self.init_sd_recruit = config.get("init_sd_recruit", 1.5)
@@ -56,7 +61,7 @@ class greenCrabEnv(gym.Env):
         self.w_mort_scale = config.get("w_mort_scale", 5)
         self.K = config.get("K", 25000) #carrying capacity
         self.imm = config.get("imm", 1000) #colonization/immigration rate
-        self.r = config.get("r", 0.5) #intrinsic rate of growth
+        self.r = config.get("r", 1) #intrinsic rate of growth
 
         self.max_action = config.get("max_action", 2000)
         self.max_obs = config.get("max_obs", 2000)
@@ -73,7 +78,10 @@ class greenCrabEnv(gym.Env):
         
         self.delta_t = config.get("delta_t", 1/12)
         self.env_stoch = config.get("env_stoch", 0.1)
-        self.action_reward_scale = config.get("action_reward_scale", 0.000001)
+        
+        self.action_reward_scale = np.array(config.get("action_reward_scale", [0.1, 0.1, 10]))
+        self.action_reward_exponent = config.get("action_reward_exponent", 1)
+        
         self.config = config
 
         # Preserve these for reset
@@ -94,21 +102,27 @@ class greenCrabEnv(gym.Env):
         # Action space
         # action -- # traps per month
         self.action_space = spaces.Box(
-            np.array([0], dtype=np.float32),
-            np.array([self.max_action], dtype=np.float32),
+            np.array([0, 0, 0], dtype=np.float32),
+            np.array(3*[self.max_action], dtype=np.float32),
             dtype=np.float32,
         )
         
         # Observation space
         self.observation_space = spaces.Box(
-            np.zeros(shape=9, dtype=np.float32),
-            self.max_obs * np.ones(shape=9, dtype=np.float32),
+            np.zeros(shape=self.ntime, dtype=np.float32),
+            self.max_obs * np.ones(shape=self.ntime, dtype=np.float32),
             dtype=np.float32,
         )
         
     def step(self,action):
         #size selective harvest rate, given action
-        harvest_rate = 1-np.exp(-(self.size_sel_norm()*action + self.size_sel_log()*action))
+        harvest_rate = (
+            1 - np.exp( -(
+                self.size_sel_norm()*action[0] 
+                + self.size_sel_log(self.trapf_pmax, self.trapf_midpoint, self.trapf_k)*action[1] 
+                + self.size_sel_log(self.traps_pmax, self.traps_midpoint, self.traps_k)*action[2]
+            ))
+        )
 
         #add pop at t=1
         size_freq = np.zeros(shape=(self.nsize,self.ntime),dtype='object')
@@ -179,7 +193,7 @@ class greenCrabEnv(gym.Env):
         self.state = np.maximum(recruit_sizes + new_adults, 0)
 
         #calculate reward
-        self.reward = self.reward_func(np.sum(action))
+        self.reward = self.reward_func(action)
         self.years_passed += 1
 
         done = bool(self.years_passed > self.Tmax)
@@ -196,8 +210,7 @@ class greenCrabEnv(gym.Env):
         # for tracking only
         self.reward = 0
 
-        # self.observations = np.zeros(shape=self.ntime)
-        self.observations = np.float32(np.random.randint(0,100, size=self.ntime))
+        self.observations = np.zeros(shape=self.ntime, dtype=np.float32)
 
         return self.observations, {}
 
@@ -223,13 +236,13 @@ class greenCrabEnv(gym.Env):
         return init_pop
 
     #function for logistic size selectivity curve
-    def size_sel_log(self):
-        size_sel = self.trapf_pmax/(1+np.exp(-self.trapf_k*(self.midpts-self.trapf_midpoint)))
+    def size_sel_log(self, trap_pmax, trap_midpts, trap_k):
+        size_sel = trap_pmax/(1+np.exp(-trap_k*(self.midpts-trap_midpts)))
         return size_sel
 
     #function for gaussian size selectivity curve
     def size_sel_norm(self):
-        size_sel = self.trapm_pmax*np.exp(-(self.midpts-self.trapm_xmax)**2/2*self.trapm_sigma**2)
+        size_sel = self.trapm_pmax*np.exp(-(self.midpts-self.trapm_xmax)**2/(2*self.trapm_sigma**2))
         return size_sel
 
     #function for growth/mortality kernel
@@ -256,7 +269,25 @@ class greenCrabEnv(gym.Env):
     # 1. impact on environment (function of crab density)
     # 2. penalty for how much effort we expended (function of action)
     def reward_func(self,action):
-        reward = -self.loss_a/(1+np.exp(-self.loss_b*(np.sum(self.state)/self.area-self.loss_c)))-self.action_reward_scale*action/self.max_action
+        def trap_cost(action, max_action, exponent):
+            return np.array(
+                [
+                    (action[0]/max_action) ** exponent,
+                    (action[1]/max_action) ** exponent,
+                    (action[2]/max_action) ** exponent,
+                ]
+            )
+        reward = (
+            -self.loss_a 
+            /
+            (
+                1+np.exp(-self.loss_b*(np.sum(self.state)/self.area-self.loss_c))
+            )
+            - np.sum(
+                self.action_reward_scale 
+                * trap_cost(action, self.max_action, self.action_reward_exponent) 
+            )
+        )
         return reward
 
 
@@ -265,13 +296,13 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
     def __init__(self, config={}):
         super().__init__(config=config)
         self.observation_space = spaces.Box(
-            np.array([-1,-1,-1], dtype=np.float32),
-            np.array([1,1,1], dtype=np.float32),
+            np.array([-1,-1], dtype=np.float32),
+            np.array([1,1], dtype=np.float32),
             dtype=np.float32,
         )
         self.action_space = spaces.Box(
-            np.float32([-1]),
-            np.float32([1]),
+            np.float32([-1, -1, -1]),
+            np.float32([1, 1, 1]),
             dtype=np.float32,
         )
         self.max_action = config.get('max_action', 2000) # ad hoc based on previous values
@@ -283,7 +314,9 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
             np.float32(action_natural_units)
         )
         normalized_cpue = 2 * self.cpue_2(obs, action_natural_units) - 1
-        observation = np.float32(np.append(normalized_cpue, action))
+        # observation = np.float32(np.append(normalized_cpue, action))
+        observation = normalized_cpue
+        rew = 10 * rew # use larger rewards, possibly makes trainer easier?
         return observation, rew, term, trunc, info
 
     def reset(self, *, seed=42, options=None):
