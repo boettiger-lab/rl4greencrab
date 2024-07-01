@@ -337,4 +337,3 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
         ])
         return cpue_2
         
-        
