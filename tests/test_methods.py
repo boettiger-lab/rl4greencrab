@@ -5,7 +5,7 @@ import numpy as np
 def test_action_units():
     env = greenCrabSimplifiedEnv()
     env.reset()
-    action = np.array([-1,-1,-1])
+    action = np.array([-1,-1,-1]) # no traps
     natural_units = np.maximum( env.max_action * (1 + action)/2 , 0.)
     assert np.array_equal(natural_units, np.array([0,0,0])) # check if no crab exist and no change in population when do nothing
 
@@ -40,3 +40,25 @@ def test_full_harvest():
     assert trunc == False
     assert term == False
     assert sum(env.state) < 100000
+
+def test_cpue_2():
+    env = greenCrabSimplifiedEnv()
+    env.reset()
+    max_action = 2000
+    
+    # check if return 0 when sum(action_natural_units) = 0
+    action = np.array([-1,-1, -1])
+    action_natural_units = np.maximum( max_action * (1 + action)/2 , 0.) # action_natural_units = 0
+    observation = env.observations
+    assert all((env.cpue_2(observation,  action_natural_units))== np.float32([0,0]))
+
+    # when sum(action_natural_units) > 0
+    action = np.array([1,1, 1])
+    action_natural_units = np.maximum( max_action * (1 + action)/2 , 0.)
+    observation = env.observations
+    cpue_2_value = env.cpue_2(observation,  action_natural_units)
+    assert -1<cpue_2_value[0]<1 
+    assert -1<cpue_2_value[1]<1 
+    
+    
+        
