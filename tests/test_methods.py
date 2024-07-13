@@ -59,6 +59,25 @@ def test_cpue_2():
     cpue_2_value = env.cpue_2(observation,  action_natural_units)
     assert -1<cpue_2_value[0]<1 
     assert -1<cpue_2_value[1]<1 
+
+def test_reset():
+    env = greenCrabSimplifiedEnv()
+    steps = env.Tmax 
+    # run the simulation util the 
+    for i in range(steps):
+        env.step(np.array([0,0, 0])) # set constant amount of trap every year
+
+    curr_ob_space = env.observation_space
+
+    # if final observation space is [-1, -1], set it to other obseravtion space for test
+    if curr_ob_space == np.array([-1,-1]):
+        curr_ob_space = np.array([1,1])
+
+    # reset the obseravtion environment
+    new_ob_space, new_info = env.reset()
+
+    assert np.array_equal(new_ob_space, np.array([-1, -1]))
+
     
     
         
