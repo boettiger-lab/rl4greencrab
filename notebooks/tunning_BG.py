@@ -19,12 +19,6 @@
 
 # %%
 
-
-# %pip install gym
-# %pip install optuna
-# %pip install rl_zoo3
-
-
 # %%
 
 
@@ -71,8 +65,17 @@ from sample_params import sample_ppo_params, sample_td3_params, sample_tqc_param
 
 # %%
 
+config = {
+        'action_reward_scale': np.array([0.08, 0.08, 0.4]),
+        'max_action': 3000,
+        # 'env_stoch': 0.,
+        'trapm_pmax': 10 * 0.1 * 2.75e-5, #2.26e-6,
+        'trapf_pmax': 10 * 0.03 * 2.75e-5, #8.3e-7,
+        'traps_pmax': 10 * 2.75e-5, #2.75e-5,
+        'action_reward_exponent': 10,
+    }
 
-gcse = greenCrabSimplifiedEnv()
+gcse = greenCrabSimplifiedEnv(config=config)
 vec_env = make_vec_env(greenCrabSimplifiedEnv, n_envs=12)
 eval_envs = vec_env
 
@@ -86,11 +89,11 @@ N_TRIALS = 100  # Maximum number of trials
 N_JOBS = 1 # Number of jobs to run in parallel
 N_STARTUP_TRIALS = 5  # Stop random sampling after N_STARTUP_TRIALS
 N_EVALUATIONS = 2  # Number of evaluations during the training
-N_TIMESTEPS = 1000000 # Training budget
+N_TIMESTEPS = 500000 # Training budget
 EVAL_FREQ = int(N_TIMESTEPS / N_EVALUATIONS)
 N_EVAL_ENVS = 12
 N_EVAL_EPISODES = 10
-TIMEOUT = int(360 * 100)  # 10 hrs
+TIMEOUT = int(100 * 100)  # 3 hrs in seconds
 
 DEFAULT_HYPERPARAMS = {
     "policy": "MlpPolicy",
@@ -98,8 +101,10 @@ DEFAULT_HYPERPARAMS = {
     "tensorboard_log": "/home/rstudio/logs"
 }
 
-save_tunning_model_name = "tunning_best_gcse_tqc"
-file_name_to_write = 'study_results_tqc_cartpole.csv'
+study_result_path = 'rl4greencrab/notebooks/study_results'
+save_tunning_model_name = "tunning_best_gcse_ppo_config_1"
+file_name_to_write = 'study_results_ppo_congfig_1_cartpole.csv'
+
 
 # ### Define Search Space in another sample_params.py
 
@@ -108,6 +113,9 @@ file_name_to_write = 'study_results_tqc_cartpole.csv'
 
 # %%
 
+# Custom exception for NaN values
+class NaNTrialException(optuna.exceptions.OptunaError):
+    pass
 
 from stable_baselines3.common.callbacks import EvalCallback
 
@@ -199,23 +207,25 @@ def objective_flex(model_parameter, model_train):
         try:
             # Train the model
             model.learn(N_TIMESTEPS, callback=eval_callback)
-        except AssertionError as e:
+        except (AssertionError,ValueError) as e:
             # Sometimes, random hyperparams can generate NaN
             print(e)
             nan_encountered = True
+            
         finally:
             # Check if the current trial has the best accuracy
             if trial.number >= 1:
                 if eval_callback.last_mean_reward > study.best_trial.value:
                     print("save the current best model")
-                    model.save(save_tunning_model_name) # save the trained best model
+                    model.save(os.path.join(study_result_path,save_tunning_model_name)) # save the trained best model
             # Free memory
             model.env.close()
             vec_env.close()
     
         # Tell the optimizer that the trial failed
         if nan_encountered:
-            return float("nan")
+            print("fail with value None")
+            raise optuna.exceptions.TrialPruned() # try to skip the trail if the trail encounter NaN
     
         if eval_callback.is_pruned:
             raise optuna.exceptions.TrialPruned()
@@ -258,7 +268,7 @@ study = optuna.create_study(sampler=sampler, pruner=pruner, direction="maximize"
 
 try:
     print("start the training")
-    study.optimize(objective_TQC, n_trials=N_TRIALS, n_jobs=N_JOBS, timeout=TIMEOUT)
+    study.optimize(objective_PPO, n_trials=N_TRIALS, n_jobs=N_JOBS, timeout=TIMEOUT)
 except KeyboardInterrupt:
     pass
 
@@ -277,14 +287,14 @@ print("  User attrs:")
 for key, value in trial.user_attrs.items():
     print(f"    {key}: {value}")
 
-DF_file = Path(f" ./{file_name_to_write}")
+result_file_path = os.path.join(study_result_path,file_name_to_write)
 
-if not os.path.isfile(file_name_to_write):
-    study.trials_dataframe().to_csv(file_name_to_write)
+if not os.path.isfile(result_file_path):
+    study.trials_dataframe().to_csv(result_file_path)
 else:
-    hyperparameter_df = pd.read_csv(file_name_to_write)# read current csv file
+    hyperparameter_df = pd.read_csv(result_file_path)# read current csv file
     # insert new hyperparameter into existed df
-    pd.concat([hyperparameter_df, study.trials_dataframe()],ignore_index=True).to_csv(file_name_to_write)
+    pd.concat([hyperparameter_df, study.trials_dataframe()],ignore_index=True).to_csv(result_file_path)
 
 # Write report
 # study.trials_dataframe().to_csv("study_results_ppo_cartpole.csv")
