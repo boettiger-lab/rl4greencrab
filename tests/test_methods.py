@@ -65,13 +65,11 @@ def test_reset():
     steps = env.Tmax 
     # run the simulation util the 
     for i in range(steps):
-        env.step(np.array([0,0, 0])) # set constant amount of trap every year
-
-    curr_ob_space = env.observation_space
+        observation, reward, terminated, truncated, info = env.step(np.array([0,0, 0])) # set constant amount of trap every year
 
     # if final observation space is [-1, -1], set it to other obseravtion space for test
-    if curr_ob_space == np.array([-1,-1]):
-        curr_ob_space = np.array([1,1])
+    if all(observation == np.array([-1,-1])):
+        observation = np.array([1,1])
 
     # reset the obseravtion environment
     new_ob_space, new_info = env.reset()
