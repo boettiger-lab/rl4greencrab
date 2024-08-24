@@ -31,10 +31,11 @@ def test_full_harvest():
     steps = env.Tmax
     prev_state = env.state # store the state before taking step
     for i in range(steps):
-        observation, rew, term, trunc, info  = env.step(np.array([1,1, 1]))
+        observation, rew, term, trunc, info  = env.step(np.array([1,1,1]))
         # if crab population drop, catch rate should not be zero 
         if (sum(prev_state) > sum(env.state)):
             assert observation[0] != -1 or observation[1] != -1
+        assert rew <= 0 # try to discourage laying all traps for each timestep
 
     assert info == {}
     assert trunc == False
@@ -75,3 +76,24 @@ def test_reset():
     new_ob_space, new_info = env.reset()
 
     assert np.array_equal(new_ob_space, np.array([-1, -1]))
+
+# test reward function for both greenCrab and greenCrabSimplified
+def test_reward_func():
+    env = greenCrabSimplifiedEnv()
+    env.reset()
+    # self.state = self.self.init_state()
+
+    # test no trap laid for one timestep when no crab
+    action = np.array([-1, -1, -1])
+    assert env.reward_func(action) > 0 # are we expecting positive when no traps laid when no crabs
+
+    # test no trap when there is a lot of crabs
+    env.state = np.array([10., 10., 10., 10., 1000., 10000., 100000., 1000., 100., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.])
+    action = np.array([-1, -1, -1])
+    assert env.reward_func(action) < 0 # expecting neg reward
+
+    # test all trap laid for one timestep
+    action = np.array([1, 1, 1])
+    assert env.reward_func(action) < 0
+
+    
