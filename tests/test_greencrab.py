@@ -6,3 +6,4 @@ def test_GC():
     check_env(greenCrabEnv(), warn=True)
     check_env(greenCrabSimplifiedEnv(), warn=True)
     check_env(timeSeriesEnv(), warn=True)
+    
