@@ -35,7 +35,7 @@ def test_full_harvest():
         # if crab population drop, catch rate should not be zero 
         if (sum(prev_state) > sum(env.state)):
             assert observation[0] != -1 or observation[1] != -1
-        assert rew <= 0 # try to discourage laying all traps for each timestep
+        assert rew < 0 # try to discourage laying all traps for each timestep
 
     assert info == {}
     assert trunc == False
