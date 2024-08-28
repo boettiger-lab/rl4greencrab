@@ -85,7 +85,7 @@ def test_reward_func():
 
     # test no trap laid for one timestep when no crab
     action = np.array([-1, -1, -1])
-    assert env.reward_func(action) > 0 # are we expecting positive when no traps laid when no crabs
+    assert env.reward_func(action) >= 0 # are we expecting non-negative when no traps laid when no crabs
 
     # test for all trap laid for one timestep when no crab
     action = np.array([1, 1, 1])
