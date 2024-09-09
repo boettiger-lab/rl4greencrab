@@ -72,18 +72,22 @@ config = {
         'trapm_pmax': 10 * 0.1 * 2.75e-5, #2.26e-6,
         'trapf_pmax': 10 * 0.03 * 2.75e-5, #8.3e-7,
         'traps_pmax': 10 * 2.75e-5, #2.75e-5,
+
+        'loss_a': 0.2,
+        'loss_b': 5,
+        'loss_c': 5,
+        
         'action_reward_exponent': 10,
     }
 
 gcse = greenCrabSimplifiedEnv(config=config)
 vec_env = make_vec_env(greenCrabSimplifiedEnv, n_envs=12)
-eval_envs = vec_env
 
 
 # ### Config
 
 # %%
-
+algorithm = "TD3"
 
 N_TRIALS = 100  # Maximum number of trials
 N_JOBS = 1 # Number of jobs to run in parallel
@@ -93,7 +97,7 @@ N_TIMESTEPS = 500000 # Training budget
 EVAL_FREQ = int(N_TIMESTEPS / N_EVALUATIONS)
 N_EVAL_ENVS = 12
 N_EVAL_EPISODES = 10
-TIMEOUT = int(100 * 100)  # 3 hrs in seconds
+TIMEOUT = int(216 * 100)  # 6 hrs in seconds
 
 DEFAULT_HYPERPARAMS = {
     "policy": "MlpPolicy",
@@ -101,9 +105,9 @@ DEFAULT_HYPERPARAMS = {
     "tensorboard_log": "/home/rstudio/logs"
 }
 
-study_result_path = 'rl4greencrab/notebooks/study_results'
-save_tunning_model_name = "tunning_best_gcse_ppo_config_1"
-file_name_to_write = 'study_results_ppo_congfig_1_cartpole.csv'
+study_result_path = 'study_results'
+save_tunning_model_name = "tunning_best_gcse_tqc_config_2"
+file_name_to_write = 'study_results_tqc_congfig_2_cartpole.csv'
 
 
 # ### Define Search Space in another sample_params.py
@@ -196,7 +200,7 @@ def objective_flex(model_parameter, model_train):
         model = model_train(**kwargs)
     
         # 2. Create envs used for evaluation using `make_vec_env`, `ENV_ID` and `N_EVAL_ENVS`
-        eval_env = greenCrabSimplifiedEnv()
+        eval_env = greenCrabSimplifiedEnv(config=config)
         # 3. Create the `TrialEvalCallback` callback defined above that will periodically evaluate
         # and report the performance using `N_EVAL_EPISODES` every `EVAL_FREQ`
         # TrialEvalCallback signature:
@@ -268,7 +272,14 @@ study = optuna.create_study(sampler=sampler, pruner=pruner, direction="maximize"
 
 try:
     print("start the training")
-    study.optimize(objective_PPO, n_trials=N_TRIALS, n_jobs=N_JOBS, timeout=TIMEOUT)
+    if (algorithm == "TQC"):
+        study.optimize(objective_TQC, n_trials=N_TRIALS, n_jobs=N_JOBS, timeout=TIMEOUT)
+    elif (algorithm == "PPO"):
+        study.optimize(objective_PPO, n_trials=N_TRIALS, n_jobs=N_JOBS, timeout=TIMEOUT)
+    elif (algorithm == "TD3"):
+        study.optimize(objective_TD3, n_trials=N_TRIALS, n_jobs=N_JOBS, timeout=TIMEOUT)
+    else:
+        raise ValueError("Invalid algorithm input")
 except KeyboardInterrupt:
     pass
 
