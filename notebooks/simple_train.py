@@ -22,6 +22,8 @@ from scipy.stats import norm
 
 import sample_params
 
+print('start training')
+
 config = {
         'action_reward_scale': np.array([0.08, 0.08, 0.4]),
         'max_action': 3000,
@@ -30,31 +32,22 @@ config = {
         'trapf_pmax': 10 * 0.03 * 2.75e-5, #8.3e-7,
         'traps_pmax': 10 * 2.75e-5, #2.75e-5,
 
-        'loss_a': 100,
-        'loss_b': 10,
-        'loss_c': 0.5,
+        'loss_a': 0.2,
+        'loss_b': 5,
+        'loss_c': 5,
         
         'action_reward_exponent': 10,
     }
 
 gcse = greenCrabSimplifiedEnv(config)
 vec_env = make_vec_env(greenCrabSimplifiedEnv, n_envs=12)
-eval_envs = vec_env
 
-model = TQC("MlpPolicy", 
-            vec_env, 
-            verbose=0, 
-            gamma= 0.9999, 
-            learning_rate = 0.020439420278073966, 
-            batch_size = 16, 
-            buffer_size = 10000, 
-            learning_starts= 0, 
-            train_freq = 16, 
-            tau = 0.05, 
-            top_quantiles_to_drop_per_net = 1)
+model = PPO("MlpPolicy", gcse, verbose=0, tensorboard_log="/home/rstudio/logs")
+
 model.learn(
-	total_timesteps= 1000000, 
+	total_timesteps= 10000000, 
 	progress_bar=False,
 )
+
 print("finish training")
-model.save("tqc_gcse_short")
+model.save("ppo_gcse_short")

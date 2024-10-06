@@ -68,6 +68,7 @@ def sample_ppo_params(trial: optuna.Trial, n_actions: int, n_envs: int, addition
     # Independent networks usually work best
     # when not working with images
     net_arch = {
+        "tiny_small": dict(net_arch=[16,16]),
         "tiny": dict(pi=[64], vf=[64]),
         "small": dict(pi=[64, 64], vf=[64, 64]),
         "medium": dict(pi=[256, 256], vf=[256, 256]),
