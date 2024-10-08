@@ -40,14 +40,13 @@ config = {
     }
 
 gcse = greenCrabSimplifiedEnv(config)
-vec_env = make_vec_env(greenCrabSimplifiedEnv, n_envs=12)
 
-model = PPO("MlpPolicy", gcse, verbose=0, tensorboard_log="/home/rstudio/logs")
+model = TQC("MlpPolicy", gcse, verbose=0, tensorboard_log="/home/rstudio/logs")
 
 model.learn(
-	total_timesteps= 10000000, 
+	total_timesteps= 200000, 
 	progress_bar=False,
 )
 
 print("finish training")
-model.save("ppo_gcse_short")
+model.save("tqc_gcse_short")
