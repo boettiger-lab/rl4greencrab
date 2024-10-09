@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/rstudio/rl4greencrab/notebooks/simple_train.py", line 9, in <module>
+    from rl4greencrab import greenCrabSimplifiedEnv,  simulator
+ImportError: cannot import name 'greenCrabSimplifiedEnv' from 'rl4greencrab' (unknown location)
+start training
+finish training
