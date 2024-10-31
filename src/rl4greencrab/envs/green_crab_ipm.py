@@ -326,11 +326,14 @@ class greenCrabSimplifiedEnv(greenCrabEnv):
         return - np.ones(shape=self.observation_space.shape, dtype=np.float32), info
 
     def cpue_2(self, obs, action_natural_units):
-        if any(action_natural_units <= 0):
+        # If you don't set traps, the catch-per-effort is 0/0.  Should be NaN, but we call it 0
+        if np.sum(action_natural_units) <= 0:
             return np.float32([0,0])
+#            return np.float32([np.NaN,np.NaN]) 
+        # can't tell which traps caught each number of crabs here. Perhaps too simple but maybe realistic 
         cpue_2 = np.float32([
-            np.sum(obs[0:5]) / (self.cpue_normalization * action_natural_units[0]),
-            np.sum(obs[5:]) / (self.cpue_normalization * action_natural_units[0])
+            np.sum(obs[0:5]) / (self.cpue_normalization * np.sum(action_natural_units)),
+            np.sum(obs[5:]) / (self.cpue_normalization * np.sum(action_natural_units))
         ])
         return cpue_2
         
