@@ -38,16 +38,16 @@ class greenCrabEnv(gym.Env):
         self.growth_xinf = np.float32(config.get("growth_xinf", 109))
         self.growth_sd = np.float32(config.get("growth_sd", 2.5))
         self.nmortality = np.float32(config.get("nmortality", 0.03))
-        
+
+        self.trapm_pmax = np.float32(config.get("trapm_pmax", 10 * 0.1 * 2.75e-5))
         self.trapm_sigma = np.float32(config.get("trapm_sigma", 6))
         self.trapm_xmax = np.float32(config.get("trapm_xmax", 47))
-        self.trapm_pmax = np.float32(config.get("trapm_pmax", 2.26e-6))
         #
-        self.trapf_pmax = np.float32(config.get("trapf_pmax", 8.3e-7))
+        self.trapf_pmax = np.float32(config.get("trapf_pmax", 10 * 0.03 * 2.75e-5))
         self.trapf_k = np.float32(config.get("trapf_k", 0.4))
         self.trapf_midpoint = np.float32(config.get("trapf_midpoint", 41))
         #
-        self.traps_pmax = np.float32(config.get("traps_pmax", 2.75e-5))
+        self.traps_pmax = np.float32(config.get("traps_pmax", 10 * 2.75e-5))
         self.traps_k = np.float32(config.get("traps_k", 0.4))
         self.traps_midpoint = np.float32(config.get("traps_midpoint", 45))
         
@@ -63,7 +63,7 @@ class greenCrabEnv(gym.Env):
         self.imm = config.get("imm", 1000) #colonization/immigration rate
         self.r = config.get("r", 1) #intrinsic rate of growth
 
-        self.max_action = config.get("max_action", 2000)
+        self.max_action = config.get("max_action", 3000)
         self.max_obs = config.get("max_obs", 2000)
         
         self.area = config.get("area", 4000)
@@ -79,8 +79,8 @@ class greenCrabEnv(gym.Env):
         self.delta_t = config.get("delta_t", 1/12)
         self.env_stoch = config.get("env_stoch", 0.1)
         
-        self.action_reward_scale = np.array(config.get("action_reward_scale", [0.1, 0.1, 10]))
-        self.action_reward_exponent = config.get("action_reward_exponent", 1)
+        self.action_reward_scale = np.array(config.get("action_reward_scale", [0.08, 0.08, 0.4]))
+        self.action_reward_exponent = config.get("action_reward_exponent", 10)
         
         self.config = config
 
