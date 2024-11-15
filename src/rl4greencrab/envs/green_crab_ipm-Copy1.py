@@ -184,7 +184,7 @@ class greenCrabEnv(gym.Env):
         local_recruits = np.random.normal(self.dd_growth(size_freq[:,self.ntime-1]),self.env_stoch)
         # nonlocal_recruits = np.random.poisson(self.imm)*(1-np.sum(size_freq[:,self.ntime-1])/self.K)
         mu = self.imm
-        r = self.theta
+        r = theta
         p = r / (r + mu)
         nonlocal_recruits = np.random.negative_binomial(r,p)*(1-np.sum(size_freq[:,self.ntime-1])/self.K)
         recruit_total = local_recruits + nonlocal_recruits
