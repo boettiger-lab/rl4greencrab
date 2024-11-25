@@ -140,7 +140,7 @@ class greenCrabMonthEnv(gym.Env):
         else:
             size_freq[:] = [np.random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
             removed[:] = [np.random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
-        self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for next month
+        self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
             
         #record the catch in the observation space
         self.observations[0] = np.sum(removed[:,0])
@@ -185,7 +185,7 @@ class greenCrabMonthEnv(gym.Env):
         
     def reset(self, *, seed=42, options=None):
         self.state = self.init_state()
-        self.years_passed = 0
+        self.month_passed = 0
 
         # for tracking only
         self.reward = 0
