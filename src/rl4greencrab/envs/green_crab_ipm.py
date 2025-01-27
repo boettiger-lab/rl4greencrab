@@ -39,26 +39,26 @@ class greenCrabEnv(gym.Env):
         self.growth_sd = np.float32(config.get("growth_sd", 2.5))
         self.nmortality = np.float32(config.get("nmortality", 0.03))
 
-        self.trapm_pmax = np.float32(config.get("trapm_pmax", 10 * 0.1 * 2.75e-5))
-        self.trapm_sigma = np.float32(config.get("trapm_sigma", 6))
-        self.trapm_xmax = np.float32(config.get("trapm_xmax", 47))
+        self.trapm_pmax = np.float32(config.get("trapm_pmax", 0.00044))
+        self.trapm_sigma = np.float32(config.get("trapm_sigma", 6.47))
+        self.trapm_xmax = np.float32(config.get("trapm_xmax", 45.02))
         #
-        self.trapf_pmax = np.float32(config.get("trapf_pmax", 10 * 0.03 * 2.75e-5))
-        self.trapf_k = np.float32(config.get("trapf_k", 0.4))
-        self.trapf_midpoint = np.float32(config.get("trapf_midpoint", 41))
+        self.trapf_pmax = np.float32(config.get("trapf_pmax", 0.00029))
+        self.trapf_k = np.float32(config.get("trapf_k", 0.36))
+        self.trapf_midpoint = np.float32(config.get("trapf_midpoint", 38.72))
         #
-        self.traps_pmax = np.float32(config.get("traps_pmax", 10 * 2.75e-5))
-        self.traps_k = np.float32(config.get("traps_k", 0.4))
-        self.traps_midpoint = np.float32(config.get("traps_midpoint", 45))
+        self.traps_pmax = np.float32(config.get("traps_pmax", 0.00448))
+        self.traps_k = np.float32(config.get("traps_k", 0.33))
+        self.traps_midpoint = np.float32(config.get("traps_midpoint", 46.47))
         
-        self.init_mean_recruit = config.get("init_mean_recruit", 15)
+        self.init_mean_recruit = config.get("init_mean_recruit", 9.31)
         self.init_sd_recruit = config.get("init_sd_recruit", 1.5)
-        self.init_mean_adult = config.get("init_mean_adult", 65)
-        self.init_sd_adult = config.get("init_sd_adult", 8)
+        self.init_mean_adult = config.get("init_mean_adult", 47.9)
+        self.init_sd_adult = config.get("init_sd_adult", 8.1)
         self.init_n_recruit = config.get("init_n_recruit", 0)
         self.init_n_adult = config.get("init_n_adult", 0)
         
-        self.w_mort_scale = config.get("w_mort_scale", 5)
+        self.w_mort_scale = config.get("w_mort_scale", 500)
         self.K = config.get("K", 25000) #carrying capacity
         self.imm = config.get("imm", 1000) #colonization/immigration rate
         self.r = config.get("r", 1) #intrinsic rate of growth
@@ -66,7 +66,7 @@ class greenCrabEnv(gym.Env):
         self.max_action = config.get("max_action", 3000)
         self.max_obs = config.get("max_obs", 2000)
         
-        self.area = config.get("area", 4000)
+        self.area = config.get("area", 30000)
         self.loss_a = config.get("loss_a", 0.265)
         self.loss_b = config.get("loss_b", 2.80)
         self.loss_c = config.get("loss_c", 2.99)
@@ -256,7 +256,7 @@ class greenCrabEnv(gym.Env):
 
     #function for overwinter mortality
     def w_mortality(self):
-        wmort = self.w_mort_scale/self.midpts
+        wmort = self.w_mort_scale/self.midpts**2
         return wmort
 
     #function for density dependent growth
@@ -264,11 +264,16 @@ class greenCrabEnv(gym.Env):
         dd_recruits = np.sum(popsize)*self.r*(1-np.sum(popsize)/self.K)
         return dd_recruits
 
+    # function for getting biomass from crab size
+    def get_biomass_size(self):
+        biomass = [-0.071 * y + 0.003 * y**2 + 0.00002 * y**3 for y in self.midpts]
+        return [np.max([0, b]) for b in biomass]
+
     #function for reward
     # two part reward function:
-    # 1. impact on environment (function of crab density)
+    # 1. impact on environment (function of crab biomass)
     # 2. penalty for how much effort we expended (function of action)
-    def reward_func(self,action):
+    def reward_func(self, action):
         def trap_cost(action, max_action, exponent):
             return np.array(
                 [
@@ -277,11 +282,12 @@ class greenCrabEnv(gym.Env):
                     (action[2]/max_action) ** exponent,
                 ]
             )
+        biomass = np.sum(get_biomass_size(self) * self.state) # get biomass
         reward = (
             -self.loss_a 
             /
             (
-                1+np.exp(-self.loss_b*(np.sum(self.state)/self.area-self.loss_c))
+                1+np.exp(-self.loss_b*(biomass/self.area-self.loss_c))
             )
             - np.sum(
                 self.action_reward_scale 
