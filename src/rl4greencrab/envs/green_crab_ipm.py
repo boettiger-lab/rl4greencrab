@@ -282,7 +282,7 @@ class greenCrabEnv(gym.Env):
                     (action[2]/max_action) ** exponent,
                 ]
             )
-        biomass = np.sum(get_biomass_size(self) * self.state) # get biomass
+        biomass = np.sum(self.get_biomass_size() * self.state) # get biomass
         reward = (
             -self.loss_a 
             /
