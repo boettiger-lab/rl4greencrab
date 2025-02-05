@@ -32,7 +32,7 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
         normalized_cpue = 2 * self.cpue_2(obs, action_natural_units) - 1
         # observation = np.float32(np.append(normalized_cpue, action))
         observation = normalized_cpue
-        rew = 10 * rew # use larger rewards, possibly makes trainer easier?
+        # rew = 10 * rew # use larger rewards, possibly makes trainer easier?
         return observation, rew, term, trunc, info
 
     def reset(self, *, seed=42, options=None):

@@ -23,29 +23,21 @@ def model_train(model_name):
     elif model_name == 'TQC':
         model = TQC("MlpPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
     elif model_name == 'TD3':
-        model = TD3("MlpPolicy", vec_env,
-                    gamma=0.9999,
-                    learning_rate = 0.0006492037640356935,
-                    batch_size=64,
-                    buffer_size=100000,
-                    tau=0.005,
-                    train_freq=512,
-                    policy_kwargs= dict(net_arch = [256, 256]),
-                    verbose=0, tensorboard_log="/home/rstudio/logs")
+        model = TD3("MlpPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
     elif model_name == 'RecurrentPPO':
         model = RecurrentPPO("MlpLstmPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
 
     print(f'start train {model_name}')
     model.learn(
-            total_timesteps= 3000000, 
+            total_timesteps= 2000000, 
             progress_bar=False,
         )
     model_path = model_name + '_gcmenorm'
     model.save(model_path)
     
-# model_train('PPO')
-# model_train('TQC')
+model_train('PPO')
+model_train('TQC')
 model_train('TD3')
-#model_train('RecurrentPPO')
+model_train('RecurrentPPO')
 
 print("finish training")
