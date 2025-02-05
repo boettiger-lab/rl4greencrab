@@ -83,7 +83,7 @@ class greenCrabMonthEnv(gym.Env):
         self.env_stoch = config.get("env_stoch", 0.1)
         
         self.action_reward_scale = np.array(config.get("action_reward_scale", [0.08, 0.08, 0.4]))
-        self.action_reward_exponent = config.get("action_reward_exponent", 10)
+        self.action_reward_exponent = config.get("action_reward_exponent", 1)
         
         self.config = config
 
