@@ -8,12 +8,15 @@ from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNorma
 import gymnasium as gym
 import logging
 
-print('start training')
+print('start training',flush=True)
 
-config = {}
+config = {
+    "w_mort_scale" : 600,
+    "growth_k": 0.70,
+}
 
-gcme = greenCrabMonthEnv()
-gmonthNorm = greenCrabMonthEnvNormalized()
+gcme = greenCrabMonthEnv(config)
+gmonthNorm = greenCrabMonthEnvNormalized(config)
 vec_env = make_vec_env(greenCrabMonthEnvNormalized, n_envs=12)
 
 def model_train(model_name):
@@ -29,15 +32,15 @@ def model_train(model_name):
 
     print(f'start train {model_name}')
     model.learn(
-            total_timesteps= 2000000, 
+            total_timesteps= 5000000, 
             progress_bar=False,
         )
     model_path = model_name + '_gcmenorm'
     model.save(model_path)
     
-model_train('PPO')
-model_train('TQC')
-model_train('TD3')
+# model_train('PPO')
+# model_train('TQC')
+# model_train('TD3')
 model_train('RecurrentPPO')
 
 print("finish training")
