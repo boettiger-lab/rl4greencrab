@@ -32,15 +32,15 @@ def model_train(model_name):
 
     print(f'start train {model_name}')
     model.learn(
-            total_timesteps= 5000000, 
+            total_timesteps= 3000000, 
             progress_bar=False,
         )
     model_path = model_name + '_gcmenorm'
     model.save(model_path)
     
-# model_train('PPO')
-# model_train('TQC')
-# model_train('TD3')
+model_train('PPO')
+model_train('TQC')
+model_train('TD3')
 model_train('RecurrentPPO')
 
 print("finish training")
