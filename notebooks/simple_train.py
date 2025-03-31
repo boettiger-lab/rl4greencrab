@@ -17,18 +17,18 @@ config = {
 
 gcme = greenCrabMonthEnv(config)
 gmonthNorm = greenCrabMonthEnvNormalized(config)
-vec_env = make_vec_env(greenCrabMonthEnvNormalized, n_envs=12)
+vec_env = make_vec_env(greenCrabMonthEnvNormalized, n_envs=12, env_kwargs={'config':config})
 
 def model_train(model_name):
-    model = PPO("MlpPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs") #defualt PPO
+    model = PPO('MultiInputPolicy', vec_env, verbose=0, tensorboard_log="/home/rstudio/logs") #defualt PPO
     if model_name == 'PPO':
-        model = PPO("MlpPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
+        model = PPO('MultiInputPolicy', vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
     elif model_name == 'TQC':
-        model = TQC("MlpPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
+        model = TQC('MultiInputPolicy', vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
     elif model_name == 'TD3':
-        model = TD3("MlpPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
+        model = TD3('MultiInputPolicy', vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
     elif model_name == 'RecurrentPPO':
-        model = RecurrentPPO("MlpLstmPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
+        model = RecurrentPPO("MultiInputLstmPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
 
     print(f'start train {model_name}')
     model.learn(

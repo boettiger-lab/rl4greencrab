@@ -1,0 +1,19 @@
+start training
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+Traceback (most recent call last):
+  File "/home/rstudio/rl4greencrab/notebooks/simple_train.py", line 41, in <module>
+    model_train('PPO')
+  File "/home/rstudio/rl4greencrab/notebooks/simple_train.py", line 23, in model_train
+    model = PPO("MlpPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs") #defualt PPO
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/stable_baselines3/ppo/ppo.py", line 109, in __init__
+    super().__init__(
+  File "/opt/conda/lib/python3.12/site-packages/stable_baselines3/common/on_policy_algorithm.py", line 86, in __init__
+    super().__init__(
+  File "/opt/conda/lib/python3.12/site-packages/stable_baselines3/common/base_class.py", line 193, in __init__
+    raise ValueError(f"You must use `MultiInputPolicy` when working with dict observation space, not {policy}")
+ValueError: You must use `MultiInputPolicy` when working with dict observation space, not MlpPolicy
+start training
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
