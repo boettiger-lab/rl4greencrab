@@ -1,8 +1,10 @@
 import gymnasium as gym
 import logging
 import numpy as np
+import random
 
 from gymnasium import spaces
+from gym.spaces import Tuple, Box, Discrete, Dict
 from scipy.stats import norm
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -58,11 +60,11 @@ class greenCrabMonthEnv(gym.Env):
         self.init_n_recruit = config.get("init_n_recruit", 0)
         self.init_n_adult = config.get("init_n_adult", 0)
         
-        self.w_mort_scale = config.get("w_mort_scale", 500)
+        self.w_mort_scale = config.get("w_mort_scale", 200)
         self.K = config.get("K", 25000) #carrying capacity
 
         self.imm = config.get("imm", 1000) #colonization/immigration rate
-        self.theta = 5 #dispersion parameter for immigration
+        self.theta = 5 #dispersion parameter for immigrationt
         
         self.r = config.get("r", 1) #intrinsic rate of growth
 
@@ -88,7 +90,9 @@ class greenCrabMonthEnv(gym.Env):
         self.config = config
 
         # Preserve these for reset
-        self.observations = np.zeros(shape=9, dtype=np.float32)
+        # self.observations = np.zeros(shape=9, dtype=np.float32)
+        # self.observations = (np.array([0, 0], dtype=np.float32), 1)
+        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
         self.reward = 0
         self.month_passed = 0
         self.curr_month = 3 #start with third month
@@ -104,6 +108,7 @@ class greenCrabMonthEnv(gym.Env):
         self.pmort = np.exp(-self.nmortality)
 
         self.monthly_size = np.zeros(shape=(self.nsize,1),dtype='object')
+        self.random_start = config.get('random_start', False)
 
         # Action space
         # action -- # traps per month
@@ -112,13 +117,28 @@ class greenCrabMonthEnv(gym.Env):
             np.array(3*[self.max_action], dtype=np.float32),
             dtype=np.float32,
         )
-        
-        # Observation space
-        self.observation_space = spaces.Box(
-            np.zeros(shape=1, dtype=np.float32),
-            self.max_obs ,
-            dtype=np.float32,
-        )
+
+        self.max_biomass = config.get("max_biomass", 5e4)
+        self.max_mean_biomass = self.get_biomass_size()[-1]
+        # Observation space with month observation feature
+        # self.observation_space = spaces.Tuple((
+        #    spaces.Box(
+        #         low=np.array([0, 0]),  # Lower bounds: original obs (0)
+        #         high=np.array([self.max_obs, self.max_mean_biomass]),  # Upper bounds: obs max,
+        #         shape=(2,),
+        #         dtype=np.float32
+        #     ), 
+        #     spaces.Discrete(12, start=1)
+        # ))
+        self.observation_space = spaces.Dict({
+           "crabs": spaces.Box(
+                low=np.array([0, 0]),  # Lower bounds: original obs (0)
+                high=np.array([self.max_obs, self.max_mean_biomass]),  # Upper bounds: obs max,
+                shape=(2,),
+                dtype=np.float32
+            ), 
+            "months": spaces.Discrete(12, start=1)
+        })
         
     def step(self,action):
         #size selective harvest rate, given action
@@ -142,8 +162,13 @@ class greenCrabMonthEnv(gym.Env):
             removed[:] = [np.random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
         self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
             
-        #record the catch in the observation space
-        self.observations[0] = np.sum(removed[:,0])
+        #update observation space
+        biomass = np.sum(self.get_biomass_size() * self.state) # get biomass
+        crab_counts = np.sum(removed[:,0])
+        mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
+        self.observations = {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), 
+                             "months": self.curr_month}
+        
         #TODO: update self.state for every month or use different parameter for reward calculation
         self.state = self.monthly_size.reshape(21,) # calculate crab popluation after remove crab caught
 
@@ -189,8 +214,13 @@ class greenCrabMonthEnv(gym.Env):
 
         # for tracking only
         self.reward = 0
-
-        self.observations = np.zeros(shape=1, dtype=np.float32)
+        
+        if self.random_start:
+            random.seed(seed)
+            self.init_n_adult = random.randint(0, self.max_obs)
+    
+        # self.observations = np.zeros(shape=1, dtype=np.float32)
+        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
 
         return self.observations, {}
 
