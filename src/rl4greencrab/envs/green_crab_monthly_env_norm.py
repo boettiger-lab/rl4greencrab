@@ -43,7 +43,7 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
         mean_biomass = obs["crabs"][1]
         normal_biomass = self.normalize_biomass(mean_biomass)
         # TODO: normalize biomass
-        self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass]), "months": obs['months']}
+        self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass],dtype=np.float32), "months": obs['months']}
         # rew = 10 * rew # use larger rewards, possibly makes trainer easier?
         return self.observation, rew, term, trunc, info
 
@@ -51,7 +51,7 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
         _, info = super().reset(seed=seed, options=options)
 
         # completely new  obs
-        return {"crabs":np.array([-1, -1]), "months":1}, info
+        return {"crabs":np.array([-1, -1], dtype=np.float32), "months":1}, info
 
     def normalize_biomass(self, mean_biomass):
         biomass_sizes = self.get_biomass_size()
