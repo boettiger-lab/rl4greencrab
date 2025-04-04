@@ -30,7 +30,7 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
             np.float32([1, 1, 1]),
             dtype=np.float32,
         )
-        self.max_action = config.get('max_action', 2000) # ad hoc based on previous values
+        self.max_action = config.get('max_action', 3000) # ad hoc based on previous values, prev = 2000
         self.cpue_normalization = config.get('cpue_normalization', 100)
         
     def step(self, action):

@@ -216,7 +216,7 @@ class greenCrabMonthEnv(gym.Env):
         self.reward = 0
         
         if self.random_start:
-            random.seed(seed)
+            # random.seed(seed) for deterministic init adult
             self.init_n_adult = random.randint(0, self.max_obs)
     
         # self.observations = np.zeros(shape=1, dtype=np.float32)
