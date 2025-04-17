@@ -11,12 +11,12 @@ class evaluate_agent:
     def evaluate(self, return_episode_rewards=False, n_eval_episodes=50):
         if self.ray_remote:
             rewards = ray.get([
-                self.simulator.remote(env=self.env, agent=self.agent) 
+                self.simulator.remote(env=self.env, agent=self.agent)
                 for _ in range(n_eval_episodes)
             ])
         else:
             rewards = [
-                self.simulator.remote(env=self.env, agent=self.agent) 
+                self.simulator(env=self.env, agent=self.agent) 
                 for _ in range(n_eval_episodes)
             ]
         #

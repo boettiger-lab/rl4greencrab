@@ -13,6 +13,7 @@ print('start training',flush=True)
 config = {
     "w_mort_scale" : 600,
     "growth_k": 0.70,
+    "random_start": True
 }
 
 gcme = greenCrabMonthEnv(config)
@@ -30,7 +31,7 @@ def model_train(model_name):
     elif model_name == 'RecurrentPPO':
         model = RecurrentPPO("MultiInputLstmPolicy", vec_env, verbose=0, tensorboard_log="/home/rstudio/logs")
 
-    print(f'start train {model_name}')
+    print(f'start train {model_name}', flush=True)
     model.learn(
             total_timesteps= 3000000, 
             progress_bar=False,
@@ -38,9 +39,9 @@ def model_train(model_name):
     model_path = model_name + '_gcmenorm'
     model.save(model_path)
     
-model_train('PPO')
-model_train('TQC')
-model_train('TD3')
+# model_train('PPO')
+# model_train('TQC')
+# model_train('TD3')
 model_train('RecurrentPPO')
 
 print("finish training")
