@@ -61,8 +61,7 @@ class greenCrabMonthEnv(gym.Env):
         self.w_mort_scale = config.get("w_mort_scale", 500)
         self.K = config.get("K", 25000) #carrying capacity
 
-        self.imm = config.get("imm", 1000) #colonization/immigration rate
-        self.theta = 5 #dispersion parameter for immigration
+        self.imm = config.get("imm", 5000) # mean colonization/immigration rate
         
         self.r = config.get("r", 1) #intrinsic rate of growth
 
@@ -156,12 +155,9 @@ class greenCrabMonthEnv(gym.Env):
         if self.curr_month > 11: 
             new_adults = [np.random.binomial(size_freq[k,0],self.w_mort_exp[k]) for k in range(self.nsize) ]
 
-            #simulate new recruits for next year? 
+            #simulate new recruits for next year
             local_recruits = np.random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
-            mu = self.imm
-            r = self.theta
-            p = r / (r + mu)
-            nonlocal_recruits = np.random.negative_binomial(r,p)*(1-np.sum(size_freq[:])/self.K)
+            nonlocal_recruits = self.imm * np.random.lognormal()*(1-np.sum(size_freq[:])/self.K)
             recruit_total = local_recruits + nonlocal_recruits
     
             logging.debug('local recruits = {}'.format(local_recruits))
