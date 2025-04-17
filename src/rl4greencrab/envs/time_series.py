@@ -22,6 +22,7 @@ class timeSeriesEnv(gym.Env):
             dtype=np.float32,
         )
         self.observation_space = spaces.Box(-ones_shape, +ones_shape)
+        self.Tmax = self.base_env.Tmax
         #
         # [[state t], [state t-1], [state t-2], ..., [state t - (N_mem-1)]]
         # where each [state i] is a vector
@@ -54,7 +55,3 @@ class timeSeriesEnv(gym.Env):
     
     def state_to_pop(self, state):
         return self.base_env.state_to_pop(state)
-
-
-
-
