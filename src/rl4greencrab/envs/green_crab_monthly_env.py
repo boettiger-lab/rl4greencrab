@@ -186,7 +186,8 @@ class greenCrabMonthEnv(gym.Env):
             mu = self.imm
             r = self.theta
             p = r / (r + mu)
-            nonlocal_recruits = np.random.negative_binomial(r,p)*(1-np.sum(size_freq[:])/self.K)
+            # nonlocal_recruits = np.random.negative_binomial(r,p)*(1-np.sum(size_freq[:])/self.K)
+            nonlocal_recruits = np.random.lognormal(mu,p)*(1-np.sum(size_freq[:])/self.K)
             recruit_total = local_recruits + nonlocal_recruits
     
             logging.debug('local recruits = {}'.format(local_recruits))
