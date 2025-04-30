@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 from gymnasium import spaces
-from gym.spaces import Tuple, Box, Discrete, Dict
+from gymnasium.spaces import Tuple, Box, Discrete, Dict
 from scipy.stats import norm
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -36,6 +36,8 @@ class greenCrabMonthEnv(gym.Env):
         config=config or {}
         
         # parameters
+        self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
+        
         self.growth_k = np.float32(config.get("growth_k", 0.43))
         self.growth_xinf = np.float32(config.get("growth_xinf", 109))
         self.growth_sd = np.float32(config.get("growth_sd", 2.5))
@@ -108,6 +110,7 @@ class greenCrabMonthEnv(gym.Env):
 
         self.monthly_size = np.zeros(shape=(self.nsize,1),dtype='object')
         self.random_start = config.get('random_start', False)
+        self.curriculum_enabled = config.get('curriculum', False)
 
         # Action space
         # action -- # traps per month
@@ -117,8 +120,8 @@ class greenCrabMonthEnv(gym.Env):
             dtype=np.float32,
         )
 
-        self.max_biomass = config.get("max_biomass", 5e4)
         self.max_mean_biomass = self.get_biomass_size()[-1]
+        
         # Observation space with month observation feature
         # self.observation_space = spaces.Tuple((
         #    spaces.Box(
@@ -206,23 +209,43 @@ class greenCrabMonthEnv(gym.Env):
         return self.observations, self.reward, done, done, {}
         
     def reset(self, *, seed=42, options=None):
+        if not hasattr(self, "total_episodes_seen"):
+            self.total_episodes_seen = 0
+        else:
+            self.total_episodes_seen += 1 
+        
         self.state = self.init_state()
         self.month_passed = 0
 
         # for tracking only
         self.reward = 0
+
+        # curriculumn learning
+        if self.curriculum_enabled:
+            # Increase difficulty slowly with training progress
+            progress = self.get_curriculum_progress()  # value between 0 and 1
+            low = int(self.max_obs * (0.4 - 0.2 * progress))   # gets wider over time
+            high = int(self.max_obs * (0.6 + 0.2 * progress))
+            low = max(0, low)
+            high = min(self.max_obs, high)
+        else:
+            low = 0
+            high = self.max_obs
         
         if self.random_start:
-            # random.seed(seed) for deterministic init adult
-            self.init_n_adult = random.randint(0, self.max_obs)
+            self.init_n_adult = self.np_random.integers(low, high + 1)
     
-        # self.observations = np.zeros(shape=1, dtype=np.float32)
         self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
 
         return self.observations, {}
 
     #################
     #helper functions
+    
+    # calculate progress value for curriculum training
+    def get_curriculum_progress(self):
+        """Returns a value from 0.0 to 1.0 based on total episodes seen."""
+        return min(1.0, self.total_episodes_seen / 1000_000)
 
     #set up boundary points of IPM mesh
     def boundary(self):
