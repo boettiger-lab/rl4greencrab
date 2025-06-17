@@ -1,0 +1,8 @@
+python: can't open file '/home/rstudio/rl4greencrab/scripts/combine.py': [Errno 2] No such file or directory
+INFO: Note: detected 128 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO: Note: NumExpr detected 128 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO: NumExpr defaulting to 16 threads.
+/opt/conda/lib/python3.12/site-packages/gymnasium/envs/registration.py:736: UserWarning: [33mWARN: The environment is being initialised with render_mode='rgb_array' that is not in the possible render_modes ([]).[0m
+  logger.warn(
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
