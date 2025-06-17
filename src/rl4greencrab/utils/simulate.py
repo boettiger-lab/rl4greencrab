@@ -149,6 +149,7 @@ class simulator:
 
     # simlulate for dict env
     def simulate_full_named_dict_obs_acts(self, reps=10, obs_names = None, acts_names = None):
+        # num_obs = np.prod(len(self.env.observation_space))
         num_obs = np.prod(len(self.env.observation_space))
         num_acts = np.prod(self.env.action_space.shape)
         obs_names = obs_names or [f'obs{i}' for i in range(num_obs)]

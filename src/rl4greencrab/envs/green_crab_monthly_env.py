@@ -65,7 +65,7 @@ class greenCrabMonthEnv(gym.Env):
         self.w_mort_scale = config.get("w_mort_scale", 200)
         self.K = config.get("K", 25000) #carrying capacity
 
-        self.imm = config.get("imm", 5000) # mean colonization/immigration rate
+        self.imm = config.get("imm", 5000) # mean colonization/immigration rate --> randomize 
         
         self.r = config.get("r", 1) #intrinsic rate of growth
 
@@ -186,7 +186,7 @@ class greenCrabMonthEnv(gym.Env):
             #simulate new recruits for next year
             local_recruits = np.random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
             
-            nonlocal_recruits = self.imm * np.random.lognormal()*(1-np.sum(size_freq[:])/self.K)
+            nonlocal_recruits = self.non_localrecurit(size_freq)
             recruit_total = local_recruits + nonlocal_recruits
     
             logging.debug('local recruits = {}'.format(local_recruits))
@@ -293,6 +293,17 @@ class greenCrabMonthEnv(gym.Env):
     def dd_growth(self,popsize):
         dd_recruits = np.sum(popsize)*self.r*(1-np.sum(popsize)/self.K)
         return dd_recruits
+
+    # Calculate newborn green crab for the coming year
+    def non_localrecurit(self, size_freq):
+        # self.imm * np.random.lognormal()*(1-np.sum(size_freq[:])/self.K) # 0.2 for high 80000, 0.8 for low 8000 
+        outcomes = [0, 1]
+        probabilities = [0.8, 0.2]
+        
+        if random.choices(outcomes, weights=probabilities, k=1)[0] == 0:
+            return max(np.random.normal(8000, 1) * (1-np.sum(size_freq[:])/self.K), 0)
+        else:
+            return max(np.random.normal(80000, 10) * (1-np.sum(size_freq[:])/self.K), 0) 
 
     # function for getting biomass from crab size
     def get_biomass_size(self):

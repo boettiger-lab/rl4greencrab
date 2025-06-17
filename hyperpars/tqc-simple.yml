@@ -1,0 +1,14 @@
+# stable-baselines3 configuration.
+
+algo: "TQC"
+env_id: "simpleEnv"
+n_envs: 12
+tensorboard: "/home/rstudio/logs"
+total_timesteps: 1000000
+config: 
+    'r': 0.5
+    'init_pop': 50
+use_sde: True
+id: "1"
+repo: "cboettig/rl4greencrab"
+save_path: "/home/rstudio/rl4greencrab/saved_agents"

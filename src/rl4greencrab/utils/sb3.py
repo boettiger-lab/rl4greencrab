@@ -58,7 +58,7 @@ def sb3_train(config_file, **kwargs):
         env,
         verbose=0,
         tensorboard_log=options["tensorboard"],
-        use_sde=options["use_sde"],
+        use_sde=options.get("use_sde", False),
     )
 
     progress_bar = options.get("progress_bar", False)
