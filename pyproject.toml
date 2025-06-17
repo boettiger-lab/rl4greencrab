@@ -15,7 +15,13 @@ dependencies = ["gymnasium",
                 "scipy",
                 "matplotlib",
                 "typing",
-                "pyyaml"]
+                "pyyaml",
+                "scikit-plot",
+                "scikit-optimize",
+                "ray",
+                "stable_baselines3",
+                "sb3-contrib",
+                "optuna"]
 
 [project.optional-dependencies]
 tests = [
