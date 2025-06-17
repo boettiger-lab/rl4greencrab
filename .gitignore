@@ -138,5 +138,5 @@ venv/
 *.zip
 
 manuscript/*.pdf
-
+saved_agents/
 
