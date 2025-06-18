@@ -23,7 +23,7 @@ class SimpleEnv(gym.Env):
             low=np.array([0]), high=np.array([self.K]), shape=(1,), dtype=np.float32
         )
         self.timestep = 0
-        self.Tmax = config.get("Tmax", 15000) # 100 years
+        self.Tmax = config.get("Tmax", 1500) # 100 years
         self.init_pop = config.get("init_pop", 10)
         self.state = self.init_pop
         self.reward = 0
