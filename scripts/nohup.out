@@ -5,3 +5,5 @@ INFO: NumExpr defaulting to 16 threads.
   logger.warn(
 /opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
   gym.logger.warn(
+ 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4,005,888/4,000,000  [ 3:19:56 < 0:00:00 , ? it/s ]
+Saved PPO model at /home/rstudio/rl4greencrab/saved_agents/PPO-simpleEnv-r_1

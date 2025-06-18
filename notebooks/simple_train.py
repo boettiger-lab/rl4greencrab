@@ -53,6 +53,7 @@ model_config = {
 def model_train(model_name):
     model = PPO('MultiInputPolicy',
                     vec_env, use_sde=True, verbose=0, tensorboard_log="/home/rstudio/logs") #defualt PPO
+    model_path = f'{model_name}_gcmenorm'
     if model_name == 'PPO':
         model = PPO('MultiInputPolicy',
                     vec_env, use_sde=True, verbose=0, tensorboard_log="/home/rstudio/logs")
