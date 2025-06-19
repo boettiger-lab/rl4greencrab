@@ -50,16 +50,25 @@ def sb3_train(config_file, **kwargs):
     else:
         env = gym.make(options["env_id"])
     ALGO = algorithm(options["algo"])
+    PLOICY = options.get("policy", "MlpPolicy")
     model_id = options["algo"] + "-" + options["env_id"]  + "-" + options["id"]
     save_id = os.path.join(options["save_path"], model_id)
 
-    model = ALGO(
-        "MlpPolicy",
-        env,
-        verbose=0,
-        tensorboard_log=options["tensorboard"],
-        use_sde=options.get("use_sde", False),
-    )
+    if options["algo"] == "TD3":
+        model = ALGO(
+            PLOICY,
+            env,
+            verbose=0,
+            tensorboard_log=options["tensorboard"],
+        )
+    else:
+        model = ALGO(
+            PLOICY,
+            env,
+            verbose=0,
+            tensorboard_log=options["tensorboard"],
+            use_sde=options.get("use_sde", False),
+        )
 
     progress_bar = options.get("progress_bar", False)
     model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)

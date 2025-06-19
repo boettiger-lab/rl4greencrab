@@ -76,14 +76,14 @@ def model_train(model_name):
     print(f'start train {model_name}', flush=True)
     
     model.learn(
-            total_timesteps= 4000000,
+            total_timesteps= 8000000,
             progress_bar=False,
         )
     model.save(model_path)
     
-model_train('PPO')
-model_train('TQC')
-model_train('TD3')
+# model_train('PPO')
+# model_train('TQC')
+# model_train('TD3')
 model_train('RecurrentPPO')
 
 print("finish training")

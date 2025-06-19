@@ -19,7 +19,7 @@ register(
 )
 register(
     id="tsenv", 
-    entry_point="rl4greencrab.envs.time_series:TimeSeriesEnv",
+    entry_point="rl4greencrab.envs.time_series:timeSeriesEnv",
 )
 register(
     id="monthenv", 

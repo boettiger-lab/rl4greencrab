@@ -8,15 +8,16 @@ class timeSeriesEnv(gym.Env):
     takes an environment env and produces an new environemtn timeSeriesEnv(env)
     whose observations are timeseries of the env environment.
     """
-    def __init__(self, config = {}):
+    def __init__(self, config = {}, render_mode=None):
         self.N_mem = config.get('N_mem', 3)
         self.configuration = config.get('config', {})
         self.is_dict = False
+        self.render_mode = render_mode
         if 'base_env' in config:
             self.base_env = config['base_env']
         else:
-            from rl4greencrab import greenCrabSimplifiedEnv
-            self.base_env = greenCrabSimplifiedEnv(self.configuration)
+            from rl4greencrab import greenCrabMonthEnvNormalized
+            self.base_env = greenCrabMonthEnvNormalized(self.configuration)
     
         self.action_space = self.base_env.action_space
         

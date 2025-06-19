@@ -7,7 +7,7 @@ algo: "PPO"
 env_id: "simpleEnv"
 n_envs: 12
 tensorboard: "/home/rstudio/logs"
-total_timesteps: 4000000
+total_timesteps: 8000000
 config: 
     'r': 0.1
     'init_pop': 20
