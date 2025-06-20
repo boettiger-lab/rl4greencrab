@@ -4,6 +4,7 @@ import numpy as np
 import random
 
 from gymnasium import spaces
+from gymnasium.spaces import Tuple, Box, Discrete, Dict
 from scipy.stats import norm
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -35,6 +36,8 @@ class greenCrabMonthEnv(gym.Env):
         config=config or {}
         
         # parameters
+        self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
+        
         self.growth_k = np.float32(config.get("growth_k", 0.43))
         self.growth_xinf = np.float32(config.get("growth_xinf", 109))
         self.growth_sd = np.float32(config.get("growth_sd", 2.5))
@@ -61,7 +64,8 @@ class greenCrabMonthEnv(gym.Env):
         
         self.w_mort_scale = config.get("w_mort_scale", 200)
         self.K = config.get("K", 25000) #carrying capacity
-        self.imm = config.get("imm", 5000) # mean colonization/immigration rate
+
+        self.imm = config.get("imm", 5000) # mean colonization/immigration rate --> randomize 
         
         self.r = config.get("r", 1) #intrinsic rate of growth
 
@@ -106,6 +110,7 @@ class greenCrabMonthEnv(gym.Env):
 
         self.monthly_size = np.zeros(shape=(self.nsize,1),dtype='object')
         self.random_start = config.get('random_start', False)
+        self.curriculum_enabled = config.get('curriculum', False)
 
         # Action space
         # action -- # traps per month
@@ -115,8 +120,8 @@ class greenCrabMonthEnv(gym.Env):
             dtype=np.float32,
         )
 
-        self.max_biomass = config.get("max_biomass", 5e4)
         self.max_mean_biomass = self.get_biomass_size()[-1]
+        
         # Observation space with month observation feature
         # self.observation_space = spaces.Tuple((
         #    spaces.Box(
@@ -180,7 +185,8 @@ class greenCrabMonthEnv(gym.Env):
 
             #simulate new recruits for next year
             local_recruits = np.random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
-            nonlocal_recruits = self.imm * np.random.lognormal()*(1-np.sum(size_freq[:])/self.K)
+            
+            nonlocal_recruits = self.non_localrecurit(size_freq)
             recruit_total = local_recruits + nonlocal_recruits
     
             logging.debug('local recruits = {}'.format(local_recruits))
@@ -203,23 +209,43 @@ class greenCrabMonthEnv(gym.Env):
         return self.observations, self.reward, done, done, {}
         
     def reset(self, *, seed=42, options=None):
+        if not hasattr(self, "total_episodes_seen"):
+            self.total_episodes_seen = 0
+        else:
+            self.total_episodes_seen += 1 
+        
         self.state = self.init_state()
         self.month_passed = 0
 
         # for tracking only
         self.reward = 0
+
+        # curriculumn learning
+        if self.curriculum_enabled:
+            # Increase difficulty slowly with training progress
+            progress = self.get_curriculum_progress()  # value between 0 and 1
+            low = int(self.max_obs * (0.4 - 0.2 * progress))   # gets wider over time
+            high = int(self.max_obs * (0.6 + 0.2 * progress))
+            low = max(0, low)
+            high = min(self.max_obs, high)
+        else:
+            low = 0
+            high = self.max_obs
         
         if self.random_start:
-            random.seed(seed)
-            self.init_n_adult = random.randint(0, self.max_obs)
+            self.init_n_adult = self.np_random.integers(low, high + 1)
     
-        # self.observations = np.zeros(shape=1, dtype=np.float32)
         self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
 
         return self.observations, {}
 
     #################
     #helper functions
+    
+    # calculate progress value for curriculum training
+    def get_curriculum_progress(self):
+        """Returns a value from 0.0 to 1.0 based on total episodes seen."""
+        return min(1.0, self.total_episodes_seen / 1000_000)
 
     #set up boundary points of IPM mesh
     def boundary(self):
@@ -267,6 +293,17 @@ class greenCrabMonthEnv(gym.Env):
     def dd_growth(self,popsize):
         dd_recruits = np.sum(popsize)*self.r*(1-np.sum(popsize)/self.K)
         return dd_recruits
+
+    # Calculate newborn green crab for the coming year
+    def non_localrecurit(self, size_freq):
+        # self.imm * np.random.lognormal()*(1-np.sum(size_freq[:])/self.K) # 0.2 for high 80000, 0.8 for low 8000 
+        outcomes = [0, 1]
+        probabilities = [0.8, 0.2]
+        
+        if random.choices(outcomes, weights=probabilities, k=1)[0] == 0:
+            return max(np.random.normal(8000, 1) * (1-np.sum(size_freq[:])/self.K), 0)
+        else:
+            return max(np.random.normal(80000, 10) * (1-np.sum(size_freq[:])/self.K), 0) 
 
     # function for getting biomass from crab size
     def get_biomass_size(self):

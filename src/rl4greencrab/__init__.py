@@ -4,7 +4,9 @@ from rl4greencrab.envs.green_crab_monthly_env import greenCrabMonthEnv
 from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNormalized
 from rl4greencrab.agents.const_action import constAction, constActionNatUnits, multiConstAction
 from rl4greencrab.agents.const_escapement import constEsc
+from rl4greencrab.agents.hyperparam import *
 from rl4greencrab.utils.simulate import simulator, get_simulator, evaluate_agent
+from rl4greencrab.utils.plot_utils import environment_simulation, plot_selected_sizes
 
 from gymnasium.envs.registration import register
 register(
@@ -26,4 +28,8 @@ register(
 register(
     id="monthenvnorm", 
     entry_point="rl4greencrab.envs.green_crab_monthly_env_norm:greenCrabMonthEnvNormalized",
+)
+register(
+    id="simpleEnv", 
+    entry_point="rl4greencrab.envs.simple_env:SimpleEnv",
 )
