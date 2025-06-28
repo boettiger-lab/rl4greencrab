@@ -2,11 +2,13 @@ import numpy as np
 import pandas as pd
 from stable_baselines3 import PPO, TD3
 from sb3_contrib import TQC, RecurrentPPO
+from LipschitzPPO import LipschitzPPO
 from stable_baselines3.common.env_util import make_vec_env
 from rl4greencrab.envs.green_crab_monthly_env import greenCrabMonthEnv
-from ensemble_ppo import *
+from rl4greencrab.agents.ensemble_ppo import *
 import torch.nn as nn
 from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNormalized
+from rl4greencrab.envs.green_crab_movingAvg import greenCrabMonthNormalizedMoving
 import gymnasium as gym
 import logging
 
@@ -21,6 +23,7 @@ config = {
 
 gcme = greenCrabMonthEnv(config)
 gmonthNorm = greenCrabMonthEnvNormalized(config)
+gmonthMoving = greenCrabMonthNormalizedMoving(config)
 vec_env = make_vec_env(greenCrabMonthEnvNormalized, n_envs=12, env_kwargs={'config':config})
 
 model_config = {
@@ -38,7 +41,7 @@ model_config = {
     'gae_lambda': 0.9,
     'max_grad_norm': 0.5,
     'vf_coef': 0.19,
-    'use_sde': True,
+    'use_sde': False,
     'sde_sample_freq': 8,
     'tensorboard_log':"/home/rstudio/logs",
     'policy_kwargs': dict(log_std_init=0.0, 
@@ -71,19 +74,25 @@ def model_train(model_name):
         print(model_path, flush=True)   
         model = RecurrentPPO(**model_config)
     elif model_name =="ensemblePPO":
-        eppo = EnsemblePPO('MultiInputPolicy', vec_env, n_agents=3, verbose=0, tensorboard_log="/home/rstudio/logs")
-
+        model = EnsemblePPO('MultiInputPolicy', vec_env, n_agents=3, verbose=0, tensorboard_log="/home/rstudio/logs")
+    elif model_name == 'LipschitzPPO':
+        gp_coef=0.1  
+        gp_K = 1
+        model_path = f'{model_name}_gcmenorm_{gp_coef}_{gp_K}'
+        model = LipschitzPPO('MultiInputPolicy', vec_env, gp_coef=gp_coef,  gp_K =  gp_K, verbose=0, tensorboard_log="/home/rstudio/logs")
+        
     print(f'start train {model_name}', flush=True)
     
     model.learn(
-            total_timesteps= 8000000,
+            total_timesteps= 10000000,
             progress_bar=False,
         )
     model.save(model_path)
     
-# model_train('PPO')
-# model_train('TQC')
-# model_train('TD3')
-model_train('RecurrentPPO')
+model_train('PPO')
+model_train('TQC')
+model_train('TD3')
+# model_train('RecurrentPPO')
+# model_train('LipschitzPPO')
 
 print("finish training")

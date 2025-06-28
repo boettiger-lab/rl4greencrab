@@ -2,9 +2,11 @@ from rl4greencrab.envs.green_crab_ipm import greenCrabEnv, greenCrabSimplifiedEn
 from rl4greencrab.envs.time_series import timeSeriesEnv
 from rl4greencrab.envs.green_crab_monthly_env import greenCrabMonthEnv
 from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNormalized
+from rl4greencrab.envs.green_crab_movingAvg import greenCrabMonthNormalizedMoving
 from rl4greencrab.agents.const_action import constAction, constActionNatUnits, multiConstAction
 from rl4greencrab.agents.const_escapement import constEsc
 from rl4greencrab.agents.hyperparam import *
+from rl4greencrab.agents.ensemble_ppo import *
 from rl4greencrab.utils.simulate import simulator, get_simulator, evaluate_agent
 from rl4greencrab.utils.plot_util import environment_simulation, plot_selected_sizes
 
@@ -32,4 +34,8 @@ register(
 register(
     id="simpleEnv", 
     entry_point="rl4greencrab.envs.simple_env:SimpleEnv",
+)
+register(
+    id="monenvmoving", 
+    entry_point="rl4greencrab.envs.green_crab_movingAvg:greenCrabMonthNormalizedMoving",
 )

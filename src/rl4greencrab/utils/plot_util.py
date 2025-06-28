@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from ipywidgets import interact, widgets
+import matplotlib.pyplot as plt
 
 def environment_simulation(env, agent, reps=10, obs_names = None, acts_names = None):
     num_obs = np.prod(len(env.observation_space))
