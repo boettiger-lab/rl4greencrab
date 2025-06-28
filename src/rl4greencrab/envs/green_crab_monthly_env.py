@@ -111,6 +111,7 @@ class greenCrabMonthEnv(gym.Env):
         self.monthly_size = np.zeros(shape=(self.nsize,1),dtype='object')
         self.random_start = config.get('random_start', False)
         self.curriculum_enabled = config.get('curriculum', False)
+        
         self.action_stacks = [] # storing whole year action -> store normalized action
         self.variance_penalty_ratio = config.get('var_penalty_const', 1)
 
@@ -205,7 +206,7 @@ class greenCrabMonthEnv(gym.Env):
         #     done = True
 
         return self.observations, self.reward, done, done, {}
-        
+
     def reset(self, *, seed=None, options=None):
         if not hasattr(self, "total_episodes_seen"):
             self.total_episodes_seen = 0

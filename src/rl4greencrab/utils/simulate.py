@@ -213,6 +213,7 @@ class simulator:
                     data['t'].append(t)
                     for idx, obs_name in enumerate(obs_names):
                         data[obs_name].append(observation['crabs'][-1][idx])
+
                     for idx, act_name in enumerate(acts_names):
                         data[act_name].append(action[idx])
                     #

@@ -21,7 +21,8 @@ dependencies = ["gymnasium",
                 "ray",
                 "stable_baselines3",
                 "sb3-contrib",
-                "optuna"]
+                "optuna",
+                "ipywidgets"]
 
 [project.optional-dependencies]
 tests = [

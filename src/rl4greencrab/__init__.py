@@ -34,8 +34,10 @@ register(
 register(
     id="simpleEnv", 
     entry_point="rl4greencrab.envs.simple_env:SimpleEnv",
+
 )
 register(
     id="monenvmoving", 
     entry_point="rl4greencrab.envs.green_crab_movingAvg:greenCrabMonthNormalizedMoving",
 )
+

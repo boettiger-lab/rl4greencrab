@@ -39,7 +39,6 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
             np.float32(action_natural_units)
         )
         normalized_cpue = 2 * self.cpue_2(obs['crabs'], action_natural_units) - 1
-
         mean_biomass = obs["crabs"][1]
         normal_biomass = self.normalize_biomass(mean_biomass)
         # TODO: normalize biomass
