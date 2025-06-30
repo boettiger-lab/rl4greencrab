@@ -19,6 +19,7 @@ config = {
     "growth_k": 0.70,
     "random_start": True,
     "curriculum": False
+    'var_penalty_const': 0.3
 }
 
 gcme = greenCrabMonthEnv(config)
