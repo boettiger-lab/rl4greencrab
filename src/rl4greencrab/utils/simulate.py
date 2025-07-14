@@ -1,12 +1,14 @@
 import numpy as np
+import torch
 import ray
 
 class evaluate_agent:
-    def __init__(self, *, agent, env=None, ray_remote=False):
+    def __init__(self, *, agent, env=None, ray_remote=False, gpu=False):
         self.agent = agent
         self.env = env or agent.env
-        self.simulator = get_simulator(ray_remote=ray_remote)
+        self.simulator = get_simulator(ray_remote=ray_remote, gpu=gpu)
         self.ray_remote = ray_remote
+        self.gpu = gpu
     
     def evaluate(self, return_episode_rewards=False, n_eval_episodes=50):
         if self.ray_remote:
@@ -27,20 +29,36 @@ class evaluate_agent:
         
     
 
-def get_simulator(ray_remote = False):
+def get_simulator(ray_remote = False, gpu=False):
     if ray_remote:
-        @ray.remote
-        def simulator(env, agent):
-            results = []
-            episode_reward = 0.0
-            observation, _ = env.reset()
-            for t in range(env.Tmax):
-                action, _ = agent.predict(observation, deterministic=True)
-                observation, reward, terminated, done, info = env.step(action)
-                episode_reward += reward
-                if terminated or done:
-                    break
-            return episode_reward
+        print(torch.cuda.is_available())
+        print(ray.cluster_resources())
+        if gpu:
+            @ray.remote(num_gpus=1)
+            def simulator(env, agent):
+                results = []
+                episode_reward = 0.0
+                observation, _ = env.reset()
+                for t in range(env.Tmax):
+                    action, _ = agent.predict(observation, deterministic=True)
+                    observation, reward, terminated, done, info = env.step(action)
+                    episode_reward += reward
+                    if terminated or done:
+                        break
+                return episode_reward
+        else:
+            @ray.remote
+            def simulator(env, agent):
+                results = []
+                episode_reward = 0.0
+                observation, _ = env.reset()
+                for t in range(env.Tmax):
+                    action, _ = agent.predict(observation, deterministic=True)
+                    observation, reward, terminated, done, info = env.step(action)
+                    episode_reward += reward
+                    if terminated or done:
+                        break
+                return episode_reward
         return simulator
     else:
         def simulator(env, agent):

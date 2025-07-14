@@ -5,10 +5,11 @@ from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNorma
 from rl4greencrab.envs.green_crab_movingAvg import greenCrabMonthNormalizedMoving
 from rl4greencrab.agents.const_action import constAction, constActionNatUnits, multiConstAction
 from rl4greencrab.agents.const_escapement import constEsc
+from rl4greencrab.agents.LipschitzPPO import *
 from rl4greencrab.agents.hyperparam import *
 from rl4greencrab.agents.ensemble_ppo import *
 from rl4greencrab.utils.simulate import simulator, get_simulator, evaluate_agent
-from rl4greencrab.utils.plot_util import environment_simulation, plot_selected_sizes
+from rl4greencrab.utils.plot_utils import *
 
 from gymnasium.envs.registration import register
 register(
