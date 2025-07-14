@@ -32,6 +32,7 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
         )
         self.max_action = config.get('max_action', 3000) # ad hoc based on previous values, prev = 2000
         self.cpue_normalization = config.get('cpue_normalization', 100)
+        self.observation = {"crabs": np.array([-1, -1], dtype=np.float32), "months": 12}
         
     def step(self, action):
         action_natural_units = np.maximum(self.max_action * (1 + action)/2 , 0.) #convert to normal action
@@ -48,9 +49,9 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
 
     def reset(self, *, seed=None, options=None):
         _, info = super().reset(seed=seed, options=options)
-
+        self.observation = {"crabs": np.array([-1, -1], dtype=np.float32), "months": 12}
         # completely new  obs
-        return {"crabs":np.array([-1, -1], dtype=np.float32), "months":1}, info
+        return {"crabs":np.array([-1, -1], dtype=np.float32), "months": 12}, info
 
     def normalize_biomass(self, mean_biomass):
         biomass_sizes = self.get_biomass_size()
