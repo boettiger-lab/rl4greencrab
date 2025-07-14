@@ -8,7 +8,8 @@ config:
     "w_mort_scale" : 600
     "growth_k": 0.70
     'random_start': True
-use_sde: True
+model_config:
+    use_sde: True
 id: "1"
 repo: "cboettig/rl4greencrab"
 save_path: "/home/rstudio/rl4greencrab/saved_agents"
