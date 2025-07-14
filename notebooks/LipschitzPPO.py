@@ -51,13 +51,27 @@ class LipschitzPPO(PPO):
                 mean_action = dist.distribution.mean
                 gp_loss = 0.0
 
-                for j in range(mean_action.shape[1]):
-                    grad = torch.autograd.grad(mean_action[:, j].sum(), obs_gp["crabs"], create_graph=True)[0]
-                    grad_norm = (grad ** 2).sum(dim=1).sqrt()
-                    excess = (grad_norm - self.gp_K).clamp(min=0.0)
-                    gp_loss += (excess ** 2).mean()
-                    # gp_loss += (grad ** 2).sum(dim=1).mean() default to gp_K = 0
-                gp_loss = gp_loss / mean_action.shape[1]
+                # for j in range(mean_action.shape[1]):
+                #     grad = torch.autograd.grad(mean_action[:, j].sum(), obs_gp["crabs"], create_graph=True)[0]
+                #     grad_norm = (grad ** 2).sum(dim=1).sqrt()
+                #     excess = (grad_norm - self.gp_K).clamp(min=0.0)
+                #     gp_loss += (excess ** 2).mean()
+                #     # gp_loss += (grad ** 2).sum(dim=1).mean() default to gp_K = 0
+                # gp_loss = gp_loss / mean_action.shape[1]
+                try:
+                    for j in range(mean_action.shape[1]):
+                        grad = torch.autograd.grad(mean_action[:, j].sum(), obs_gp["crabs"], create_graph=True)[0]
+                        if not torch.isfinite(grad).all():
+                            raise RuntimeError("NaN in gradient of mean_action w.r.t. obs")
+                
+                        grad_norm = grad.norm(dim=1)
+                        excess = (grad_norm - self.gp_K).clamp(min=0.0)
+                        gp_loss += (excess ** 2).mean()
+                    gp_loss = gp_loss / mean_action.shape[1]
+                except Exception as e:
+                    print(f"GP loss error: {e}")
+                    gp_loss = torch.tensor(0.0, device=obs["crabs"].device)
+
 
                 values, log_prob, entropy = self.policy.evaluate_actions(obs, actions)
                 values = values.flatten()

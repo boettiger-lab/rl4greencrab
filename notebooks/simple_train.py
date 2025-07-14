@@ -18,10 +18,10 @@ config = {
     "w_mort_scale" : 600,
     "growth_k": 0.70,
     "random_start": True,
-    "curriculum": False
+    "curriculum": False,
     'var_penalty_const': 0.3
 }
-
+print(config, flush=True)
 gcme = greenCrabMonthEnv(config)
 gmonthNorm = greenCrabMonthEnvNormalized(config)
 gmonthMoving = greenCrabMonthNormalizedMoving(config)
@@ -77,23 +77,24 @@ def model_train(model_name):
     elif model_name =="ensemblePPO":
         model = EnsemblePPO('MultiInputPolicy', vec_env, n_agents=3, verbose=0, tensorboard_log="/home/rstudio/logs")
     elif model_name == 'LipschitzPPO':
-        gp_coef=0.1  
-        gp_K = 1
+        gp_coef=0.001
+        gp_K = 50
         model_path = f'{model_name}_gcmenorm_{gp_coef}_{gp_K}'
-        model = LipschitzPPO('MultiInputPolicy', vec_env, gp_coef=gp_coef,  gp_K =  gp_K, verbose=0, tensorboard_log="/home/rstudio/logs")
+        print(model_path, flush=True)
+        model = LipschitzPPO('MultiInputPolicy', vec_env, gp_coef=gp_coef,  gp_K = gp_K, verbose=0, tensorboard_log="/home/rstudio/logs")
         
     print(f'start train {model_name}', flush=True)
     
     model.learn(
-            total_timesteps= 10000000,
+            total_timesteps= 20000000,
             progress_bar=False,
         )
     model.save(model_path)
     
-model_train('PPO')
-model_train('TQC')
-model_train('TD3')
-# model_train('RecurrentPPO')
+# model_train('PPO')
+# model_train('TQC')
+# model_train('TD3')
+model_train('RecurrentPPO')
 # model_train('LipschitzPPO')
 
 print("finish training")

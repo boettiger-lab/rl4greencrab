@@ -1,0 +1,17 @@
+algo: "TQC"
+policy: "MultiInputPolicy"
+env_id: "monthenvnorm"
+n_envs: 12
+tensorboard: "/home/rstudio/logs"
+total_timesteps: 10000000
+config: 
+    "w_mort_scale" : 600
+    "growth_k": 0.70
+    'random_start': True
+    "curriculum": False
+    'var_penalty_const': 0.3
+use_sde: False
+id: "1"
+repo: "cboettig/rl4geco"
+save_path: "/home/rstudio/rl4greencrab/saved_agents"
+progress_bar: True
