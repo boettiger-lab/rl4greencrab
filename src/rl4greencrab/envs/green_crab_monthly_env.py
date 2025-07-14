@@ -93,7 +93,7 @@ class greenCrabMonthEnv(gym.Env):
         # Preserve these for reset
         # self.observations = np.zeros(shape=9, dtype=np.float32)
         # self.observations = (np.array([0, 0], dtype=np.float32), 1)
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 12}
+        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
         self.reward = 0
         self.month_passed = 0
         self.curr_month = 3 #start with third month
@@ -234,7 +234,7 @@ class greenCrabMonthEnv(gym.Env):
         if self.random_start:
             self.init_n_adult = self.np_random.integers(low, high + 1)
     
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 12} # potentially start with end of previous year
+        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1} # potentially start with end of previous year
 
         return self.observations, {}
 
