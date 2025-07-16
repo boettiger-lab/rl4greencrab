@@ -11,11 +11,6 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
     def __init__(self, config={}):
         super().__init__(config=config)
-        # self.observation_space = spaces.Box(
-        #     np.array([-1], dtype=np.float32),
-        #     np.array([1], dtype=np.float32),
-        #     dtype=np.float32,
-        # )
         self.observation_space = spaces.Dict({
             "crabs": spaces.Box(
                 low=np.array([-1, -1]),  # Lower bounds: original obs (0), month (1)
@@ -30,8 +25,9 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
             np.float32([1, 1, 1]),
             dtype=np.float32,
         )
-        self.max_action = config.get('max_action', 2000) # ad hoc based on previous values
+        self.max_action = config.get('max_action', 3000) # ad hoc based on previous values, prev = 2000
         self.cpue_normalization = config.get('cpue_normalization', 100)
+        self.observation = {"crabs": np.array([-1, -1], dtype=np.float32), "months": 1}
         
     def step(self, action):
         action_natural_units = np.maximum(self.max_action * (1 + action)/2 , 0.) #convert to normal action
@@ -39,19 +35,17 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
             np.float32(action_natural_units)
         )
         normalized_cpue = 2 * self.cpue_2(obs['crabs'], action_natural_units) - 1
-
         mean_biomass = obs["crabs"][1]
         normal_biomass = self.normalize_biomass(mean_biomass)
-        # TODO: normalize biomass
-        self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass],dtype=np.float32), "months": obs['months']}
+        self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass], dtype=np.float32), "months": obs['months']}
         # rew = 10 * rew # use larger rewards, possibly makes trainer easier?
         return self.observation, rew, term, trunc, info
 
-    def reset(self, *, seed=42, options=None):
-        _, info = super().reset(seed=seed, options=options)
-
+    def reset(self, *, seed=None, options=None):
+        obs, info = super().reset(seed=seed, options=options)
+        self.observation = {"crabs": np.array([-1, -1], dtype=np.float32), "months": 1}
         # completely new  obs
-        return {"crabs":np.array([-1, -1], dtype=np.float32), "months":1}, info
+        return self.observation, info
 
     def normalize_biomass(self, mean_biomass):
         biomass_sizes = self.get_biomass_size()

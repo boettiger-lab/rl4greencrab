@@ -5,6 +5,7 @@ import gymnasium as gym
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3 import PPO, A2C, DQN, SAC, TD3, HER, DDPG
 from sb3_contrib import TQC, ARS, RecurrentPPO
+from rl4greencrab import LipschitzPPO
 
 def algorithm(algo):
     algos = {
@@ -34,6 +35,8 @@ def algorithm(algo):
         #
         'TQC': TQC, 
         'tqc': TQC,
+        #
+        'LipschitzPPO': LipschitzPPO
     }
     return algos[algo]
 
@@ -47,25 +50,28 @@ def sb3_train(config_file, **kwargs):
         env = make_vec_env(
             options["env_id"], options["n_envs"], env_kwargs={"config": options["config"]}
         )
+        print(f'env config: {options["config"]}')
     else:
         env = gym.make(options["env_id"])
     ALGO = algorithm(options["algo"])
+    PLOICY = options.get("policy", "MlpPolicy")
     model_id = options["algo"] + "-" + options["env_id"]  + "-" + options["id"]
+    model_config = options['model_config']
     save_id = os.path.join(options["save_path"], model_id)
 
     model = ALGO(
-        "MlpPolicy",
-        env,
-        verbose=0,
-        tensorboard_log=options["tensorboard"],
-        use_sde=options["use_sde"],
-    )
+            PLOICY,
+            env,
+            verbose=0,
+            tensorboard_log=options["tensorboard"],
+            **model_config
+        )
 
     progress_bar = options.get("progress_bar", False)
     model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 
     os.makedirs(options["save_path"], exist_ok=True)
     model.save(save_id)
-    print(f"Saved {options['algo']} model at {save_id}")
+    print(f"Saved {options['algo']} model at {save_id}", flush=True)
     
     return model

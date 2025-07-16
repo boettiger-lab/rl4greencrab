@@ -111,6 +111,9 @@ class greenCrabMonthEnv(gym.Env):
         self.monthly_size = np.zeros(shape=(self.nsize,1),dtype='object')
         self.random_start = config.get('random_start', False)
         self.curriculum_enabled = config.get('curriculum', False)
+        
+        self.action_stacks = [] # storing whole year action -> store normalized action
+        self.variance_penalty_ratio = config.get('var_penalty_const', 1)
 
         # Action space
         # action -- # traps per month
@@ -123,15 +126,6 @@ class greenCrabMonthEnv(gym.Env):
         self.max_mean_biomass = self.get_biomass_size()[-1]
         
         # Observation space with month observation feature
-        # self.observation_space = spaces.Tuple((
-        #    spaces.Box(
-        #         low=np.array([0, 0]),  # Lower bounds: original obs (0)
-        #         high=np.array([self.max_obs, self.max_mean_biomass]),  # Upper bounds: obs max,
-        #         shape=(2,),
-        #         dtype=np.float32
-        #     ), 
-        #     spaces.Discrete(12, start=1)
-        # ))
         self.observation_space = spaces.Dict({
            "crabs": spaces.Box(
                 low=np.array([0, 0]),  # Lower bounds: original obs (0)
@@ -159,13 +153,18 @@ class greenCrabMonthEnv(gym.Env):
             #create array to store # removed
             #calculate removed and record observation at month = 3
             removed[:,0] = [np.random.binomial(size_freq[k,0], harvest_rate[k]) for k in range(self.nsize)]
+            self.action_stacks = []
         else:
             size_freq[:] = [np.random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
             removed[:] = [np.random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
         self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
-            
+
+        # update actions stacks
+        normalized_action = action / self.max_action * 2 - 1
+        self.action_stacks.append(normalized_action)
+        
         #update observation space
-        biomass = np.sum(self.get_biomass_size() * self.state) # get biomass
+        biomass = np.sum(self.get_biomass_size() * removed[:,0]) # get biomass
         crab_counts = np.sum(removed[:,0])
         mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
         self.observations = {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), 
@@ -207,8 +206,8 @@ class greenCrabMonthEnv(gym.Env):
         #     done = True
 
         return self.observations, self.reward, done, done, {}
-        
-    def reset(self, *, seed=42, options=None):
+
+    def reset(self, *, seed=None, options=None):
         if not hasattr(self, "total_episodes_seen"):
             self.total_episodes_seen = 0
         else:
@@ -234,8 +233,9 @@ class greenCrabMonthEnv(gym.Env):
         
         if self.random_start:
             self.init_n_adult = self.np_random.integers(low, high + 1)
-    
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
+
+        # TODO: potentially start with end of previous year
+        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1} 
 
         return self.observations, {}
 
@@ -284,12 +284,12 @@ class greenCrabMonthEnv(gym.Env):
                           norm.cdf(self.bndry[0:self.nsize],mean,self.growth_sd))
         return array
 
-    #function for overwinter mortality
+    # function for overwinter mortality
     def w_mortality(self):
         wmort = self.w_mort_scale/self.midpts**2
         return wmort
 
-    #function for density dependent growth
+    # function for density dependent growth
     def dd_growth(self,popsize):
         dd_recruits = np.sum(popsize)*self.r*(1-np.sum(popsize)/self.K)
         return dd_recruits
@@ -301,16 +301,16 @@ class greenCrabMonthEnv(gym.Env):
         probabilities = [0.8, 0.2]
         
         if random.choices(outcomes, weights=probabilities, k=1)[0] == 0:
-            return max(np.random.normal(8000, 1) * (1-np.sum(size_freq[:])/self.K), 0)
+            return max(np.random.normal(8000, 1000) * (1-np.sum(size_freq[:])/self.K), 0)
         else:
-            return max(np.random.normal(80000, 10) * (1-np.sum(size_freq[:])/self.K), 0) 
+            return max(np.random.normal(80000, 10000) * (1-np.sum(size_freq[:])/self.K), 0) 
 
     # function for getting biomass from crab size
     def get_biomass_size(self):
         biomass = [-0.071 * y + 0.003 * y**2 + 0.00002 * y**3 for y in self.midpts]
         return [np.max([0, b]) for b in biomass]
     
-    #function for reward
+    # function for reward
     # two part reward function:
     # 1. impact on environment (function of crab density)
     # 2. penalty for how much effort we expended (function of action)
@@ -335,4 +335,8 @@ class greenCrabMonthEnv(gym.Env):
                 * trap_cost(action, self.max_action, self.action_reward_exponent) 
             )
         )
+        # discourage high std in a year
+        if self.curr_month == 11:
+            action_std = np.std(self.action_stacks, axis=0)
+            reward -= self.variance_penalty_ratio * np.sum(action_std)
         return reward
