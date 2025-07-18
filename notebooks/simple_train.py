@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from stable_baselines3 import PPO, TD3
 from sb3_contrib import TQC, RecurrentPPO
-from LipschitzPPO import LipschitzPPO
+from rl4greencrab import LipschitzPPO
 from stable_baselines3.common.env_util import make_vec_env
 from rl4greencrab.envs.green_crab_monthly_env import greenCrabMonthEnv
 from rl4greencrab.agents.ensemble_ppo import *
@@ -86,7 +86,7 @@ def model_train(model_name):
     print(f'start train {model_name}', flush=True)
     
     model.learn(
-            total_timesteps= 20000000,
+            total_timesteps= 25000000,
             progress_bar=False,
         )
     model.save(model_path)
