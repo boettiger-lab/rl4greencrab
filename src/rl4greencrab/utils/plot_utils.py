@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 from ipywidgets import interact, widgets
 import matplotlib.pyplot as plt
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -85,32 +86,12 @@ def plot_selected_sizes(expanded_df:pd.DataFrame, selected_sizes,
     # Show the plot
     plt.show()
 
-def agent_action_plot(evalEnv, agent, action=[]):
-    data = simulator(env=evalEnv, agent=agent).simulate_full_named_dict_obs_acts()
-    df = pd.DataFrame(data)
-
-    # Line plots (separate)
-    df[df.rep == 0].plot(x='t', y=['act0', 'act1', 'act2'], title="Actions over Time")
-    df[df.rep == 0].plot(x='t', y=['obs0'], title="Observation 0 over Time")
-
-    # Combined scatter plot (in one figure)
-    fig, ax = plt.subplots()
-    ax.scatter(x=df[df.rep == 0]['obs0'], y=df[df.rep == 0]['act0'], label='act1 vs obs0', alpha=0.7)
-    ax.scatter(x=df[df.rep == 0]['obs0'], y=df[df.rep == 0]['act1'], label='act0 vs obs0', alpha=0.7)
-    ax.scatter(x=df[df.rep == 0]['obs0'], y=df[df.rep == 0]['act2'], label='act0 vs obs0', alpha=0.7)
-    ax.set_xlabel('Observation 0')
-    ax.set_ylabel('Action')
-    ax.set_title('Scatter Plots: act0/act1 vs obs0')
-    ax.legend()
-    
-    plt.show()
-    return df
 
 # plots for policy agents
-def agent_action_plot(evalEnv, agent, action=[]):
+def agent_action_plot(evalEnv, agent, action=[], name='default'):
     data = simulator(env=evalEnv, agent=agent).simulate_full_named_dict_obs_acts()
     df = pd.DataFrame(data)
-
+    
     # Line plots (separate)
     df[df.rep == 0].plot(x='t', y=['act0', 'act1', 'act2'], title="Actions over Time")
     df[df.rep == 0].plot(x='t', y=['obs0'], title="Observation 0 over Time")
@@ -184,3 +165,47 @@ def generate_gpp_episodes(gpp, env, reps=50):
       df = pd.merge(df, state_df, on=['t','rep'], how='inner')
       return df, state_df
 
+# generate rews distrbution of different agent
+""" dict exmaple: agent_dict = {
+    'td3Agent': td3Agent,
+    'ppoAgent': ppoAgent,
+    'tqcAgent': tqcAgent,
+    'recurrentPPOAgent': recurrentPPOAgent,
+    'lppoAgent': lppoAgent,
+    'constantAgent': multiConstAction(env=env, action=np.array([83.87232800633504, 596.3225575635984, 14.882297944474463]))
+}"""
+# cols = [t, rep, agent1_rew ...]
+def generate_policy_rews_df_agents(agent_dict, eval_env, rep=3):
+    dfs = []
+    for name, agent in agent_dict.items():
+        df = pd.DataFrame(environment_simulation(eval_env, agent, reps=3))
+        df = df[df['rep']<3].loc[:, ['t', 'rep', 'rew']]
+        tmp = (
+            df
+            .rename(columns={'rew': f"{name}_rew"})
+            .set_index(['t','rep'])
+        )
+        dfs.append(tmp)
+    
+    # 2) Concatenate them side‑by‑side, then bring t, rep back as columns
+    rews_df = pd.concat(dfs, axis=1).reset_index()
+    return rews_df
+
+# generate rews distrbution of different agent
+# cols = [t, rep, agent1_rew ...]
+def generate_policy_rews_df_dfs(df_dicts, rep=3, save_dir='.', df_name='rews_df'):
+    dfs = []
+    for name, df in df_dicts.items():
+        df = df[df['rep']<3].loc[:, ['t', 'rep', 'rew']]
+        tmp = (
+            df
+            .rename(columns={'rew': f"{name}_rew"})
+            .set_index(['t','rep'])
+        )
+        dfs.append(tmp)
+    
+    # 2) Concatenate them side‑by‑side, then bring t, rep back as columns
+    rews_df = pd.concat(dfs, axis=1).reset_index()
+    rews_df.to_csv(os.path.join(save_dir,f"{df_name}.csv"), index = False)
+    return rews_df
+    
