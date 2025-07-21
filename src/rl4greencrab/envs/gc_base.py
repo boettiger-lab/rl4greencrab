@@ -362,9 +362,9 @@ class greenCrabMonthEnv(gym.Env):
         def trap_cost(action, max_action, exponent):
             return np.array(
                 [
-                    (action[0]/max_action) ** exponent,
-                    (action[1]/max_action) ** exponent,
-                    (action[2]/max_action) ** exponent,
+                    (action[0] / max_action) ** exponent,
+                    (action[1] / max_action) ** exponent,
+                    (action[2] / max_action) ** exponent,
                 ]
             )
         biomass = np.sum(self.get_biomass_size() * self.state) # get biomass
@@ -372,11 +372,15 @@ class greenCrabMonthEnv(gym.Env):
             -self.loss_a 
             /
             (
-                1+np.exp(-self.loss_b*(biomass/self.area-self.loss_c))
+                1 + np.exp(- self.loss_b * (biomass / self.area - self.loss_c))
             )
             - np.sum(
                 self.action_reward_scale 
-                * trap_cost(action, self.max_action, self.action_reward_exponent) 
+                * trap_cost(
+                    action, 
+                    self.max_action, 
+                    self.action_reward_exponent,
+                ) 
             )
         )
         # discourage high std in a year
