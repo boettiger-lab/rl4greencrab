@@ -52,7 +52,7 @@ def environment_simulation(env, agent,
     if save_df:
         df = pd.DataFrame(data)
         DATAPATH = save_path
-        ppoDataDF.to_csv(os.path.join(DATAPATH,f"{agent_name}_env.csv"), index = False)
+        df.to_csv(os.path.join(DATAPATH,f"{agent_name}_env.csv"), index = False)
     return data
 
 # plot for change of crab population of certain size overtime
@@ -208,4 +208,69 @@ def generate_policy_rews_df_dfs(df_dicts, rep=3, save_dir='.', df_name='rews_df'
     rews_df = pd.concat(dfs, axis=1).reset_index()
     rews_df.to_csv(os.path.join(save_dir,f"{df_name}.csv"), index = False)
     return rews_df
+
+# comparing reward distribution between rl_agents and constant agent
+def agent_rew_vs_constant_rew_plot(model_rews_dict, constant_rews, save_dir='.'):
+    colors = {
+        'PPO': 'blue',
+        'TD3': 'orange',
+        'TQC': 'green',
+        'RecurrentPPO': 'purple',
+        'LipschitzPPO': 'yellow',
+        'Constant': 'red'
+    }
     
+    fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(12, 8))
+    axes = axes.flatten()
+    
+    for i, (model_name, rewards) in enumerate(models.items()):
+        ax = axes[i]
+        # Plot current model
+        ax.hist(rewards, alpha=0.6, color=colors[model_name], label=model_name)
+        ax.axvline(np.mean(rewards), color=colors[model_name], linestyle='dashed', linewidth=2, label=f'{model_name} Mean')
+    
+        # Plot constant model
+        ax.hist(constant_rewards, alpha=0.3, color=colors['Constant'], label='Constant')
+        ax.axvline(np.mean(constant_rewards), color=colors['Constant'], linestyle='dashed', linewidth=2, label='Constant Mean')
+    
+        ax.set_title(f"{model_name} vs Constant")
+        ax.set_xlabel("Reward")
+        ax.set_ylabel("Frequency")
+        ax.legend()
+        ax.grid(True)
+
+    # 3. Save to disk
+    save_path = os.path.join(save_dir, 'rews_comparision.png')
+    fig.savefig(save_path,      # filename (relative or absolute path)
+                dpi=300,            # resolution in dots per inch
+                bbox_inches='tight',# trim whitespace
+                transparent=False)  # make background transparent
+    plt.tight_layout()
+    plt.show()
+
+# plot heatmap relative to crab size and time
+def state_heatmap(df, rep=0, use_log=True):
+    state_rep = df[df['rep']==0]
+    state_rep = state_rep.loc[1:, ['t','crab_pop']]
+    if use_log:
+        state_rep['state'] = df.loc[:, 'crab_pop'].apply(
+            lambda pop_list: np.log(np.array(pop_list, dtype=np.float64)+ 1)
+        )
+    else:
+        state_rep['state'] = df['crab_pop']
+    display(state_rep)
+    state_rep = state_rep.loc[1:, ['t','state']]
+    size_df = pd.DataFrame(state_rep['state'].tolist())
+    size_df.columns = [f'size_{i}' for i in range(1, size_df.shape[1]+1)]
+    state_rep =  pd.concat([state_rep.drop(columns=['state']), size_df], axis=1)
+    # prepare heatmap
+    df_melted = state_rep.melt(id_vars='t', value_name='abundance', var_name='size')
+    df_melted['size'] = df_melted['size'].str.extract(r'(\d+)').astype(int)
+    heatmap_data = df_melted.pivot(index='size', columns='t', values='abundance')
+    fig = plt.figure(figsize=(14, 6))
+    ax = sns.heatmap(heatmap_data, cmap='viridis', cbar_kws={'label': 'Abundance'})
+    plt.xlabel('Time')
+    plt.ylabel('Size Class')
+    plt.title('Heatmap of State Abundance Over Time by Size')
+    plt.tight_layout()
+    plt.show()
