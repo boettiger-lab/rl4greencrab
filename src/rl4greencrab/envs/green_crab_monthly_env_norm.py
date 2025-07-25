@@ -49,13 +49,6 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
 
     def reset(self, *, seed=None, options=None):
         obs, info = super().reset(seed=seed, options=options)
-        # action_natural_units = np.maximum(self.max_action * (1 + action)/2 , 0.) #convert to normal action
-        # normalized_cpue = 2 * self.cpue_2(obs['crabs'], action_natural_units) - 1
-        # mean_biomass = obs["crabs"][1]
-        # normal_biomass = self.normalize_biomass(mean_biomass)
-        # # TODO: normalize biomass
-        # self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass], dtype=np.float32), "months": obs['months']}
-
         self.observation = {"crabs": np.array([-1, -1], dtype=np.float32), "months": 1}
         # completely new  obs
         return self.observation, info
