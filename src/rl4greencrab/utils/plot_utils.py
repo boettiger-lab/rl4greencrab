@@ -250,16 +250,24 @@ def agent_rew_vs_constant_rew_plot(model_rews_dict, constant_rews, save_dir='.')
 
 # plot heatmap relative to crab size and time
 def state_heatmap(df, rep=0, use_log=True):
-    state_rep = df[df['rep']==0]
+    state_rep = df[df['rep']==rep]
     state_rep = state_rep.loc[1:, ['t','crab_pop']]
+    state_rep = state_rep.set_index('t')
+    state_rep['t'] = state_rep.index
     if use_log:
-        state_rep['state'] = df.loc[:, 'crab_pop'].apply(
-            lambda pop_list: np.log(np.array(pop_list, dtype=np.float64)+ 1)
-        )
+        if isinstance(state_rep['crab_pop'][0], str):
+            state_rep['state'] = state_rep.loc[:, 'crab_pop'].apply(
+                lambda pop_list: np.log(np.array(np.fromstring(pop_list.strip("[]"), sep=' '), dtype=np.float64)+ 1)
+            )
+        else:
+            state_rep['state'] = state_rep.loc[:, 'crab_pop'].apply(
+                lambda pop_list: np.log(np.array(pop_list, dtype=np.float64)+ 1)
+            )
     else:
-        state_rep['state'] = df['crab_pop']
-    display(state_rep)
-    state_rep = state_rep.loc[1:, ['t','state']]
+        state_rep['state'] =  state_rep.loc[:, 'crab_pop'].apply(
+                lambda pop_list:np.array(np.fromstring(pop_list.strip("[]"), sep=' '), dtype=np.float64)
+            )
+    state_rep = state_rep.loc[:, ['t','state']]
     size_df = pd.DataFrame(state_rep['state'].tolist())
     size_df.columns = [f'size_{i}' for i in range(1, size_df.shape[1]+1)]
     state_rep =  pd.concat([state_rep.drop(columns=['state']), size_df], axis=1)
@@ -267,10 +275,12 @@ def state_heatmap(df, rep=0, use_log=True):
     df_melted = state_rep.melt(id_vars='t', value_name='abundance', var_name='size')
     df_melted['size'] = df_melted['size'].str.extract(r'(\d+)').astype(int)
     heatmap_data = df_melted.pivot(index='size', columns='t', values='abundance')
+    # display(heatmap_data)
     fig = plt.figure(figsize=(14, 6))
-    ax = sns.heatmap(heatmap_data, cmap='viridis', cbar_kws={'label': 'Abundance'})
+    sns.heatmap(heatmap_data, cmap='viridis', cbar_kws={'label': 'Abundance'})
     plt.xlabel('Time')
     plt.ylabel('Size Class')
     plt.title('Heatmap of State Abundance Over Time by Size')
-    plt.tight_layout()
+    plt.savefig("my_seaborn_plot.png")
     plt.show()
+    return fig
