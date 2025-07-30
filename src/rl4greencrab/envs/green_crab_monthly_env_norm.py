@@ -11,6 +11,11 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
     def __init__(self, config={}):
         super().__init__(config=config)
+        # self.observation_space = spaces.Box(
+        #     np.array([-1], dtype=np.float32),
+        #     np.array([1], dtype=np.float32),
+        #     dtype=np.float32,
+        # )
         self.observation_space = spaces.Dict({
             "crabs": spaces.Box(
                 low=np.array([-1, -1]),  # Lower bounds: original obs (0), month (1)
@@ -37,7 +42,9 @@ class greenCrabMonthEnvNormalized(greenCrabMonthEnv):
         normalized_cpue = 2 * self.cpue_2(obs['crabs'], action_natural_units) - 1
         mean_biomass = obs["crabs"][1]
         normal_biomass = self.normalize_biomass(mean_biomass)
-        self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass], dtype=np.float32), "months": obs['months']}
+        # TODO: normalize biomass
+        self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass], dtype=np.float32), 
+                            "months": obs['months']}
         # rew = 10 * rew # use larger rewards, possibly makes trainer easier?
         return self.observation, rew, term, trunc, info
 

@@ -37,6 +37,8 @@ class greenCrabMonthEnv(gym.Env):
         
         # parameters
         self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
+        # migration‑only RNG
+        self.mig_rng, _ = gym.utils.seeding.np_random(config.get("seed_migration", 1337))
         
         self.growth_k = np.float32(config.get("growth_k", 0.43))
         self.growth_xinf = np.float32(config.get("growth_xinf", 109))
@@ -152,11 +154,11 @@ class greenCrabMonthEnv(gym.Env):
             size_freq[:,0] = self.state
             #create array to store # removed
             #calculate removed and record observation at month = 3
-            removed[:,0] = [np.random.binomial(size_freq[k,0], harvest_rate[k]) for k in range(self.nsize)]
+            removed[:,0] = [self.np_random.binomial(size_freq[k,0], harvest_rate[k]) for k in range(self.nsize)]
             self.action_stacks = []
         else:
-            size_freq[:] = [np.random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
-            removed[:] = [np.random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
+            size_freq[:] = [self.np_random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
+            removed[:] = [self.np_random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
         self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
 
         # update actions stacks
@@ -170,7 +172,6 @@ class greenCrabMonthEnv(gym.Env):
         self.observations = {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), 
                              "months": self.curr_month}
         
-        #TODO: update self.state for every month or use different parameter for reward calculation
         self.state = self.monthly_size.reshape(21,) # calculate crab popluation after remove crab caught
 
         #calculate reward
@@ -180,10 +181,10 @@ class greenCrabMonthEnv(gym.Env):
 
         #calculate new adult population after overwinter mortality, how do we deal with for single month? 
         if self.curr_month > 11: 
-            new_adults = [np.random.binomial(size_freq[k,0],self.w_mort_exp[k]) for k in range(self.nsize) ]
+            new_adults = [self.np_random.binomial(size_freq[k,0],self.w_mort_exp[k]) for k in range(self.nsize) ]
 
             #simulate new recruits for next year
-            local_recruits = np.random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
+            local_recruits = self.np_random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
             
             nonlocal_recruits = self.non_localrecurit(size_freq)
             recruit_total = local_recruits + nonlocal_recruits
@@ -233,9 +234,8 @@ class greenCrabMonthEnv(gym.Env):
         
         if self.random_start:
             self.init_n_adult = self.np_random.integers(low, high + 1)
-
-        # TODO: potentially start with end of previous year
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1} 
+    
+        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1} # potentially start with end of previous year
 
         return self.observations, {}
 
@@ -296,14 +296,15 @@ class greenCrabMonthEnv(gym.Env):
 
     # Calculate newborn green crab for the coming year
     def non_localrecurit(self, size_freq):
-        # self.imm * np.random.lognormal()*(1-np.sum(size_freq[:])/self.K) # 0.2 for high 80000, 0.8 for low 8000 
+        # self.imm * self.np_random.lognormal()*(1-np.sum(size_freq[:])/self.K) # 0.2 for high 80000, 0.8 for low 8000 
         outcomes = [0, 1]
         probabilities = [0.8, 0.2]
         
-        if random.choices(outcomes, weights=probabilities, k=1)[0] == 0:
-            return max(np.random.normal(8000, 1000) * (1-np.sum(size_freq[:])/self.K), 0)
+        if self.mig_rng.choice(outcomes, size=1, replace=True, p=probabilities)[0] == 0:
+            non_local_crabs = max(self.mig_rng.normal(8000, 1000) * (1-np.sum(size_freq[:])/self.K), 0)
         else:
-            return max(np.random.normal(80000, 10000) * (1-np.sum(size_freq[:])/self.K), 0) 
+            non_local_crabs = max(self.mig_rng.normal(80000, 10000) * (1-np.sum(size_freq[:])/self.K), 0) 
+        return non_local_crabs
 
     # function for getting biomass from crab size
     def get_biomass_size(self):
