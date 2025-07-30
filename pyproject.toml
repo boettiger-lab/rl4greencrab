@@ -22,7 +22,8 @@ dependencies = ["gymnasium",
                 "stable_baselines3",
                 "sb3-contrib",
                 "optuna",
-                "ipywidgets"]
+                "ipywidgets",
+                "seaborn"]
 
 [project.optional-dependencies]
 tests = [
