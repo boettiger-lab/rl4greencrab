@@ -3,6 +3,7 @@ import pandas as pd
 import os
 from ipywidgets import interact, widgets
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from rl4greencrab.utils.simulate import *
@@ -251,7 +252,7 @@ def agent_rew_vs_constant_rew_plot(model_rews_dict, constant_rews, save_dir='.')
 # plot heatmap relative to crab size and time
 def state_heatmap(df, rep=0, use_log=True):
     state_rep = df[df['rep']==rep]
-    state_rep = state_rep.loc[1:, ['t','crab_pop']]
+    state_rep = state_rep.loc[:, ['t','crab_pop']]
     state_rep = state_rep.set_index('t')
     state_rep['t'] = state_rep.index
     if use_log:
