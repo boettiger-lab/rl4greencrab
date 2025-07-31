@@ -10,6 +10,7 @@ from rl4greencrab.agents.hyperparam import *
 from rl4greencrab.agents.ensemble_ppo import *
 from rl4greencrab.utils.simulate import simulator, get_simulator, evaluate_agent
 from rl4greencrab.utils.plot_utils import *
+from rl4greencrab.utils.plot_agents import *
 
 from gymnasium.envs.registration import register
 register(
