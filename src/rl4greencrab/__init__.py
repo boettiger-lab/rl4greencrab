@@ -2,6 +2,10 @@ from rl4greencrab.envs.green_crab_ipm import greenCrabEnv, greenCrabSimplifiedEn
 from rl4greencrab.envs.time_series import timeSeriesEnv
 from rl4greencrab.envs.green_crab_monthly_env import greenCrabMonthEnv
 from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNormalized
+from rl4greencrab.envs.green_crab_monthly_env_simple import greenCrabMonthEnvSimple
+from rl4greencrab.envs.green_crab_monthly_env_simple_norm import greenCrabMonthEnvSimpleNormalized
+from rl4greencrab.envs.green_crab_monthly_env_size import greenCrabMonthEnvSize
+from rl4greencrab.envs.green_crab_monthly_env_size_norm import greenCrabMonthEnvSizeNormalized
 from rl4greencrab.envs.green_crab_movingAvg import greenCrabMonthNormalizedMoving
 from rl4greencrab.agents.const_action import constAction, constActionNatUnits, multiConstAction
 from rl4greencrab.agents.const_escapement import constEsc
@@ -32,6 +36,22 @@ register(
 register(
     id="monthenvnorm", 
     entry_point="rl4greencrab.envs.green_crab_monthly_env_norm:greenCrabMonthEnvNormalized",
+)
+register(
+    id="gcmonthenvsimple", 
+    entry_point="rl4greencrab.envs.green_crab_monthly_env_simple:greenCrabMonthEnvSimple",
+)
+register(
+    id="gcmonthenvsimplenorm", 
+    entry_point="rl4greencrab.envs.green_crab_monthly_env_simple_norm:greenCrabMonthEnvSimpleNormalized",
+)
+register(
+    id="gcmonthenvsize", 
+    entry_point="rl4greencrab.envs.green_crab_monthly_env_size:greenCrabMonthEnvSize",
+)
+register(
+    id="gcmonthenvsizenorm", 
+    entry_point="rl4greencrab.envs.green_crab_monthly_env_size:greenCrabMonthEnvSizeNormalized",
 )
 register(
     id="simpleEnv", 

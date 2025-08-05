@@ -5,6 +5,7 @@ from ipywidgets import interact, widgets
 import matplotlib.pyplot as plt
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
+import seaborn as sns
 from rl4greencrab.utils.simulate import *
 
 def environment_simulation(env, agent, 
@@ -222,8 +223,9 @@ def agent_rew_vs_constant_rew_plot(model_rews_dict, constant_rews, save_dir='.')
     
     fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(12, 8))
     axes = axes.flatten()
+    constant_rewards = constant_rews
     
-    for i, (model_name, rewards) in enumerate(models.items()):
+    for i, (model_name, rewards) in enumerate(model_rews_dict.items()):
         ax = axes[i]
         # Plot current model
         ax.hist(rewards, alpha=0.6, color=colors[model_name], label=model_name)

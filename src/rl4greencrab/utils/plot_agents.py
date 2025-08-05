@@ -24,12 +24,12 @@ class plot_agent:
         self.env = env
         self.agent = agent
         self.save_dir = os.path.join(save_dir, agent_name)
-        if self.env_simulation_df == None:
+        if self.env_simulation_df is None:
             self.gen_env_sim_df()
 
-    def agent_action_overtime_plots(self):
+    def agent_action_overtime_plots(self, rep=0):
         df = self.env_simulation_df
-        df = df[df.rep == 0]
+        df = df[df.rep == rep]
         fig, ax = plt.subplots(figsize=(8, 4))
         
         ax.plot(df['t'], df['act0'], label='act0')

@@ -1,6 +1,7 @@
 import gymnasium as gym
 import logging
 import numpy as np
+from numpy.random import default_rng
 import random
 
 from gymnasium import spaces
@@ -36,9 +37,14 @@ class greenCrabMonthEnv(gym.Env):
         config=config or {}
         
         # parameters
-        self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
-        # migration‑only RNG
-        self.mig_rng, _ = gym.utils.seeding.np_random(config.get("seed_migration", 1337))
+        self.control_randomness = config.get("control_randomness", False)
+        if self.control_randomness:
+            self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
+            # migration‑only RNG
+            self.mig_rng, _ = gym.utils.seeding.np_random(config.get("seed_migration", 1337))
+        else:
+            self.np_random = default_rng()
+            self.mig_rng = default_rng()
         
         self.growth_k = np.float32(config.get("growth_k", 0.43))
         self.growth_xinf = np.float32(config.get("growth_xinf", 109))
