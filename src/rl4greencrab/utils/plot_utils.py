@@ -26,7 +26,8 @@ def environment_simulation(env, agent,
         **{actn: [] for actn in acts_names},
         'rew': [],
         'rep': [],
-        'crab_pop':[]
+        'crab_pop':[],
+        'nonlocal_crab': []
     }
     env = env
     agent = agent
@@ -40,16 +41,18 @@ def environment_simulation(env, agent,
             data['rep'].append(rep)
             data['t'].append(t)
             data['crab_pop'].append(env.state)
+            data['nonlocal_crab'].append(np.array(env.non_local_crabs))
             for idx, obs_name in enumerate(obs_names):
                 data[obs_name].append(observation['crabs'][idx])
             for idx, act_name in enumerate(acts_names):
                 data[act_name].append(action[idx])
-            #
+                
             observation, reward, terminated, done, info = env.step(action)
             episode_reward += reward
             #
             if terminated or done:
                 break
+    
     if save_df:
         df = pd.DataFrame(data)
         DATAPATH = save_path

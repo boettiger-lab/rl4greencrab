@@ -108,7 +108,7 @@ class greenCrabMonthEnvSimple(gym.Env):
         
         self.action_stacks = [] # storing whole year action -> store normalized action
         self.variance_penalty_ratio = config.get('var_penalty_const', 1)
-
+        self.non_local_crabs = []
         # Action space
         # action -- # traps per month
         self.action_space = spaces.Box(
@@ -206,7 +206,7 @@ class greenCrabMonthEnvSimple(gym.Env):
         
         self.state = self.init_state()
         self.month_passed = 0
-
+        self.curr_month = 3
         # for tracking only
         self.reward = 0
 
@@ -225,8 +225,9 @@ class greenCrabMonthEnvSimple(gym.Env):
         if self.random_start:
             self.init_n_adult = self.np_random.integers(low, high + 1)
     
-        self.observations = {"crabs": np.array([0], dtype=np.float32)} # potentially start with end of previous year
-
+        self.observations = {"crabs": np.array([0], dtype=np.float32)} 
+        
+        self.non_local_crabs = []
         return self.observations, {}
 
     #################
@@ -294,6 +295,8 @@ class greenCrabMonthEnvSimple(gym.Env):
             non_local_crabs = max(self.mig_rng.normal(8000, 1000) * (1-np.sum(size_freq[:])/self.K), 0)
         else:
             non_local_crabs = max(self.mig_rng.normal(80000, 10000) * (1-np.sum(size_freq[:])/self.K), 0) 
+
+        self.non_local_crabs.append(non_local_crabs)
         return non_local_crabs
 
     # function for getting biomass from crab size

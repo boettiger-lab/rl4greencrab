@@ -89,7 +89,8 @@ class plot_agent:
     def gen_env_sim_df(self, rep=10):
         if self.agent == None:
             raise ValueError("didn't provide an agent for simulation")
-        self.env_simulation_df = pd.DataFrame(environment_simulation(self.env, self.agent, reps=rep))
+        data = environment_simulation(self.env, self.agent, reps=rep)
+        self.env_simulation_df = pd.DataFrame(data)
         return self.env_simulation_df
 
     def load_from_csv(self, csv_path):

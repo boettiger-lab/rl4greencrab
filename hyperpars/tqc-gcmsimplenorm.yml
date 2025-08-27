@@ -1,0 +1,16 @@
+algo: "TQC"
+policy: "MultiInputPolicy"
+env_id: "gcmonthenvsimplenorm"
+n_envs: 12
+tensorboard: "/home/rstudio/logs"
+total_timesteps: 10000000
+config: 
+    "w_mort_scale" : 600
+    "growth_k": 0.70
+    'random_start': True
+model_config:
+    use_sde: True
+id: "1"
+repo: "cboettig/rl4greencrab"
+save_path: "/home/rstudio/rl4greencrab/saved_agents"
+progress_bar: False

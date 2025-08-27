@@ -9,6 +9,7 @@ from rl4greencrab.agents.ensemble_ppo import *
 import torch.nn as nn
 from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNormalized
 from rl4greencrab.envs.green_crab_movingAvg import greenCrabMonthNormalizedMoving
+from rl4greencrab import greenCrabMonthEnvSimpleNormalized, greenCrabMonthEnvSizeNormalized
 import gymnasium as gym
 import logging
 
@@ -25,7 +26,10 @@ print(config, flush=True)
 gcme = greenCrabMonthEnv(config)
 gmonthNorm = greenCrabMonthEnvNormalized(config)
 gmonthMoving = greenCrabMonthNormalizedMoving(config)
-vec_env = make_vec_env(greenCrabMonthEnvNormalized, n_envs=12, env_kwargs={'config':config})
+gmonthSimple  = greenCrabMonthEnvSimpleNormalized(config)
+gmonthSize = greenCrabMonthEnvSizeNormalized(config)
+env_id = "gcmonthenvsizenorm"
+vec_env = make_vec_env(greenCrabMonthEnvSizeNormalized, n_envs=12, env_kwargs={'config':config})
 
 model_config = {
     'policy':"MultiInputLstmPolicy",
@@ -57,7 +61,7 @@ model_config = {
 def model_train(model_name):
     model = PPO('MultiInputPolicy',
                     vec_env, use_sde=True, verbose=0, tensorboard_log="/home/rstudio/logs") #defualt PPO
-    model_path = f'{model_name}_gcmenorm'
+    model_path = f'{model_name}_{env_id}'
     if model_name == 'PPO':
         model = PPO('MultiInputPolicy',
                     vec_env, use_sde=True, verbose=0, tensorboard_log="/home/rstudio/logs")
@@ -71,7 +75,7 @@ def model_train(model_name):
         n_lstm_layers = model_config['policy_kwargs']['n_lstm_layers']
         net_arch = model_config['policy_kwargs']['net_arch']
         use_sde = model_config['use_sde']
-        model_path = f'{model_name}_gcmenorm_{lstm_hidden_size}_{n_lstm_layers}_{net_arch}_{use_sde}'
+        model_path = f'{model_name}_{env_id}_{lstm_hidden_size}_{n_lstm_layers}_{net_arch}_{use_sde}'
         print(model_path, flush=True)   
         model = RecurrentPPO(**model_config)
     elif model_name =="ensemblePPO":
@@ -79,18 +83,19 @@ def model_train(model_name):
     elif model_name == 'LipschitzPPO':
         gp_coef=0.001
         gp_K = 50
-        model_path = f'{model_name}_gcmenorm_{gp_coef}_{gp_K}'
+        model_path = f'{model_name}_{env_id}_{gp_coef}_{gp_K}'
         print(model_path, flush=True)
         model = LipschitzPPO('MultiInputPolicy', vec_env, gp_coef=gp_coef,  gp_K = gp_K, verbose=0, tensorboard_log="/home/rstudio/logs")
         
     print(f'start train {model_name}', flush=True)
     
     model.learn(
-            total_timesteps= 25000000,
+            total_timesteps= 16000000,
             progress_bar=False,
         )
     model.save(model_path)
-    
+
+print(f'train in env {env_id}')
 # model_train('PPO')
 # model_train('TQC')
 # model_train('TD3')

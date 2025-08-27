@@ -51,7 +51,7 @@ register(
 )
 register(
     id="gcmonthenvsizenorm", 
-    entry_point="rl4greencrab.envs.green_crab_monthly_env_size:greenCrabMonthEnvSizeNormalized",
+    entry_point="rl4greencrab.envs.green_crab_monthly_env_size_norm:greenCrabMonthEnvSizeNormalized",
 )
 register(
     id="simpleEnv", 

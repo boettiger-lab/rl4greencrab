@@ -56,7 +56,7 @@ def sb3_train(config_file, **kwargs):
     ALGO = algorithm(options["algo"])
     PLOICY = options.get("policy", "MlpPolicy")
     model_id = options["algo"] + "-" + options["env_id"]  + "-" + options["id"]
-    model_config = options['model_config']
+    model_config = options.get('model_config', {})
     save_id = os.path.join(options["save_path"], model_id)
 
     model = ALGO(

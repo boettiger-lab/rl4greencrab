@@ -1,0 +1,8 @@
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+start training
+{'w_mort_scale': 600, 'growth_k': 0.7, 'random_start': True, 'curriculum': False, 'var_penalty_const': 0.3}
+train in env gcmonthenvsizenorm
+RecurrentPPO_gcmonthenvsizenorm_256_1_{'pi': [256, 256], 'vf': [256, 256]}_False
+start train RecurrentPPO
+finish training
