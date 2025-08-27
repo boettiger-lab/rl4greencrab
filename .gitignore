@@ -134,9 +134,9 @@ dmypy.json
 
 # cache
 venv/
-*.gz
-*.zip
+# *.gz
+# *.zip
 
 manuscript/*.pdf
-saved_agents/
-notebooks/rl4greencrab
+# saved_agents/
+# notebooks/rl4greencrab
