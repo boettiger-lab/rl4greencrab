@@ -27,7 +27,7 @@ class plot_agent:
         if self.env_simulation_df is None:
             self.gen_env_sim_df()
 
-    def agent_action_overtime_plots(self, rep=0):
+    def agent_action_overtime_plots(self, rep=0, show=True):
         df = self.env_simulation_df
         df = df[df.rep == rep]
         fig, ax = plt.subplots(figsize=(8, 4))
@@ -42,13 +42,14 @@ class plot_agent:
         ax.legend()
         
         self.save_fig(fig, f"actions_over_time.png")
-        plt.show()
+        if show:
+            plt.show()
 
-    def agent_ob_overtime_plots(self, obs_name):
+    def agent_ob_overtime_plots(self, obs_name, rep=0, show=True):
         # Observation over Time
         fig = plt.figure(figsize=(8,4))
         df = self.env_simulation_df
-        df = df[df.rep == 0]
+        df = df[df.rep == rep]
         fig, ax = plt.subplots(figsize=(8, 4))
         
         ax.plot(df['t'], df[obs_name], label=obs_name)
@@ -57,12 +58,13 @@ class plot_agent:
         ax.set_title(f'{obs_name} over Time')
         
         self.save_fig(fig, f"{obs_name}_over_time.png")
-        plt.show()
+        if show:
+            plt.show()
 
-    def obs_vs_acts_plots(self, ob_name):
+    def obs_vs_acts_plots(self, ob_name, rep=0, show=True):
         fig = plt.figure(figsize=(6,6))
         df = self.env_simulation_df
-        subset = df[df.rep == 0]
+        subset = df[df.rep == rep]
         plt.scatter(subset[ob_name], subset['act0'], label=f'act0 vs {ob_name}', alpha=0.7)
         plt.scatter(subset[ob_name], subset['act1'], label=f'act1 vs {ob_name}', alpha=0.7)
         plt.scatter(subset[ob_name], subset['act2'], label=f'act2 vs {ob_name}', alpha=0.7)
@@ -71,15 +73,21 @@ class plot_agent:
         plt.ylabel('action')
         plt.legend()
         self.save_fig(fig, f"{ob_name}_vs_actions.png")
-        plt.show()
+        if show:
+            plt.show()
 
     def state_heatmap(self, rep=0, use_log=True):
         fig = state_heatmap(self.env_simulation_df, rep=rep, use_log=use_log)
         self.save_fig(fig, f"{ob_name}_state_headmap.png")
 
     # gaussian smooth the actions to generate gpp agents and df
-    def gaussian_smoothing(self):
-        df = self.env_simulation_df.loc[:, ['obs0', 'obs1', 'act0', 'act1', 'act2']]
+    """ arguments:
+    max_reps: max number of repitition used to fit gaussian process
+    """
+    def gaussian_smoothing(self, max_reps=10):
+        df  = self.env_simulation_df
+        df = df[df['rep']<=max_reps]
+        df = df.loc[:, ['obs0', 'obs1', 'act0', 'act1', 'act2']]
         gpp= GaussianProcessPolicy(df, length_scale=1, noise_level=1)
         gpp_df, state_df= generate_gpp_episodes(gpp, self.env, reps=5)
         gpp_df.to_csv(os.path.join(self.save_dir,f"{self.agent_name}_GPP.csv.xz"), index = False)
