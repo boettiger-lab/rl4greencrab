@@ -3,9 +3,9 @@ import pandas as pd
 import os
 from ipywidgets import interact, widgets
 import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
+import seaborn as sns
 from rl4greencrab.utils.simulate import *
 
 def environment_simulation(env, agent, 
@@ -26,7 +26,8 @@ def environment_simulation(env, agent,
         **{actn: [] for actn in acts_names},
         'rew': [],
         'rep': [],
-        'crab_pop':[]
+        'crab_pop':[],
+        'nonlocal_crab': []
     }
     env = env
     agent = agent
@@ -40,16 +41,18 @@ def environment_simulation(env, agent,
             data['rep'].append(rep)
             data['t'].append(t)
             data['crab_pop'].append(env.state)
+            data['nonlocal_crab'].append(np.array(env.non_local_crabs))
             for idx, obs_name in enumerate(obs_names):
                 data[obs_name].append(observation['crabs'][idx])
             for idx, act_name in enumerate(acts_names):
                 data[act_name].append(action[idx])
-            #
+                
             observation, reward, terminated, done, info = env.step(action)
             episode_reward += reward
             #
             if terminated or done:
                 break
+    
     if save_df:
         df = pd.DataFrame(data)
         DATAPATH = save_path
@@ -223,8 +226,9 @@ def agent_rew_vs_constant_rew_plot(model_rews_dict, constant_rews, save_dir='.')
     
     fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(12, 8))
     axes = axes.flatten()
+    constant_rewards = constant_rews
     
-    for i, (model_name, rewards) in enumerate(models.items()):
+    for i, (model_name, rewards) in enumerate(model_rews_dict.items()):
         ax = axes[i]
         # Plot current model
         ax.hist(rewards, alpha=0.6, color=colors[model_name], label=model_name)

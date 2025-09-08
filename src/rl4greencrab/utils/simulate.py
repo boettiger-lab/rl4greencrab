@@ -31,6 +31,8 @@ class evaluate_agent:
 
 def get_simulator(ray_remote = False, gpu=False):
     if ray_remote:
+        print(torch.cuda.is_available())
+        print(ray.cluster_resources())
         if gpu:
             @ray.remote(num_gpus=1)
             def simulator(env, agent):
@@ -71,6 +73,7 @@ def get_simulator(ray_remote = False, gpu=False):
                     break
             return episode_reward
         return simulator
+        
 
 class simulator:
     def __init__(self, env, agent):
@@ -201,7 +204,8 @@ class simulator:
 
     # simualtion for time series env
     def simulate_full_named_obs_acts_time_series(self, reps=10, obs_names = None, acts_names = None):
-            num_obs = np.prod(self.env.base_env.observation_space.shape)
+            # num_obs = np.prod(self.env.base_env.observation_space.shape)
+            num_obs = np.prod(len(self.env.observation_space))
             num_acts = np.prod(self.env.action_space.shape)
             obs_names = obs_names or [f'obs{i}' for i in range(num_obs)]
             print(f'observation name is {obs_names}')
@@ -226,7 +230,8 @@ class simulator:
                     data['rep'].append(rep)
                     data['t'].append(t)
                     for idx, obs_name in enumerate(obs_names):
-                        data[obs_name].append(observation[0][idx])
+                        data[obs_name].append(observation['crabs'][-1][idx])
+
                     for idx, act_name in enumerate(acts_names):
                         data[act_name].append(action[idx])
                     #

@@ -1,6 +1,6 @@
 import yaml
 import os
-
+import torch.nn as nn
 import gymnasium as gym
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3 import PPO, A2C, DQN, SAC, TD3, HER, DDPG
@@ -40,6 +40,13 @@ def algorithm(algo):
     }
     return algos[algo]
 
+# Map string names to actual functions/classes
+activation_map = {
+    "ReLU": nn.ReLU,
+    "Tanh": nn.Tanh,
+    "Sigmoid": nn.Sigmoid,
+}
+
 def sb3_train(config_file, **kwargs):
     with open(config_file, "r") as stream:
         options = yaml.safe_load(stream)
@@ -56,7 +63,13 @@ def sb3_train(config_file, **kwargs):
     ALGO = algorithm(options["algo"])
     PLOICY = options.get("policy", "MlpPolicy")
     model_id = options["algo"] + "-" + options["env_id"]  + "-" + options["id"]
-    model_config = options['model_config']
+    model_config = options.get('model_config', {})
+    
+    # subprocess activation_fn parameter
+    if "activation_fn" in model_config["policy_kwargs"]:
+        act = model_config["policy_kwargs"]["activation_fn"]
+        model_config["policy_kwargs"]["activation_fn"] = activation_map[act]
+
     save_id = os.path.join(options["save_path"], model_id)
 
     model = ALGO(
