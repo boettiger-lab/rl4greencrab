@@ -44,6 +44,7 @@ Coming soon: a more detailed explanation of the integral projection model used!
 
 `notebooks/intro_pt2.ipynb`
 
+`notebooks/model_env_intro.ipynb`
 # Installation
 
 1. `git clone https://github.com/boettiger-lab/rl4greencrab.git`
@@ -58,3 +59,14 @@ Coming soon: a more detailed explanation of the integral projection model used!
 
 Alternatively, `bash scripts/train_algos.sh` trains using several algorithms in parallel.
 
+# Plotting
+
+`python plot_script.py -csv [path to env simulation csv file] -agent_name ['name of the RL agent'] -env_id ['env_id'] -save_dir ['store loaction']`
+
+example:
+
+`python plot_script.py -csv ../notebooks/rl4greencrab/data/ppo_env.csv -agent_name ppo_agent -env_id monthenvnorm -save_dir .`
+
+Generate plots for all existed agents at once:
+
+`python plot_scripts_example.py`

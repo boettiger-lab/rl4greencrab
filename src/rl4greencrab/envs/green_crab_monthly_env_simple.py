@@ -15,25 +15,13 @@ Taken from IPM_202040117.ipynb, modified minor aspects to be able to interface
 with ts_model.py
 """
 
-class greenCrabMonthEnv(gym.Env):
+class greenCrabMonthEnvSimple(gym.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
         self,
         config=None,
-    ):
-        # if config == {}:
-        #     config = {
-        #         "Tmax": 100,
-        #         "growth_k": 0.43, "growth_xinf": 109, "growth_sd": 2.5, "nmortality": 0.03,
-        #         "trapm_sigma": 0.15, "trapm_xmax": 44, "trapm_pmax": 0.0005, "trapf_pmax": 0.0008,
-        #         "trapf_k": 0.5, "trapf_midpoint": 45, "init_mean_recruit": 15, "init_sd_recruit": 1.5,
-        #         "init_mean_adult": 65, "init_sd_adult": 8, "init_n_recruit": 1000, "init_n_adult": 1000,
-        #         "w_mort_scale": 5, "K": 25000, "imm": 10, "r": 50, "area": 4000,"loss_a": 0.265,
-        #         "loss_b": 2.80, "loss_c": 2.99, "minsize": 5, "maxsize": 110, "nsize": 21, "ntime":9,"delta_t": 1/12,
-        #         "env_stoch": 0.1, "action_reward_scale":0.001
-        #     }
-        
+    ):      
         config=config or {}
         
         # parameters
@@ -99,9 +87,7 @@ class greenCrabMonthEnv(gym.Env):
         self.config = config
 
         # Preserve these for reset
-        # self.observations = np.zeros(shape=9, dtype=np.float32)
-        # self.observations = (np.array([0, 0], dtype=np.float32), 1)
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
+        self.observations = {"crabs": np.array([0], dtype=np.float32)}
         self.reward = 0
         self.month_passed = 0
         self.curr_month = 3 #start with third month
@@ -123,7 +109,6 @@ class greenCrabMonthEnv(gym.Env):
         self.action_stacks = [] # storing whole year action -> store normalized action
         self.variance_penalty_ratio = config.get('var_penalty_const', 1)
         self.non_local_crabs = []
-
         # Action space
         # action -- # traps per month
         self.action_space = spaces.Box(
@@ -137,12 +122,11 @@ class greenCrabMonthEnv(gym.Env):
         # Observation space with month observation feature
         self.observation_space = spaces.Dict({
            "crabs": spaces.Box(
-                low=np.array([0, 0]),  # Lower bounds: original obs (0)
-                high=np.array([self.max_obs, self.max_mean_biomass]),  # Upper bounds: obs max,
-                shape=(2,),
+                low=np.array([0]),  # Lower bounds: original obs (0)
+                high=np.array([self.max_obs]),  # Upper bounds: obs max,
+                shape=(1,),
                 dtype=np.float32
             ), 
-            "months": spaces.Discrete(12, start=1)
         })
         
     def step(self,action):
@@ -176,8 +160,7 @@ class greenCrabMonthEnv(gym.Env):
         biomass = np.sum(self.get_biomass_size() * removed[:,0]) # get biomass
         crab_counts = np.sum(removed[:,0])
         mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
-        self.observations = {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), 
-                             "months": self.curr_month}
+        self.observations = {"crabs": np.array([crab_counts], dtype=np.float32)}
         
         self.state = self.monthly_size.reshape(21,) # calculate crab popluation after remove crab caught
 
@@ -223,10 +206,9 @@ class greenCrabMonthEnv(gym.Env):
         
         self.state = self.init_state()
         self.month_passed = 0
-
+        self.curr_month = 3
         # for tracking only
         self.reward = 0
-        self.non_local_crabs = []
 
         # curriculumn learning
         if self.curriculum_enabled:
@@ -243,9 +225,9 @@ class greenCrabMonthEnv(gym.Env):
         if self.random_start:
             self.init_n_adult = self.np_random.integers(low, high + 1)
     
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1} # potentially start with end of previous year
-        self.curr_month = 3
-
+        self.observations = {"crabs": np.array([0], dtype=np.float32)} 
+        
+        self.non_local_crabs = []
         return self.observations, {}
 
     #################

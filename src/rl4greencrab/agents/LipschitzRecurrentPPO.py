@@ -3,8 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import gymnasium as gym
 import numpy as np
-from stable_baselines3.ppo.ppo import PPO
-from stable_baselines3.common.policies import ActorCriticPolicy
+from sb3_contrib import TQC, RecurrentPPO
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
 
@@ -26,8 +25,8 @@ class CustomFeatureExtractor(BaseFeaturesExtractor):
         return self.net(x)
 
 
-class LipschitzPPO(PPO):
-    def __init__(self, *args, gp_coef=1.0, gp_K=0.0, **kwargs):
+class LipschitzRecurrentPPO(RecurrentPPO):
+    def __init__(self, *args, gp_coef=1.0, gp_K=0.5, **kwargs):
         self.gp_coef = gp_coef
         self.gp_K = gp_K
         super().__init__(*args, **kwargs)
@@ -36,7 +35,7 @@ class LipschitzPPO(PPO):
         entropy_losses, all_values, all_log_prob, clip_fractions = [], [], [], []
         clip_range = self.clip_range(self._current_progress_remaining)
         for epoch in range(self.n_epochs):
-            for rollout_data in self.rollout_buffer.get(batch_size=self.batch_size):
+            for rollout_data in self.rollout_buffer.get(self.batch_size):
                 actions = rollout_data.actions
                 if isinstance(self.action_space, gym.spaces.Box):
                     actions = torch.clamp(actions, torch.as_tensor(self.action_space.low).to(actions.device), torch.as_tensor(self.action_space.high).to(actions.device))
@@ -46,34 +45,21 @@ class LipschitzPPO(PPO):
                     "crabs": obs["crabs"].detach().clone().requires_grad_(True),
                     "months": obs["months"]
                 }
-
-                dist = self.policy.get_distribution(obs_gp)
+                
+                state = rollout_data.lstm_states
+                episode_starts = rollout_data.episode_starts
+                dist = self.policy.get_distribution(obs_gp, state, episode_starts)
                 mean_action = dist.distribution.mean
                 gp_loss = 0.0
 
-                # for j in range(mean_action.shape[1]):
-                #     grad = torch.autograd.grad(mean_action[:, j].sum(), obs_gp["crabs"], create_graph=True)[0]
-                #     grad_norm = (grad ** 2).sum(dim=1).sqrt()
-                #     excess = (grad_norm - self.gp_K).clamp(min=0.0)
-                #     gp_loss += (excess ** 2).mean()
-                #     # gp_loss += (grad ** 2).sum(dim=1).mean() default to gp_K = 0
-                # gp_loss = gp_loss / mean_action.shape[1]
-                try:
-                    for j in range(mean_action.shape[1]):
-                        grad = torch.autograd.grad(mean_action[:, j].sum(), obs_gp["crabs"], create_graph=True)[0]
-                        if not torch.isfinite(grad).all():
-                            raise RuntimeError("NaN in gradient of mean_action w.r.t. obs")
-                
-                        grad_norm = grad.norm(dim=1)
-                        excess = (grad_norm - self.gp_K).clamp(min=0.0)
-                        gp_loss += (excess ** 2).mean()
-                    gp_loss = gp_loss / mean_action.shape[1]
-                except Exception as e:
-                    print(f"GP loss error: {e}")
-                    gp_loss = torch.tensor(0.0, device=obs["crabs"].device)
+                for j in range(mean_action.shape[1]):
+                    grad = torch.autograd.grad(mean_action[:, j].sum(), obs_gp["crabs"], create_graph=True)[0]
+                    grad_norm = (grad ** 2).sum(dim=1).sqrt()
+                    excess = (grad_norm - self.gp_K).clamp(min=0.0)
+                    gp_loss += (excess ** 2).mean()
+                gp_loss = gp_loss / mean_action.shape[1]
 
-
-                values, log_prob, entropy = self.policy.evaluate_actions(obs, actions)
+                values, log_prob, entropy = self.policy.evaluate_actions(obs, state, episode_starts, actions)
                 values = values.flatten()
                 advantages = rollout_data.advantages
                 if self.normalize_advantage:
@@ -107,5 +93,3 @@ class LipschitzPPO(PPO):
         self.logger.record("train/gp_loss", gp_loss.item())
         self.logger.record("train/approx_kl", (rollout_data.old_log_prob - log_prob).mean().item())
         self.logger.record("train/clip_fraction", np.mean(clip_fractions))
-
-

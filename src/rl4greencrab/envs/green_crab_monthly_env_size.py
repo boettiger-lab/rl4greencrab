@@ -15,7 +15,7 @@ Taken from IPM_202040117.ipynb, modified minor aspects to be able to interface
 with ts_model.py
 """
 
-class greenCrabMonthEnv(gym.Env):
+class greenCrabMonthEnvSize(gym.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
@@ -100,8 +100,7 @@ class greenCrabMonthEnv(gym.Env):
 
         # Preserve these for reset
         # self.observations = np.zeros(shape=9, dtype=np.float32)
-        # self.observations = (np.array([0, 0], dtype=np.float32), 1)
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
+        self.observations = {"crabs":  np.zeros(shape=self.nsize, dtype=np.float32), "months": 1}
         self.reward = 0
         self.month_passed = 0
         self.curr_month = 3 #start with third month
@@ -123,7 +122,7 @@ class greenCrabMonthEnv(gym.Env):
         self.action_stacks = [] # storing whole year action -> store normalized action
         self.variance_penalty_ratio = config.get('var_penalty_const', 1)
         self.non_local_crabs = []
-
+        
         # Action space
         # action -- # traps per month
         self.action_space = spaces.Box(
@@ -136,12 +135,11 @@ class greenCrabMonthEnv(gym.Env):
         
         # Observation space with month observation feature
         self.observation_space = spaces.Dict({
-           "crabs": spaces.Box(
-                low=np.array([0, 0]),  # Lower bounds: original obs (0)
-                high=np.array([self.max_obs, self.max_mean_biomass]),  # Upper bounds: obs max,
-                shape=(2,),
-                dtype=np.float32
-            ), 
+               "crabs": spaces.Box(
+                np.zeros(shape=self.nsize, dtype=np.float32),
+                self.max_obs * np.ones(shape=self.nsize, dtype=np.float32),
+                dtype=np.float32,
+            ),
             "months": spaces.Discrete(12, start=1)
         })
         
@@ -176,8 +174,8 @@ class greenCrabMonthEnv(gym.Env):
         biomass = np.sum(self.get_biomass_size() * removed[:,0]) # get biomass
         crab_counts = np.sum(removed[:,0])
         mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
-        self.observations = {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), 
-                             "months": self.curr_month}
+        self.observations = {"crabs": np.array(removed[:,0], dtype=np.float32),
+                            "months": self.curr_month}
         
         self.state = self.monthly_size.reshape(21,) # calculate crab popluation after remove crab caught
 
@@ -223,10 +221,9 @@ class greenCrabMonthEnv(gym.Env):
         
         self.state = self.init_state()
         self.month_passed = 0
-
+        self.curr_month = 3
         # for tracking only
         self.reward = 0
-        self.non_local_crabs = []
 
         # curriculumn learning
         if self.curriculum_enabled:
@@ -243,9 +240,9 @@ class greenCrabMonthEnv(gym.Env):
         if self.random_start:
             self.init_n_adult = self.np_random.integers(low, high + 1)
     
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1} # potentially start with end of previous year
-        self.curr_month = 3
-
+        self.observations = {"crabs":  np.zeros(self.nsize, dtype=np.float32),
+                            "months": 1} # potentially start with end of previous year
+        self.non_local_crabs = []
         return self.observations, {}
 
     #################
