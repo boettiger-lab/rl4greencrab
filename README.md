@@ -64,6 +64,7 @@ Alternatively, `bash scripts/train_algos.sh` trains using several algorithms in 
 `python plot_script.py -csv [path to env simulation csv file] -agent_name ['name of the RL agent'] -env_id ['env_id'] -save_dir ['store loaction']`
 
 example:
+
 `python plot_script.py -csv ../notebooks/rl4greencrab/data/ppo_env.csv -agent_name ppo_agent -env_id monthenvnorm -save_dir .`
 
 Generate plots for all existed agents at once:
