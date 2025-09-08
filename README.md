@@ -44,6 +44,7 @@ Coming soon: a more detailed explanation of the integral projection model used!
 
 `notebooks/intro_pt2.ipynb`
 
+`notebooks/model_env_intro.ipynb`
 # Installation
 
 1. `git clone https://github.com/boettiger-lab/rl4greencrab.git`
