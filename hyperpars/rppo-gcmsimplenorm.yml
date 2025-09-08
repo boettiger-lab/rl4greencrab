@@ -22,13 +22,17 @@ model_config:
     'vf_coef': 0.19
     'use_sde': False
     'sde_sample_freq': 8
-    'policy_kwargs': dict(log_std_init=0.0, 
-                          ortho_init=False,
-                       lstm_hidden_size=256,
-                       n_lstm_layers = 1,
-                       enable_critic_lstm=True,
-                       activation_fn=nn.ReLU,
-                       net_arch=dict(pi=[256, 256], vf=[256, 256]))
+    'policy_kwargs': 
+        log_std_init: 0.0
+        ortho_init : False
+        lstm_hidden_size : 256
+        n_lstm_layers : 1
+        enable_critic_lstm : True
+        activation_fn : "ReLU"
+        net_arch:
+          pi: [256, 256]
+          vf: [256, 256]
+
 id: "1"
 repo: "cboettig/rl4greencrab"
 save_path: "/home/rstudio/rl4greencrab/saved_agents"
