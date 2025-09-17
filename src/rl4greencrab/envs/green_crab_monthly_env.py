@@ -242,7 +242,7 @@ class greenCrabMonthEnv(gym.Env):
         
         if self.random_start:
             self.init_n_adult = self.np_random.integers(low, high + 1)
-    
+        
         self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1} # potentially start with end of previous year
         self.curr_month = 3
 

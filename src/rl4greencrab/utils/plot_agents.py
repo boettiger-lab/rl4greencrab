@@ -24,8 +24,8 @@ class plot_agent:
         self.env = env
         self.agent = agent
         self.save_dir = os.path.join(save_dir, agent_name)
-        if self.env_simulation_df is None:
-            self.gen_env_sim_df()
+        # if self.env_simulation_df is None:
+        #     self.gen_env_sim_df()
 
     def agent_action_overtime_plots(self, rep=0, show=True):
         df = self.env_simulation_df
@@ -51,12 +51,22 @@ class plot_agent:
         df = self.env_simulation_df
         df = df[df.rep == rep]
         fig, ax = plt.subplots(figsize=(8, 4))
-        
-        ax.plot(df['t'], df[obs_name], label=obs_name)
+
+        # Handle case where each observation is an array
+        first_val = df[obs_name].iloc[0]
+        if isinstance(first_val, np.ndarray):
+            obs_array = np.stack(df[obs_name].values)  # shape: (timesteps, features)
+            timesteps = df['t'].values
+            for i in range(obs_array.shape[1]):
+                ax.plot(timesteps, obs_array[:, i], label=f"{obs_name}[{i}]")
+            ax.legend()
+        else:
+            ax.plot(df['t'], df[obs_name], label=obs_name)
+    
         ax.set_xlabel('t')
         ax.set_ylabel(obs_name)
         ax.set_title(f'{obs_name} over Time')
-        
+    
         self.save_fig(fig, f"{obs_name}_over_time.png")
         if show:
             plt.show()
@@ -94,10 +104,14 @@ class plot_agent:
         self.gpp_df = gpp_df
         return gpp_df, state_df
 
-    def gen_env_sim_df(self, rep=10):
+    # generate envrionment simulation from the agent
+    def gen_env_sim_df(self, 
+                       obs_names=None, 
+                       acts_names=None, 
+                       rep=10):
         if self.agent == None:
             raise ValueError("didn't provide an agent for simulation")
-        data = environment_simulation(self.env, self.agent, reps=rep)
+        data = environment_simulation(self.env, self.agent, acts_names=acts_names, obs_names=obs_names, reps=rep)
         self.env_simulation_df = pd.DataFrame(data)
         return self.env_simulation_df
 

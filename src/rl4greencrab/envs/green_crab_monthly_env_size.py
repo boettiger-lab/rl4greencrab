@@ -241,7 +241,7 @@ class greenCrabMonthEnvSize(gym.Env):
             self.init_n_adult = self.np_random.integers(low, high + 1)
     
         self.observations = {"crabs":  np.zeros(self.nsize, dtype=np.float32),
-                            "months": 1} # potentially start with end of previous year
+                            "months":  self.curr_month} # potentially start with end of previous year
         self.non_local_crabs = []
         return self.observations, {}
 

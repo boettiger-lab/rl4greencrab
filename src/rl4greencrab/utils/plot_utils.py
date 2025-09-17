@@ -43,7 +43,7 @@ def environment_simulation(env, agent,
             data['crab_pop'].append(env.state)
             data['nonlocal_crab'].append(np.array(env.non_local_crabs))
             for idx, obs_name in enumerate(obs_names):
-                data[obs_name].append(observation['crabs'][idx])
+                data[obs_name].append(observation[obs_name])
             for idx, act_name in enumerate(acts_names):
                 data[act_name].append(action[idx])
                 
