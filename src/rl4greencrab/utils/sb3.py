@@ -64,9 +64,10 @@ def sb3_train(config_file, **kwargs):
     PLOICY = options.get("policy", "MlpPolicy")
     model_id = options["algo"] + "-" + options["env_id"]  + "-" + options["id"]
     model_config = options.get('model_config', {})
+    policy_kwargs = model_config.get("policy_kwargs", {})
     
     # subprocess activation_fn parameter
-    if "activation_fn" in model_config["policy_kwargs"]:
+    if "activation_fn" in policy_kwargs:
         act = model_config["policy_kwargs"]["activation_fn"]
         model_config["policy_kwargs"]["activation_fn"] = activation_map[act]
 
