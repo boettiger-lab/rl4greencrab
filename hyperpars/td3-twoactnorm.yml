@@ -1,4 +1,4 @@
-algo: "TQC"
+algo: "TD3"
 policy: "MultiInputPolicy"
 env_id: "twoactmonthnorm"
 n_envs: 12
@@ -8,8 +8,6 @@ config:
     "w_mort_scale" : 600
     "growth_k": 0.70
     'random_start': True
-model_config:
-    use_sde: True
 id: "1"
 repo: "cboettig/rl4greencrab"
 save_path: "/home/rstudio/rl4greencrab/saved_agents/twoActEnv"

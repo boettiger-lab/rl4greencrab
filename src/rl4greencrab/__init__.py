@@ -40,7 +40,7 @@ register(
     entry_point="rl4greencrab.envs.green_crab_env_2act:greenCrabMonthEnvTwoAct",
 )
 register(
-    id="twoactmonthnorm", 
+    id="twoactmonthnorm",
     entry_point="rl4greencrab.envs.green_crab_env_2act_norm:greenCrabMonthEnvTwoActNormalized",
 )
 register(

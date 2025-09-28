@@ -1,6 +1,6 @@
 algo: "PPO"
 policy: "MultiInputPolicy"
-env_id: "gcmonthenvsizenorm"
+env_id: "twoactmonthnorm"
 n_envs: 12
 tensorboard: "/home/rstudio/logs"
 total_timesteps: 10000000
@@ -12,5 +12,5 @@ model_config:
     use_sde: False
 id: "1"
 repo: "cboettig/rl4greencrab"
-save_path: "/home/rstudio/rl4greencrab/saved_agents"
+save_path: "/home/rstudio/rl4greencrab/saved_agents/twoActEnv"
 progress_bar: False
