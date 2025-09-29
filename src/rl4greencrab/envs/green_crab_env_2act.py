@@ -2,7 +2,7 @@ import gymnasium as gym
 import logging
 import numpy as np
 import random
-
+from numpy.random import default_rng
 from gymnasium import spaces
 from gymnasium.spaces import Tuple, Box, Discrete, Dict
 from scipy.stats import norm
@@ -21,22 +21,18 @@ class greenCrabMonthEnvTwoAct(gym.Env):
         self,
         config=None,
     ):
-        # if config == {}:
-        #     config = {
-        #         "Tmax": 100,
-        #         "growth_k": 0.43, "growth_xinf": 109, "growth_sd": 2.5, "nmortality": 0.03,
-        #         "trapm_sigma": 0.15, "trapm_xmax": 44, "trapm_pmax": 0.0005, "trapf_pmax": 0.0008,
-        #         "trapf_k": 0.5, "trapf_midpoint": 45, "init_mean_recruit": 15, "init_sd_recruit": 1.5,
-        #         "init_mean_adult": 65, "init_sd_adult": 8, "init_n_recruit": 1000, "init_n_adult": 1000,
-        #         "w_mort_scale": 5, "K": 25000, "imm": 10, "r": 50, "area": 4000,"loss_a": 0.265,
-        #         "loss_b": 2.80, "loss_c": 2.99, "minsize": 5, "maxsize": 110, "nsize": 21, "ntime":9,"delta_t": 1/12,
-        #         "env_stoch": 0.1, "action_reward_scale":0.001
-        #     }
         
         config=config or {}
         
         # parameters
-        self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
+        self.control_randomness = config.get("control_randomness", False)
+        if self.control_randomness:
+            self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
+            # migration‑only RNG
+            self.mig_rng, _ = gym.utils.seeding.np_random(config.get("seed_migration", 1337))
+        else:
+            self.np_random = default_rng()
+            self.mig_rng = default_rng()
         
         self.growth_k = np.float32(config.get("growth_k", 0.43))
         self.growth_xinf = np.float32(config.get("growth_xinf", 109))
@@ -112,6 +108,10 @@ class greenCrabMonthEnvTwoAct(gym.Env):
         self.random_start = config.get('random_start', False)
         self.curriculum_enabled = config.get('curriculum', False)
 
+        self.action_stacks = [] # storing whole year action -> store normalized action
+        self.variance_penalty_ratio = config.get('var_penalty_const', 1)
+        self.non_local_crabs = []
+
         # Action space
         # action -- # traps per month
         self.action_space = spaces.Box(
@@ -147,10 +147,12 @@ class greenCrabMonthEnvTwoAct(gym.Env):
             size_freq[:,0] = self.state
             #create array to store # removed
             #calculate removed and record observation at month = 3
-            removed[:,0] = [np.random.binomial(size_freq[k,0], harvest_rate[k]) for k in range(self.nsize)]
+            removed[:,0] = [self.np_random.binomial(size_freq[k,0], harvest_rate[k]) for k in range(self.nsize)]
+            self.action_stacks = []
         else:
-            size_freq[:] = [np.random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
-            removed[:] = [np.random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
+            size_freq[:] = [self.np_random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
+            removed[:] = [self.np_random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
+            
         self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
             
         #update observation space
@@ -170,10 +172,10 @@ class greenCrabMonthEnvTwoAct(gym.Env):
 
         #calculate new adult population after overwinter mortality, how do we deal with for single month? 
         if self.curr_month > 11: 
-            new_adults = [np.random.binomial(size_freq[k,0],self.w_mort_exp[k]) for k in range(self.nsize) ]
+            new_adults = [self.np_random.binomial(size_freq[k,0],self.w_mort_exp[k]) for k in range(self.nsize) ]
 
             #simulate new recruits for next year
-            local_recruits = np.random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
+            local_recruits = self.np_random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
             
             nonlocal_recruits = self.non_localrecurit(size_freq)
             recruit_total = local_recruits + nonlocal_recruits
@@ -282,15 +284,19 @@ class greenCrabMonthEnvTwoAct(gym.Env):
         return dd_recruits
 
     # Calculate newborn green crab for the coming year
+    # Calculate newborn green crab for the coming year
     def non_localrecurit(self, size_freq):
-        # self.imm * np.random.lognormal()*(1-np.sum(size_freq[:])/self.K) # 0.2 for high 80000, 0.8 for low 8000 
+        # self.imm * self.np_random.lognormal()*(1-np.sum(size_freq[:])/self.K) # 0.2 for high 80000, 0.8 for low 8000 
         outcomes = [0, 1]
         probabilities = [0.8, 0.2]
         
-        if random.choices(outcomes, weights=probabilities, k=1)[0] == 0:
-            return max(np.random.normal(8000, 1) * (1-np.sum(size_freq[:])/self.K), 0)
+        if self.mig_rng.choice(outcomes, size=1, replace=True, p=probabilities)[0] == 0:
+            non_local_crabs = max(self.mig_rng.normal(8000, 1000) * (1-np.sum(size_freq[:])/self.K), 0)
         else:
-            return max(np.random.normal(80000, 10) * (1-np.sum(size_freq[:])/self.K), 0) 
+            non_local_crabs = max(self.mig_rng.normal(80000, 10000) * (1-np.sum(size_freq[:])/self.K), 0) 
+
+        self.non_local_crabs.append(non_local_crabs)
+        return non_local_crabs
 
     # function for getting biomass from crab size
     def get_biomass_size(self):
