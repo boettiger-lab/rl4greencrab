@@ -33,7 +33,7 @@ model_config:
           pi: [256, 256]
           vf: [256, 256]
 
-id: "1"
+id: "2"
 repo: "cboettig/rl4greencrab"
 save_path: "/home/rstudio/rl4greencrab/saved_agents/twoActEnv"
 progress_bar: False
