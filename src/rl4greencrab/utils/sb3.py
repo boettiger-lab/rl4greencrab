@@ -80,7 +80,8 @@ def sb3_train(config_file, **kwargs):
             tensorboard_log=options["tensorboard"],
             **model_config
         )
-
+    
+    os.makedirs(model.tensorboard_log, exist_ok=True)
     progress_bar = options.get("progress_bar", False)
     model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
 

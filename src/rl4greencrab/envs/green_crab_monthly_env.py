@@ -167,7 +167,10 @@ class greenCrabMonthEnv(gym.Env):
             removed[:] = [self.np_random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
             
         self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
-            
+        # update actions stacks
+        normalized_action = action / self.max_action * 2 - 1
+        self.action_stacks.append(normalized_action)
+        
         #update observation space
         biomass = np.sum(self.get_biomass_size() * self.state) # get biomass
         crab_counts = np.sum(removed[:,0])
@@ -339,4 +342,8 @@ class greenCrabMonthEnv(gym.Env):
                 * trap_cost(action, self.max_action, self.action_reward_exponent) 
             )
         )
+                # discourage high std in a year
+        if self.curr_month == 11:
+            action_std = np.std(self.action_stacks, axis=0)
+            reward -= self.variance_penalty_ratio * np.sum(action_std)
         return reward

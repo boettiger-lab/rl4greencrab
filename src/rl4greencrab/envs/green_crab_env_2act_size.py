@@ -132,7 +132,7 @@ class greenCrabMonthEnvTwoActSize(greenCrabMonthEnvTwoAct):
         self.non_local_crabs = []
         return self.observations, {}
 
-class greenCrabMonthEnvTwoActNormalized(greenCrabMonthEnvTwoActSize):
+class greenCrabMonthEnvTwoActSizeNormalized(greenCrabMonthEnvTwoActSize):
     def __init__(self, config={}):
         super().__init__(config=config)
 
