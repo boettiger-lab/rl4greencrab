@@ -1,4 +1,4 @@
-algo: "PPO"
+algo: "TD3"
 policy: "MultiInputPolicy"
 env_id: "twoactmonthnorm"
 n_envs: 12
@@ -8,10 +8,8 @@ config:
     "w_mort_scale" : 600
     "growth_k": 0.70
     'random_start': True
-    'var_penalty_const': 0.3
-model_config:
-    use_sde: False
-id: "2"
+    'var_penalty_const': 0
+id: "1"
 repo: "cboettig/rl4greencrab"
 save_path: "/home/jovyan/rl4greencrab/saved_agents/twoActEnv"
 progress_bar: False

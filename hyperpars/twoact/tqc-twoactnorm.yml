@@ -11,7 +11,7 @@ config:
     'var_penalty_const': 0.3
 model_config:
     use_sde: True
-id: "1"
+id: "2"
 repo: "cboettig/rl4greencrab"
-save_path: "/home/rstudio/rl4greencrab/saved_agents/twoActEnv"
+save_path: "/home/jovyan/rl4greencrab/saved_agents/twoActEnv"
 progress_bar: False

@@ -1,6 +1,6 @@
-algo: "PPO"
+algo: "TD3"
 policy: "MultiInputPolicy"
-env_id: "twoactmonthnorm"
+env_id: "twoactmonthsizenorm"
 n_envs: 12
 tensorboard: "/home/jovyan/logs"
 total_timesteps: 10000000
@@ -9,8 +9,6 @@ config:
     "growth_k": 0.70
     'random_start': True
     'var_penalty_const': 0.3
-model_config:
-    use_sde: False
 id: "2"
 repo: "cboettig/rl4greencrab"
 save_path: "/home/jovyan/rl4greencrab/saved_agents/twoActEnv"

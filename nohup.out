@@ -26,3 +26,31 @@ INFO: NumExpr defaulting to 16 threads.
   gym.logger.warn(
 /opt/conda/lib/python3.12/site-packages/gymnasium/envs/registration.py:487: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
   logger.warn(
+INFO: Note: detected 128 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO: Note: NumExpr detected 128 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO: NumExpr defaulting to 16 threads.
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/opt/conda/lib/python3.12/site-packages/gymnasium/envs/registration.py:487: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+INFO: Note: detected 128 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO: Note: NumExpr detected 128 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO: NumExpr defaulting to 16 threads.
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/opt/conda/lib/python3.12/site-packages/gymnasium/envs/registration.py:487: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+INFO: Note: detected 128 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO: Note: NumExpr detected 128 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO: NumExpr defaulting to 16 threads.
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/opt/conda/lib/python3.12/site-packages/gymnasium/envs/registration.py:487: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+INFO: Note: detected 128 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO: Note: NumExpr detected 128 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO: NumExpr defaulting to 16 threads.
+/opt/conda/lib/python3.12/site-packages/gymnasium/spaces/box.py:305: UserWarning: [33mWARN: Box high's precision lowered by casting to float32, current high.dtype=float64[0m
+  gym.logger.warn(
+/opt/conda/lib/python3.12/site-packages/gymnasium/envs/registration.py:487: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
