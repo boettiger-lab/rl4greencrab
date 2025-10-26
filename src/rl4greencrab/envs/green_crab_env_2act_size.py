@@ -61,6 +61,7 @@ class greenCrabMonthEnvTwoActSize(greenCrabMonthEnvTwoAct):
         biomass = np.sum(self.get_biomass_size() * removed[:,0]) # get biomass
         crab_counts = np.sum(removed[:,0])
         mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
+        
         self.observations = {"crabs": np.array(removed[:,0], dtype=np.float32),
                             "months": self.curr_month}
         

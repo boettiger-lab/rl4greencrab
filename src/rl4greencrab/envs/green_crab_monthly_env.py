@@ -172,7 +172,7 @@ class greenCrabMonthEnv(gym.Env):
         self.action_stacks.append(normalized_action)
         
         #update observation space
-        biomass = np.sum(self.get_biomass_size() * self.state) # get biomass
+        biomass = np.sum(self.get_biomass_size() * removed[:,0]) # get biomass
         crab_counts = np.sum(removed[:,0])
         mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
         self.observations = {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), 

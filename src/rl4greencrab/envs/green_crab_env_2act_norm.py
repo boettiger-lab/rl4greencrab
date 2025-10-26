@@ -38,7 +38,7 @@ class greenCrabMonthEnvTwoActNormalized(greenCrabMonthEnvTwoAct):
         normalized_cpue = 2 * self.cpue_2(obs['crabs'], action_natural_units) - 1
         mean_biomass = obs["crabs"][1]
         normal_biomass = self.normalize_biomass(mean_biomass)
-        # TODO: normalize biomass
+        
         self.observation = {"crabs": np.array([normalized_cpue[0], normal_biomass], dtype=np.float32), 
                             "months": obs['months']}
         # rew = 10 * rew # use larger rewards, possibly makes trainer easier?
