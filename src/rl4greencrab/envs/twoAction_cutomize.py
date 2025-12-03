@@ -89,7 +89,6 @@ class twoActEnv(gym.Env):
         # Preserve these for reset
         # self.observations = np.zeros(shape=9, dtype=np.float32)
         # self.observations = (np.array([0, 0], dtype=np.float32), 1)
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": 1}
         self.reward = 0
         self.month_passed = 0
         self.curr_month = 3 #start with third month
@@ -124,6 +123,7 @@ class twoActEnv(gym.Env):
 
         self.observation_type = config.get('observation_type', 'count-biomass-time')
         self.observation_space = self.get_observations_space()
+        self.observations = self.initial_observation()
         
         
     def step(self,action):
@@ -220,7 +220,7 @@ class twoActEnv(gym.Env):
             self.init_n_adult = self.np_random.integers(low, high + 1)
 
         self.curr_month = 3
-        self.observations = {"crabs": np.array([0, 0], dtype=np.float32), "months": self.curr_month}
+        self.observations = self.initial_observation()
 
         return self.observations, {}
 
@@ -263,6 +263,17 @@ class twoActEnv(gym.Env):
                     dtype=np.float32
                 )
             })
+    def initial_observation(self):
+        if self.observation_type == 'count-biomass-time':
+            return {"crabs": np.array([0, 0], dtype=np.float32), "months": self.curr_month}
+        if self.observation_type == 'size-time':
+            return {"crabs":  np.zeros(self.nsize, dtype=np.float32), "months":  self.curr_month}
+        if self.observation_type == 'size':
+            return {"crabs":  np.zeros(self.nsize, dtype=np.float32)}
+        if self.observation_type == 'count-biomass':
+            return {"crabs": np.array([0, 0], dtype=np.float32)}
+        
+    
     def update_observation(self, crab_counts, mean_biomass, removed):
         if self.observation_type == 'count-biomass-time':
             return {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), "months": self.curr_month}
