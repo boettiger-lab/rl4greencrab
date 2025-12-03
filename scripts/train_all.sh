@@ -11,3 +11,9 @@ nohup python train.py -f ../hyperpars/twoact/rppo-twoactnorm-def.yml &
 nohup python train.py -f ../hyperpars/twoact/td3-twoactnorm-def.yml &
 nohup python train.py -f ../hyperpars/twoact/tqc-twoactnorm-def.yml &
 nohup python train.py -f ../hyperpars/twoact/td3-twoactnorm-def.yml &
+
+nohup python train.py -f ../hyperpars/twoact/size/ppo-twoactnorm.yml &
+nohup python train.py -f ../hyperpars/twoact/size/rppo-twoactnorm.yml &
+nohup python train.py -f ../hyperpars/twoact/size/td3-twoactnorm.yml &
+nohup python train.py -f ../hyperpars/twoact/size/tqc-twoactnorm.yml &
+nohup python train.py -f ../hyperpars/twoact/size/td3-twoactnorm.yml &
