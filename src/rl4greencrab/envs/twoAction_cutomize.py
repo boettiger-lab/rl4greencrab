@@ -263,6 +263,16 @@ class twoActEnv(gym.Env):
                     dtype=np.float32
                 )
             })
+        elif self.observation_type == 'biomass-time':
+            return spaces.Dict({
+               "crabs": spaces.Box(
+                    low=np.array([0]),  # Lower bounds: original obs (0)
+                    high=np.array([self.max_mean_biomass]),  # Upper bounds: obs max,
+                    shape=(1,),
+                    dtype=np.float32
+                ),
+                "months": spaces.Discrete(12, start=1)
+            })
     def initial_observation(self):
         if self.observation_type == 'count-biomass-time':
             return {"crabs": np.array([0, 0], dtype=np.float32), "months": self.curr_month}
