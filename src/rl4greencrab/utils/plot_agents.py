@@ -30,11 +30,13 @@ class plot_agent:
     def agent_action_overtime_plots(self, rep=0, show=True):
         df = self.env_simulation_df
         df = df[df.rep == rep]
-        fig, ax = plt.subplots(figsize=(8, 4))
         
-        ax.plot(df['t'], df['act0'], label='act0')
-        ax.plot(df['t'], df['act1'], label='act1')
-        ax.plot(df['t'], df['act2'], label='act2')
+        action_cols = [c for c in df.columns if c.startswith("act")]
+    
+        fig, ax = plt.subplots(figsize=(8, 4))
+    
+        for col in action_cols:
+            ax.plot(df["t"], df[col], label=col)
 
         ax.set_xlabel('t')
         ax.set_ylabel('Action value')
@@ -51,12 +53,22 @@ class plot_agent:
         df = self.env_simulation_df
         df = df[df.rep == rep]
         fig, ax = plt.subplots(figsize=(8, 4))
-        
-        ax.plot(df['t'], df[obs_name], label=obs_name)
+
+        # Handle case where each observation is an array
+        first_val = df[obs_name].iloc[0]
+        if isinstance(first_val, np.ndarray):
+            obs_array = np.stack(df[obs_name].values)  # shape: (timesteps, features)
+            timesteps = df['t'].values
+            for i in range(obs_array.shape[1]):
+                ax.plot(timesteps, obs_array[:, i], label=f"{obs_name}[{i}]")
+            ax.legend()
+        else:
+            ax.plot(df['t'], df[obs_name], label=obs_name)
+    
         ax.set_xlabel('t')
         ax.set_ylabel(obs_name)
         ax.set_title(f'{obs_name} over Time')
-        
+    
         self.save_fig(fig, f"{obs_name}_over_time.png")
         if show:
             plt.show()
@@ -65,9 +77,11 @@ class plot_agent:
         fig = plt.figure(figsize=(6,6))
         df = self.env_simulation_df
         subset = df[df.rep == rep]
-        plt.scatter(subset[ob_name], subset['act0'], label=f'act0 vs {ob_name}', alpha=0.7)
-        plt.scatter(subset[ob_name], subset['act1'], label=f'act1 vs {ob_name}', alpha=0.7)
-        plt.scatter(subset[ob_name], subset['act2'], label=f'act2 vs {ob_name}', alpha=0.7)
+        action_cols = [c for c in subset.columns if c.startswith("act")]
+
+        for col in action_cols:
+            plt.scatter(subset[ob_name], subset[col], label=f'{col} vs {ob_name}', alpha=0.7)
+        
         plt.title(f'Scatter: actions vs {ob_name}')
         plt.xlabel(ob_name)
         plt.ylabel('action')
@@ -84,13 +98,40 @@ class plot_agent:
     """ arguments:
     max_reps: max number of repitition used to fit gaussian process
     """
-    def gaussian_smoothing(self, max_reps=10):
-        df  = self.env_simulation_df
-        df = df[df['rep']<=max_reps]
-        df = df.loc[:, ['obs0', 'obs1', 'act0', 'act1', 'act2']]
-        gpp= GaussianProcessPolicy(df, length_scale=1, noise_level=1)
-        gpp_df, state_df= generate_gpp_episodes(gpp, self.env, reps=5)
-        gpp_df.to_csv(os.path.join(self.save_dir,f"{self.agent_name}_GPP.csv.xz"), index = False)
+    def gaussian_smoothing(
+        self,
+        max_reps=10,
+        reps=5,
+        obs_prefix="obs",
+        act_prefix="act",
+        obs_cols=None,
+        act_cols=None,
+        length_scale=1.0,
+        noise_level=1.0,
+    ):
+        df = self.env_simulation_df
+        df = df[df["rep"] <= max_reps].copy()
+    
+        # pick columns
+        if obs_cols is None:
+            obs_cols = sorted([c for c in df.columns if c.startswith(obs_prefix)])
+        if act_cols is None:
+            act_cols = sorted([c for c in df.columns if c.startswith(act_prefix)])
+    
+        # keep only what GPP needs
+        keep_cols = obs_cols + act_cols
+        missing = [c for c in keep_cols if c not in df.columns]
+        if missing:
+            raise ValueError(f"Missing columns in env_simulation_df: {missing}")
+    
+        df = df.loc[:, keep_cols]
+    
+        gpp = GaussianProcessPolicy(df, length_scale=length_scale, noise_level=noise_level)
+        gpp_df, state_df = generate_gpp_episodes(gpp, self.env, reps=reps)
+    
+        out_path = os.path.join(self.save_dir, f"{self.agent_name}_GPP.csv.xz")
+        gpp_df.to_csv(out_path, index=False)
+    
         self.gpp_df = gpp_df
         return gpp_df, state_df
 

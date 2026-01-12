@@ -7,6 +7,8 @@ from rl4greencrab.envs.green_crab_monthly_env_simple_norm import greenCrabMonthE
 from rl4greencrab.envs.green_crab_monthly_env_size import greenCrabMonthEnvSize
 from rl4greencrab.envs.green_crab_monthly_env_size_norm import greenCrabMonthEnvSizeNormalized
 from rl4greencrab.envs.green_crab_movingAvg import greenCrabMonthNormalizedMoving
+from rl4greencrab.envs.twoAction_cutomize import twoActEnv
+from rl4greencrab.envs.twoAction_norm import TwoActNormalized
 from rl4greencrab.agents.const_action import constAction, constActionNatUnits, multiConstAction
 from rl4greencrab.agents.const_escapement import constEsc
 from rl4greencrab.agents.LipschitzPPO import *
@@ -62,4 +64,13 @@ register(
     id="monenvmoving", 
     entry_point="rl4greencrab.envs.green_crab_movingAvg:greenCrabMonthNormalizedMoving",
 )
+register(
+    id="twoactenv", 
+    entry_point="rl4greencrab.envs.twoAction_cutomize:twoActEnv",
+)
+register(
+    id="twoactenvnorm", 
+    entry_point="rl4greencrab.envs.twoAction_norm:TwoActNormalized",
+)
+
 
