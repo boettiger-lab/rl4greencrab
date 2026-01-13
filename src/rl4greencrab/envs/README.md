@@ -3,6 +3,7 @@
 This dir contains a custom **Gymnasium** environment (`twoActEnv`) for simulating and controlling a green crab population with **two trapping actions**. For RL training, you can use normalized environment `TwoActNormalized`
 
 `twoActEnv` env_id = "twoactenv"
+
 `TwoActNormalized` env_id = "twoactenvnorm"
 
 ---
