@@ -56,6 +56,24 @@ class TwoActNormalized(twoActEnv):
                 ), 
                 "months": spaces.Discrete(12, start=1)
             })
+        elif self.observation_type == 'count-time':
+            return spaces.Dict({
+                "crabs": spaces.Box(
+                    low=np.array([-1]),  # Lower bounds: original obs (0), month (1)
+                    high=np.array([1]),  # Upper bounds: obs max, month max (12)
+                    dtype=np.float32
+                ), 
+                "months": spaces.Discrete(12, start=1)
+            })
+        elif self.observation_type == 'biomass-time':
+            return spaces.Dict({
+                "crabs": spaces.Box(
+                    low=np.array([-1]),  # Lower bounds: original obs (0), month (1)
+                    high=np.array([1]),  # Upper bounds: obs max, month max (12)
+                    dtype=np.float32
+                ), 
+                "months": spaces.Discrete(12, start=1)
+            })
         elif self.observation_type == 'size-time':
             return  spaces.Dict({
             "crabs": spaces.Box(
@@ -86,6 +104,10 @@ class TwoActNormalized(twoActEnv):
     def update_observation_norm(self, normalized_cpue, normal_biomass):
         if self.observation_type == 'count-biomass-time':
             return {"crabs": np.array([normalized_cpue[0], normal_biomass], dtype=np.float32), "months": self.curr_month}
+        if self.observation_type == 'count-time':
+            return {"crabs": np.array([normalized_cpue[0]], dtype=np.float32), "months": self.curr_month}
+        if self.observation_type == 'biomass-time':
+            return {"crabs": np.array([normal_biomass], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size-time':
             return {"crabs": normalized_cpue,  "months": self.curr_month}
         if self.observation_type == 'size':

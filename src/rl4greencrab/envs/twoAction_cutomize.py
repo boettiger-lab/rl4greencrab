@@ -237,6 +237,16 @@ class twoActEnv(gym.Env):
                 ), 
                 "months": spaces.Discrete(12, start=1)
             })
+        elif self.observation_type == 'count-time':
+            return spaces.Dict({
+               "crabs": spaces.Box(
+                    low=np.array([0, 0]),  # Lower bounds: original obs (0)
+                    high=np.array([self.max_obs]),  # Upper bounds: obs max,
+                    shape=(2,),
+                    dtype=np.float32
+                ), 
+                "months": spaces.Discrete(12, start=1)
+            })
         elif self.observation_type == 'size-time':
             return  spaces.Dict({
                    "crabs": spaces.Box(
@@ -273,26 +283,36 @@ class twoActEnv(gym.Env):
                 ),
                 "months": spaces.Discrete(12, start=1)
             })
+            
     def initial_observation(self):
         if self.observation_type == 'count-biomass-time':
             return {"crabs": np.array([0, 0], dtype=np.float32), "months": self.curr_month}
+        if self.observation_type == 'count-time':
+            return {"crabs": np.array([0], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size-time':
             return {"crabs":  np.zeros(self.nsize, dtype=np.float32), "months":  self.curr_month}
+        if self.observation_type == 'biomass-time':
+            return {"crabs": np.array([0], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size':
             return {"crabs":  np.zeros(self.nsize, dtype=np.float32)}
         if self.observation_type == 'count-biomass':
             return {"crabs": np.array([0, 0], dtype=np.float32)}
+
         
     
     def update_observation(self, crab_counts, mean_biomass, removed):
         if self.observation_type == 'count-biomass-time':
             return {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32), "months": self.curr_month}
+        if self.observation_type == 'count-time':
+            return {"crabs": np.array([crab_counts], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size-time':
             return {"crabs": np.array(removed[:,0], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size':
             return {"crabs": np.array(removed[:,0], dtype=np.float32)}
         if self.observation_type == 'count-biomass':
             return {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32)}
+        if self.observation_type == 'biomass-time':
+            return {"crabs": np.array([mean_biomass], dtype=np.float32), "months": self.curr_month}
         
     # calculate progress value for curriculum training
     def get_curriculum_progress(self):

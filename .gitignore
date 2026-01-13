@@ -140,3 +140,4 @@ venv/
 manuscript/*.pdf
 saved_agents/
 
+notebooks/test.ipynb
