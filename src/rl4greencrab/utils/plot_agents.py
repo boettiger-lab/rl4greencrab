@@ -139,10 +139,16 @@ class plot_agent:
     def gen_env_sim_df(self, 
                        obs_names=None, 
                        acts_names=None, 
-                       rep=10):
+                       rep=10,
+                       verbose = False):
         if self.agent == None:
             raise ValueError("didn't provide an agent for simulation")
-        data = environment_simulation(self.env, self.agent, acts_names=acts_names, obs_names=obs_names, reps=rep)
+        data = environment_simulation(self.env, 
+                                      self.agent, 
+                                      acts_names=acts_names, 
+                                      obs_names=obs_names, 
+                                      reps=rep, 
+                                      verbose=verbose)
         self.env_simulation_df = pd.DataFrame(data)
         return self.env_simulation_df
 

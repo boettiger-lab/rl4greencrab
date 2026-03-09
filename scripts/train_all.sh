@@ -1,19 +1,13 @@
 #!/bin/bash
 
-nohup python train.py -f ../hyperpars/twoact/ppo-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/rppo-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/td3-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/tqc-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/td3-twoactnorm.yml &
+echo "start training count-time"
+nohup python train.py -f ../hyperpars/twoact/count-time/ppo.yml &
+nohup python train.py -f ../hyperpars/twoact/count-time/rppo.yml &
+nohup python train.py -f ../hyperpars/twoact/count-time/td3.yml &
+nohup python train.py -f ../hyperpars/twoact/count-time/tqc.yml &
 
-nohup python train.py -f ../hyperpars/twoact/ppo-twoactnorm-def.yml &
-nohup python train.py -f ../hyperpars/twoact/rppo-twoactnorm-def.yml &
-nohup python train.py -f ../hyperpars/twoact/td3-twoactnorm-def.yml &
-nohup python train.py -f ../hyperpars/twoact/tqc-twoactnorm-def.yml &
-nohup python train.py -f ../hyperpars/twoact/td3-twoactnorm-def.yml &
-
-nohup python train.py -f ../hyperpars/twoact/size/ppo-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/size/rppo-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/size/td3-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/size/tqc-twoactnorm.yml &
-nohup python train.py -f ../hyperpars/twoact/size/td3-twoactnorm.yml &
+echo "start training count"
+nohup python train.py -f ../hyperpars/twoact/count/ppo.yml &
+nohup python train.py -f ../hyperpars/twoact/count/rppo.yml &
+nohup python train.py -f ../hyperpars/twoact/count/td3.yml &
+nohup python train.py -f ../hyperpars/twoact/count/tqc.yml &
