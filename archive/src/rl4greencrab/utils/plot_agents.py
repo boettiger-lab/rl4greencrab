@@ -2,13 +2,23 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+from rl4greencrab.envs.green_crab_monthly_env_norm import greenCrabMonthEnvNormalized
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from rl4greencrab.utils.plot_utils import *
 from rl4greencrab.utils.simulate import *
 
+config = {
+    "w_mort_scale" : 600,
+    "growth_k": 0.70,
+    'random_start':True,
+    'var_penalty_const': 0
+    # "curriculum": True
+}
+greencrab_month_norm_env = greenCrabMonthEnvNormalized(config)
+
 class plot_agent:
-    def __init__(self, env_sim_df, agent_name, env, agent=None, save_dir='.'):
+    def __init__(self, env_sim_df, agent_name, env=greencrab_month_norm_env, agent=None, save_dir='.'):
         self.env_simulation_df = env_sim_df
         self.agent_name = agent_name # simulation for a specific agent
         self.env = env

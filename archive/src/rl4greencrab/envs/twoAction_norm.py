@@ -32,11 +32,8 @@ class TwoActNormalized(twoActEnv):
             normalized_cpue = 2 * self.cpue_2_size(obs['crabs'], action_natural_units) - 1
         else:
             normalized_cpue = 2 * self.cpue_2_total(obs['crabs'], action_natural_units) - 1
-        if 'biomass' in self.observation_type:
-            mean_biomass = obs["crabs"][1]
-            normal_biomass = self.normalize_biomass(mean_biomass)
-        else:
-            normal_biomass = 0 # default value if we don't use it
+        mean_biomass = obs["crabs"][1]
+        normal_biomass = self.normalize_biomass(mean_biomass)
         
         self.observation = self.update_observation_norm(normalized_cpue, normal_biomass)
         # rew = 10 * rew # use larger rewards, possibly makes trainer easier?
@@ -96,14 +93,6 @@ class TwoActNormalized(twoActEnv):
                         dtype=np.float32
                     )
             })
-        elif self.observation_type == 'count':
-            return spaces.Dict({
-                "crabs": spaces.Box(
-                    low=np.array([-1]),  # Lower bounds: original obs (0), month (1)
-                    high=np.array([1]),  # Upper bounds: obs max, month max (12)
-                    dtype=np.float32
-                )
-            })
         elif self.observation_type == 'count-biomass':
             return spaces.Dict({
                 "crabs": spaces.Box(
@@ -123,22 +112,16 @@ class TwoActNormalized(twoActEnv):
             return {"crabs": normalized_cpue,  "months": self.curr_month}
         if self.observation_type == 'size':
             return {"crabs": normalized_cpue}
-        if self.observation_type == 'count':
-            return {"crabs": np.array([normalized_cpue[0]], dtype=np.float32)}
         if self.observation_type == 'count-biomass':
             return {"crabs": np.array([normalized_cpue[0], normal_biomass], dtype=np.float32)}
 
     def initial_observation(self):
         if self.observation_type == 'count-biomass-time':
             return {"crabs": np.array([-1, -1], dtype=np.float32), "months": self.curr_month}
-        if self.observation_type == 'count-time':
-            return {"crabs": np.array([-1], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size-time':
             return {"crabs": np.array([-1.0] * self.nsize, dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size':
             return {"crabs": np.array([-1.0] * self.nsize, dtype=np.float32)}
-        if self.observation_type == 'count':
-            return {"crabs": np.array([-1], dtype=np.float32)}
         if self.observation_type == 'count-biomass':
             return {"crabs": np.array([-1, -1], dtype=np.float32)}
     
