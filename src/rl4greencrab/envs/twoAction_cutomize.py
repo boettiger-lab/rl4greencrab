@@ -124,6 +124,8 @@ class twoActEnv(gym.Env):
         self.observation_type = config.get('observation_type', 'count-biomass-time')
         self.observation_space = self.get_observations_space()
         self.observations = self.initial_observation()
+
+        self.crab_caught = []
         
         
     def step(self,action):
@@ -139,14 +141,13 @@ class twoActEnv(gym.Env):
         if self.curr_month == 3:
             #add pop at t=1
             size_freq[:,0] = self.state
-            #create array to store # removed
             #calculate removed and record observation at month = 3
             removed[:,0] = [self.np_random.binomial(size_freq[k,0], harvest_rate[k]) for k in range(self.nsize)]
             self.action_stacks = []
         else:
             size_freq[:] = [self.np_random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
             removed[:] = [self.np_random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
-            
+
         self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
         # update actions stacks
         normalized_action = action / self.max_action * 2 - 1
@@ -157,6 +158,7 @@ class twoActEnv(gym.Env):
         crab_counts = np.sum(removed[:,0])
         mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
         self.observations = self.update_observation(crab_counts, mean_biomass, removed)
+        self.crab_caught = removed[:,0]
         
         #TODO: update self.state for every month or use different parameter for reward calculation
         self.state = self.monthly_size.reshape(21,) # calculate crab popluation after remove crab caught
@@ -264,6 +266,15 @@ class twoActEnv(gym.Env):
                     dtype=np.float32,
                 )
             })
+        elif self.observation_type == 'count':
+            return spaces.Dict({
+               "crabs": spaces.Box(
+                    low=np.array([0]),  # Lower bounds: original obs (0)
+                    high=np.array([self.max_obs]),  # Upper bounds: obs max,
+                    shape=(1,),
+                    dtype=np.float32
+                )
+            })
         elif self.observation_type == 'count-biomass':
             return spaces.Dict({
                "crabs": spaces.Box(
@@ -295,6 +306,8 @@ class twoActEnv(gym.Env):
             return {"crabs": np.array([0], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size':
             return {"crabs":  np.zeros(self.nsize, dtype=np.float32)}
+        if self.observation_type == 'count':
+            return {"crabs": np.array([0], dtype=np.float32)}
         if self.observation_type == 'count-biomass':
             return {"crabs": np.array([0, 0], dtype=np.float32)}
 
@@ -309,6 +322,8 @@ class twoActEnv(gym.Env):
             return {"crabs": np.array(removed[:,0], dtype=np.float32), "months": self.curr_month}
         if self.observation_type == 'size':
             return {"crabs": np.array(removed[:,0], dtype=np.float32)}
+        if self.observation_type == 'count':
+            return {"crabs": np.array([crab_counts], dtype=np.float32)}
         if self.observation_type == 'count-biomass':
             return {"crabs": np.array([crab_counts, mean_biomass], dtype=np.float32)}
         if self.observation_type == 'biomass-time':
@@ -385,6 +400,10 @@ class twoActEnv(gym.Env):
     def get_biomass_size(self):
         biomass = [-0.071 * y + 0.003 * y**2 + 0.00002 * y**3 for y in self.midpts]
         return [np.max([0, b]) for b in biomass]
+
+    # function to get actual crab caught size distribution at time t
+    def get_crab_caught(self):
+        return self.crab_caught
     
     #function for reward
     # two part reward function:

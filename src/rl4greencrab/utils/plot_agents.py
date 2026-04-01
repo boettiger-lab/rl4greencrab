@@ -8,14 +8,14 @@ from rl4greencrab.utils.plot_utils import *
 from rl4greencrab.utils.simulate import *
 
 class plot_agent:
-    def __init__(self, env_sim_df, agent_name, env, agent=None, save_dir='.'):
+    def __init__(self, env_sim_df, agent_name, env=None, agent=None, save_dir='.'):
         self.env_simulation_df = env_sim_df
         self.agent_name = agent_name # simulation for a specific agent
         self.env = env
         self.agent = agent
         self.save_dir = os.path.join(save_dir, agent_name)
-        if self.env_simulation_df is None:
-            self.gen_env_sim_df()
+        # if self.env_simulation_df is None:
+        #     self.gen_env_sim_df()
 
     def agent_action_overtime_plots(self, rep=0, show=True):
         df = self.env_simulation_df
@@ -125,10 +125,20 @@ class plot_agent:
         self.gpp_df = gpp_df
         return gpp_df, state_df
 
-    def gen_env_sim_df(self, rep=10):
+    # generate envrionment simulation from the agent
+    def gen_env_sim_df(self, 
+                       obs_names=None, 
+                       acts_names=None, 
+                       rep=10,
+                       verbose = False):
         if self.agent == None:
             raise ValueError("didn't provide an agent for simulation")
-        data = environment_simulation(self.env, self.agent, reps=rep)
+        data = environment_simulation(self.env, 
+                                      self.agent, 
+                                      acts_names=acts_names, 
+                                      obs_names=obs_names, 
+                                      reps=rep, 
+                                      verbose=verbose)
         self.env_simulation_df = pd.DataFrame(data)
         return self.env_simulation_df
 
