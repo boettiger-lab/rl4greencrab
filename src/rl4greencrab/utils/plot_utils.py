@@ -14,7 +14,8 @@ def environment_simulation(env, agent,
                            acts_names = None, 
                            save_df=False, 
                            save_path='.', 
-                           agent_name = 'ppo'):
+                           agent_name = 'ppo',
+                           verbose=False):
     num_obs = np.prod(len(env.observation_space))
     num_acts = np.prod(env.action_space.shape)
     obs_names = obs_names or [f'obs{i}' for i in range(num_obs)]
@@ -29,6 +30,8 @@ def environment_simulation(env, agent,
         'crab_pop':[],
         'nonlocal_crab': []
     }
+    if verbose:
+        data['crab_caught_distribution'] = []
     env = env
     agent = agent
     for rep in range(reps): # try score as average of 100 replicates, still a noisy measure
@@ -42,8 +45,10 @@ def environment_simulation(env, agent,
             data['t'].append(t)
             data['crab_pop'].append(env.state)
             data['nonlocal_crab'].append(np.array(env.non_local_crabs))
+            if verbose:
+                data['crab_caught_distribution'].append(env.get_crab_caught())
             for idx, obs_name in enumerate(obs_names):
-                data[obs_name].append(observation['crabs'][idx])
+                data[obs_name].append(observation[obs_name])
             for idx, act_name in enumerate(acts_names):
                 data[act_name].append(action[idx])
                 
