@@ -4,7 +4,7 @@ import numpy as np
 
 from gymnasium import spaces
 from scipy.stats import norm
-from rl4greencrab.envs.twoAction_cutomize import twoActEnv
+from rl4greencrab.envs.twoAction_env import twoActEnv
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 

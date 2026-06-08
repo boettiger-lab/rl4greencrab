@@ -33,8 +33,6 @@ class EnsembleRL:
 
 if __name__ == "__main__":
     config = {
-        "w_mort_scale" : 600,
-        "growth_k": 0.70,
         'random_start':True,
         'var_penalty_const': 0
         # "curriculum": True
