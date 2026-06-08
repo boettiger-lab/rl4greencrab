@@ -31,8 +31,6 @@ class evaluate_agent:
 
 def get_simulator(ray_remote = False, gpu=False):
     if ray_remote:
-        print(torch.cuda.is_available())
-        print(ray.cluster_resources())
         if gpu:
             @ray.remote(num_gpus=1)
             def simulator(env, agent):
