@@ -33,8 +33,8 @@ Our project aims to use this advantage in order to generate new, more responsive
 ## Model used
 
 The agent trains by interacting with an *integral projection model* which describes the population dynamics of green crabs together with the agent's observation process.
-In short, the agent's actions correspond to numbers of cages used to trap crabs. 
-This action hampers the growth of the crab population, and produces an observation of number of crabs caught per cage used.
+In short, the agent's actions correspond to numbers of traps used to catch crabs. 
+This action hampers the growth of the crab population, and produces an observation of number of crabs caught per traps used.
 
 Coming soon: a more detailed explanation of the integral projection model used!
 
