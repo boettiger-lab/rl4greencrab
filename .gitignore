@@ -141,3 +141,6 @@ manuscript/*.pdf
 saved_agents/
 
 notebooks/test.ipynb
+
+# data
+discretization/tqc_clean.csv
