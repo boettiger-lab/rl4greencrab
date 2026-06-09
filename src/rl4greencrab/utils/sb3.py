@@ -3,9 +3,8 @@ import os
 import torch.nn as nn
 import gymnasium as gym
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3 import PPO, A2C, DQN, SAC, TD3, HER, DDPG
-from sb3_contrib import TQC, ARS, RecurrentPPO
-from rl4greencrab import LipschitzPPO
+from stable_baselines3 import PPO, TD3
+from sb3_contrib import TQC, RecurrentPPO
 
 def algorithm(algo):
     algos = {
@@ -15,20 +14,6 @@ def algorithm(algo):
         'RPPO': RecurrentPPO,
         'recurrentppo': RecurrentPPO,
         'rppo': RecurrentPPO,
-        #
-        'ARS': ARS,
-        'ars': ARS,
-        'A2C': A2C, 
-        'a2c':A2C ,
-        #
-        'DDPG': DDPG, 
-        'ddpg': DDPG,
-        #
-        'HER': HER, 
-        'her': HER,
-        #
-        'SAC': SAC, 
-        'sac': SAC,
         #
         'TD3': TD3, 
         'td3': TD3,
@@ -61,7 +46,7 @@ def sb3_train(config_file, **kwargs):
     else:
         env = gym.make(options["env_id"])
     ALGO = algorithm(options["algo"])
-    PLOICY = options.get("policy", "MlpPolicy")
+    POLICY = options.get("policy", "MlpPolicy")
     observations = options["config"]['observation_type']
     variance = options["config"].get('var_penalty_const', 0)
     model_id = options["algo"] + "-" + f'Var{variance}'  + "-(" + observations + ')-' + options["id"]
@@ -76,7 +61,7 @@ def sb3_train(config_file, **kwargs):
     save_id = os.path.join(options["save_path"], model_id)
 
     model = ALGO(
-            PLOICY,
+            POLICY,
             env,
             verbose=0,
             tensorboard_log=options["tensorboard"],

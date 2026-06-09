@@ -13,17 +13,13 @@ This dir contains a custom **Gymnasium** environment (`twoActEnv`) for simulatin
 - **Gymnasium-compatible** `Env` with `reset()` and `step()`
 - **Continuous 2D action space**: traps/effort per month for two actions
 - **Size-structured population dynamics** (21 size bins by default)
-- **Seasonal loop**: months advance from March (`curr_month=3`) through November, then recruitment + overwinter effects
+- **Seasonal loop**: months advance from March (`curr_month=3`) through November, then recruitment + overwinter mortality
 - **Multiple observation modes** via `observation_type`:
-  - `count`: number of crab caught, continous
-  - `biomass`: total biomass the crab caught, continous
-  - `size`: size distribution of the crab caught, continous
-  - `time`: current month, discrete
-  - `count-biomass-time`
-  - `count-time`
-  - `count-biomass`
-  - `biomass-time`
-  - `size-time`
+  - `count-biomass-time`: number of crabs caught per trap (CPUE, continuous), mean biomass of the crabs caught (continuous), current month (discrete)
+  - `count-time`: number of crabs caught per trap (CPUE, continuous), current month (discrete)
+  - `count-biomass`: number of crabs caught per trap (CPUE, continuous), mean biomass of the crabs caught (continuous)
+  - `biomass-time`: mean biomass of the crabs caught (continuous), current month (discrete)
+  - `size-time`: number of crabs caught in size class $x$ per trap (size-structured CPUE, continuous), current month (discrete)
 - Optional **reproducibility controls** with separate RNG streams:
   - main environment RNG
   - migration-only RNG (`seed_migration`)
@@ -49,8 +45,6 @@ from rl4greencrab import TwoActNormalized
 
 # Environment configuration
 config = {
-    "w_mort_scale" : 600,
-    "growth_k": 0.70,
     'random_start':True,
     'var_penalty_const': 0,
     'observation_type': 'size-time'
