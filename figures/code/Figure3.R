@@ -93,12 +93,13 @@ action_names <- c("act1_real" = "Fukui traps",
                   "act0_real" = "Minnow traps")
 
 figure3 <- ggplot(data_long) + 
-  geom_point(aes(x = biomass_real, y = action, 
-                 color = cpue_real)) +
+  geom_point(aes(x = biomass_real, y = cpue_real, 
+                 color = action)) +
   scale_color_viridis() +
   labs(x = "mean biomass", 
-       y = "action (number of traps)",
-       color = "CPUE\n(crabs\nper trap)") +
+       y = "CPUE (crabs per trap)",
+       color = "action\n(number\nof traps)") +
+  scale_x_continuous(breaks = c(0, 10, 20)) +
   facet_grid(action_type ~ months, 
              labeller = labeller(months = month_names, 
                                  action_type = action_names)) +
