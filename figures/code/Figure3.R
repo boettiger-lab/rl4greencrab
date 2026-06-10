@@ -5,6 +5,9 @@ library(patchwork)
 # read in data
 data <- read.csv("model_evaluations/tqc_clean.csv")
 
+# remove anomalous biomass data
+data <- data[!c(data$biomass == -1 | data$biomass > -0.2), ]
+
 params <- list(
   max_action = 3000,
   smin = 5,
