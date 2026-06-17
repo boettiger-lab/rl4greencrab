@@ -1,0 +1,818 @@
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+    import rl4greencrab
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+    import rl4greencrab
+Traceback (most recent call last):
+ModuleNotFoundError: No module named 'rl4greencrab'
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 7, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 10, in <module>
+    sb3_train(args.file)
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 48, in sb3_train
+    ALGO = algorithm(options["algo"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 24, in algorithm
+    'LipschitzPPO': LipschitzPPO
+                    ^^^^^^^^^^^^
+NameError: name 'LipschitzPPO' is not defined
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 10, in <module>
+    sb3_train(args.file)
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 48, in sb3_train
+    ALGO = algorithm(options["algo"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 24, in algorithm
+    'LipschitzPPO': LipschitzPPO
+                    ^^^^^^^^^^^^
+NameError: name 'LipschitzPPO' is not defined
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 10, in <module>
+    sb3_train(args.file)
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 48, in sb3_train
+    ALGO = algorithm(options["algo"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 24, in algorithm
+    'LipschitzPPO': LipschitzPPO
+                    ^^^^^^^^^^^^
+NameError: name 'LipschitzPPO' is not defined
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 10, in <module>
+    sb3_train(args.file)
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 48, in sb3_train
+    ALGO = algorithm(options["algo"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 24, in algorithm
+    'LipschitzPPO': LipschitzPPO
+                    ^^^^^^^^^^^^
+NameError: name 'LipschitzPPO' is not defined
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/twoActEnv/TD3-Var0-(count-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/twoActEnv/TQC-Var0-(count-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/twoActEnv/PPO-Var0-(count-time)-1
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+Traceback (most recent call last):
+Traceback (most recent call last):
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+Traceback (most recent call last):
+Traceback (most recent call last):
+ModuleNotFoundError: No module named 'rl4greencrab'
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+    import rl4greencrab
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+    import rl4greencrab
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 15, in <module>
+    sb3_train(args.file, **kwargs)
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 71, in sb3_train
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/tqc.py", line 308, in learn
+    return super().learn(
+           ^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 354, in learn
+    self.train(batch_size=self.batch_size, gradient_steps=gradient_steps)
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/tqc.py", line 222, in train
+    actions_pi, log_prob = self.actor.action_log_prob(replay_data.observations)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/policies.py", line 172, in action_log_prob
+    mean_actions, log_std, kwargs = self.get_action_dist_params(obs)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/policies.py", line 155, in get_action_dist_params
+    latent_pi = self.latent_pi(features)
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 15, in <module>
+    sb3_train(args.file, **kwargs)
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 71, in sb3_train
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/tqc.py", line 308, in learn
+    return super().learn(
+           ^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 354, in learn
+    self.train(batch_size=self.batch_size, gradient_steps=gradient_steps)
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/tqc.py", line 222, in train
+    actions_pi, log_prob = self.actor.action_log_prob(replay_data.observations)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/policies.py", line 172, in action_log_prob
+    mean_actions, log_std, kwargs = self.get_action_dist_params(obs)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/tqc/policies.py", line 155, in get_action_dist_params
+    latent_pi = self.latent_pi(features)
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 15, in <module>
+    sb3_train(args.file, **kwargs)
+  File "/home/jovyan/rl4greencrab/src/rl4greencrab/utils/sb3.py", line 71, in sb3_train
+    model.learn(total_timesteps=options["total_timesteps"], tb_log_name=model_id, progress_bar=progress_bar)
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/ppo_recurrent/ppo_recurrent.py", line 450, in learn
+    return super().learn(
+           ^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/stable_baselines3/common/on_policy_algorithm.py", line 324, in learn
+    continue_training = self.collect_rollouts(self.env, callback, self.rollout_buffer, n_rollout_steps=self.n_steps)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/ppo_recurrent/ppo_recurrent.py", line 242, in collect_rollouts
+    actions, values, log_probs, lstm_states = self.policy(obs_tensor, lstm_states, episode_starts)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/sb3_contrib/common/recurrent/policies.py", line 248, in forward
+    latent_pi = self.mlp_extractor.forward_actor(latent_pi)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/stable_baselines3/common/torch_layers.py", line 258, in forward_actor
+    return self.policy_net(features)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: CUDA error: CUBLAS_STATUS_ALLOC_FAILED when calling `cublasCreate(handle)`
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+    import rl4greencrab
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+    import rl4greencrab
+Traceback (most recent call last):
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+    import rl4greencrab
+    import rl4greencrab
+Traceback (most recent call last):
+ModuleNotFoundError: No module named 'rl4greencrab'
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+    import rl4greencrab
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+Traceback (most recent call last):
+    import rl4greencrab
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+ModuleNotFoundError: No module named 'rl4greencrab'
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+Traceback (most recent call last):
+  File "/home/jovyan/rl4greencrab/scripts/train.py", line 8, in <module>
+    import rl4greencrab
+ModuleNotFoundError: No module named 'rl4greencrab'
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-time/TD3-Var0-(count-time)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-time/TD3-Var0-(count-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-time/TD3-Var0-(count-time)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-time/TD3-Var0-(count-time)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-time/TD3-Var0-(count-time)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-time/TQC-Var0-(count-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-time/TQC-Var0-(count-time)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-time/TQC-Var0-(count-time)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-time/TQC-Var0-(count-time)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-time/TQC-Var0-(count-time)-5
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-time/PPO-Var0-(count-time)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-time/PPO-Var0-(count-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-time/PPO-Var0-(count-time)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-time/PPO-Var0-(count-time)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-time/PPO-Var0-(count-time)-5
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count/TD3-Var0-(count)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count/TD3-Var0-(count)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count/TD3-Var0-(count)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count/TD3-Var0-(count)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count/TD3-Var0-(count)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count/PPO-Var0-(count)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count/PPO-Var0-(count)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count/PPO-Var0-(count)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count/PPO-Var0-(count)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count/PPO-Var0-(count)-5
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count/TQC-Var0-(count)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count/TQC-Var0-(count)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count/TQC-Var0-(count)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count/TQC-Var0-(count)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count/TQC-Var0-(count)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TD3-Var0-(count-biomass-time)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TD3-Var0-(count-biomass-time)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TD3-Var0-(count-biomass-time)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TD3-Var0-(count-biomass-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TD3-Var0-(count-biomass-time)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TQC-Var0-(count-biomass-time)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TQC-Var0-(count-biomass-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TQC-Var0-(count-biomass-time)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TQC-Var0-(count-biomass-time)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/TQC-Var0-(count-biomass-time)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/PPO-Var0-(count-biomass-time)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/PPO-Var0-(count-biomass-time)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/PPO-Var0-(count-biomass-time)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/PPO-Var0-(count-biomass-time)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'count-biomass-time'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/count-biomass-time/PPO-Var0-(count-biomass-time)-5
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/size-time/TD3-Var0-(size)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/size-time/TD3-Var0-(size)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/size-time/TD3-Var0-(size)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/size-time/TD3-Var0-(size)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TD3 model at /home/jovyan/rl4greencrab/saved_agents/size-time/TD3-Var0-(size)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/size-time/TQC-Var0-(size)-2
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/size-time/TQC-Var0-(size)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/size-time/TQC-Var0-(size)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/size-time/TQC-Var0-(size)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved TQC model at /home/jovyan/rl4greencrab/saved_agents/size-time/TQC-Var0-(size)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/size-time/PPO-Var0-(size)-4
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/size-time/PPO-Var0-(size)-5
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/size-time/PPO-Var0-(size)-1
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/size-time/PPO-Var0-(size)-3
+env config: {'random_start': True, 'var_penalty_const': 0, 'observation_type': 'size'}
+Saved PPO model at /home/jovyan/rl4greencrab/saved_agents/size-time/PPO-Var0-(size)-2
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(
+/opt/venv/lib/python3.12/site-packages/gymnasium/envs/registration.py:480: UserWarning: [33mWARN: The environment creator metadata doesn't include `render_modes`, contains: ['render.modes'][0m
+  logger.warn(

@@ -12,5 +12,5 @@ model_config:
     use_sde: False
 id: "1"
 repo: "cboettig/rl4greencrab"
-save_path: "/home/jovyan/rl4greencrab/saved_agents/twoActEnv"
+save_path: "/home/jovyan/rl4greencrab/saved_agents/count-biomass-time"
 progress_bar: False

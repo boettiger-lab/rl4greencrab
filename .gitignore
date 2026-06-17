@@ -144,3 +144,7 @@ notebooks/test.ipynb
 
 # data
 discretization/tqc_clean.csv
+data
+
+# saved agents
+saved_agents

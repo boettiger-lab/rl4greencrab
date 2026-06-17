@@ -20,8 +20,7 @@ def algorithm(algo):
         #
         'TQC': TQC, 
         'tqc': TQC,
-        #
-        'LipschitzPPO': LipschitzPPO
+
     }
     return algos[algo]
 
