@@ -7,6 +7,7 @@ total_timesteps: 10000000
 config: 
     'random_start': True
     'observation_type': 'count-time'
+    'param_csv': '/home/jovyan/rl4greencrab/data/posterior/params.csv'
 model_config:
     use_sde: True
 id: "1"

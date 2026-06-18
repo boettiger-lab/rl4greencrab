@@ -5,6 +5,7 @@ import gymnasium as gym
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3 import PPO, TD3
 from sb3_contrib import TQC, RecurrentPPO
+import pandas as pd
 
 def algorithm(algo):
     algos = {
@@ -34,6 +35,8 @@ activation_map = {
 def sb3_train(config_file, **kwargs):
     with open(config_file, "r") as stream:
         options = yaml.safe_load(stream)
+        if 'param_csv' in options.get('config', {}):
+            options['config']['param_df'] = pd.read_csv(options['config']['param_csv'])
         options = {**options, **kwargs}
         # updates / expands on yaml options with optional user-provided input
 

@@ -34,43 +34,10 @@ class twoActEnv(gym.Env):
         
         self.random_start = config.get('random_start', False)
 
-        ################################
-        # pop dynamic model parameters #
-        ################################
+        ###########################################################
+        # pop dynamic model parameters (not drawn from posterior) #
+        ###########################################################
 
-        # growth parameters
-        self.growth_k = np.float32(config.get("growth_k", 1.2))
-        self.growth_xinf = np.float32(config.get("growth_xinf", 80.5))
-        self.growth_sd = np.float32(config.get("growth_sd", 2.82))
-        self.growth_A  = config.get("growth_A", 1.54)   # seasonal amplitude
-        self.growth_ds = config.get("growth_ds", 0.25)   # seasonal phase shift
-        self.D = (np.array([91, 121, 152, 182, 213, 244, 274, 305]) - 91) / 365
-
-        # natural mortality
-        self.mort_alpha = np.float32(config.get("mort_alpha", 9.5))
-        self.mort_beta = np.float32(config.get("mort_beta", 0.0018))
-
-        # trap size-selective hazard rate parameters
-        # minnow traps
-        self.trapm_pmax = np.float32(config.get("trapm_pmax", 0.00044))
-        self.trapm_sigma = np.float32(config.get("trapm_sigma", 6.47))
-        self.trapm_xmax = np.float32(config.get("trapm_xmax", 45.02))
-        # fukui traps
-        self.trapf_pmax = np.float32(config.get("trapf_pmax", 0.00029))
-        self.trapf_k = np.float32(config.get("trapf_k", 0.36))
-        self.trapf_midpoint = np.float32(config.get("trapf_midpoint", 38.72))
-        # shrimp traps
-        #self.traps_pmax = np.float32(config.get("traps_pmax", 0.00448))
-        #self.traps_k = np.float32(config.get("traps_k", 0.33))
-        #self.traps_midpoint = np.float32(config.get("traps_midpoint", 46.47))
-        
-        # initial adult and recruit sizes
-        self.init_mean_recruit = config.get("init_mean_recruit", 10.74)
-        self.init_sd_recruit = config.get("init_sd_recruit", 5.02)
-        self.init_mean_adult = config.get("init_mean_adult", 3.8)
-        self.init_sd_adult = config.get("init_sd_adult", 0.22)
-        self.init_n_adult = config.get("init_n_adult", 0)
-        
         # overwinter motrality
         self.w_mort_scale = config.get("w_mort_scale", 600)
 
@@ -117,8 +84,8 @@ class twoActEnv(gym.Env):
         self.curr_month = 4 #start with fourth month
         self.Tmax = config.get("Tmax", 100)
 
-        # initial state
-        self.state = self.init_state()
+        # initial state (proper init happens in reset after param draw)
+        self.state = np.zeros(self.nsize)
 
         # winter mortality
         self.w_mort = self.w_mortality()
@@ -209,6 +176,7 @@ class twoActEnv(gym.Env):
             # convert state into a column
             state_col = self.state.reshape(self.nsize, 1)
 
+            # project forward based on growth and stochastic overwinter mortality
             D1 = self.D[self.curr_month - 4]
             D2 = self.D[0] + 1.0
             next_pop = self.g_kernel(D1, D2) @ self.state
@@ -219,9 +187,6 @@ class twoActEnv(gym.Env):
             nonlocal_recruits = self.non_localrecruit(state_col)
             recruit_total = local_recruits + nonlocal_recruits
 
-            logging.debug('local recruits = {}'.format(local_recruits))
-            logging.debug('nonlocal recruits = {}'.format(nonlocal_recruits))
-
             # get recruit vector for next year
             var = self.init_sd_recruit ** 2
             shape = self.init_mean_recruit ** 2 / var
@@ -230,7 +195,11 @@ class twoActEnv(gym.Env):
                 (gamma.cdf(self.bndry[1:(self.nsize+1)], a=shape, scale=1/rate) -
                  gamma.cdf(self.bndry[0:self.nsize], a=shape, scale=1/rate)) * recruit_total
             )
+
+            # add new adults to state
             self.state = np.maximum(new_adults, 0)
+
+            # reset month
             self.curr_month = 4
 
         done = bool(self.month_passed > self.Tmax)
@@ -238,6 +207,47 @@ class twoActEnv(gym.Env):
         return self.observations, self.reward, done, done, {}
         
     def reset(self, *, seed=42, options=None):
+
+        #######################################################
+        # pop dynamic model parameters (drawn from posterior) #
+        #######################################################
+
+        # get posterior index
+        param_df = self.config.get("param_df", None)
+        index = self.np_random.integers(0, len(param_df))
+
+        # growth parameters
+        self.growth_k = np.float32(param_df.loc[index, 'growth_k'])
+        self.growth_xinf = np.float32(param_df.loc[index, 'growth_xinf'])
+        self.growth_sd = np.float32(param_df.loc[index, 'growth_sd'])
+        self.growth_A  = np.float32(param_df.loc[index, 'growth_A']) 
+        self.growth_ds = np.float32(param_df.loc[index, 'growth_ds'])
+        self.D = (np.array([91, 121, 152, 182, 213, 244, 274, 305]) - 91) / 365
+
+        # natural mortality
+        self.mort_alpha = np.float32(param_df.loc[index, 'mort_alpha'])
+        self.mort_beta = np.float32(param_df.loc[index, 'mort_beta'])
+
+        # trap size-selective hazard rate parameters
+        # minnow traps
+        self.trapm_pmax = np.float32(param_df.loc[index, 'trapm_pmax'])
+        self.trapm_sigma = np.float32(param_df.loc[index, 'trapm_sigma'])
+        self.trapm_xmax = np.float32(param_df.loc[index, 'trapm_xmax'])
+        # fukui traps
+        self.trapf_pmax = np.float32(param_df.loc[index, 'trapf_pmax'])
+        self.trapf_k = np.float32(param_df.loc[index, 'trapf_k'])
+        self.trapf_midpoint = np.float32(param_df.loc[index, 'trapf_midpoint'])
+        # shrimp traps
+        #self.traps_pmax = np.float32(param_df.loc[index, 'traps_pmax'])
+        #self.traps_k = np.float32(param_df.loc[index, 'traps_k'])
+        #self.traps_midpoint = np.float32(param_df.loc[index, 'traps_midpoint'])
+        
+        # initial adult and recruit sizes
+        self.init_mean_recruit = np.float32(param_df.loc[index, 'init_mean_recruit'])
+        self.init_sd_recruit = np.float32(param_df.loc[index, 'init_sd_recruit'])
+        self.init_mean_adult = np.float32(param_df.loc[index, 'init_mean_adult'])
+        self.init_sd_adult = np.float32(param_df.loc[index, 'init_sd_adult'])
+
         if not hasattr(self, "total_episodes_seen"):
             self.total_episodes_seen = 0
         else:
@@ -250,9 +260,9 @@ class twoActEnv(gym.Env):
 
         if self.random_start:
             self.init_n_adult = self.np_random.integers(0, self.max_obs + 1)
-            self.state = self.init_state()
         else:
-            self.state = np.zeros(self.nsize)
+            self.init_n_adult = config.get("init_n_adult", 0)
+        self.state = self.init_state()
 
         self.curr_month = 4
         self.observations = self.initial_observation()
