@@ -5,8 +5,9 @@ from rl4greencrab import (
     TwoActNormalized
 )
 import pandas as pd
+import os
 
-param_df = pd.read_csv('../data/posterior/params.csv')
+param_df = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'posterior', 'params.csv'))
 
 config = {
     'random_start':True,
