@@ -4,13 +4,14 @@ from rl4greencrab import (
     twoActEnv,
     TwoActNormalized
 )
+import pandas as pd
+
+param_df = pd.read_csv('../data/posterior/params.csv')
 
 config = {
-    "w_mort_scale" : 600,
-    "growth_k": 0.70,
     'random_start':True,
-    'var_penalty_const': 0,
-    'observation_type': 'count-biomass-time'
+    'observation_type': 'count-biomass-time',
+    'param_df': param_df
 }
 
 def test_GC():
