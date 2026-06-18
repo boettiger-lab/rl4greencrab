@@ -19,7 +19,10 @@ class twoActEnv(gym.Env):
         
         config=config or {}
         
-        # parameters
+        ######################
+        # randomness control #
+        ######################
+
         self.control_randomness = config.get("control_randomness", False)
         if self.control_randomness:
             self.np_random, _ = gym.utils.seeding.np_random(config.get("seed", 42))
@@ -29,89 +32,114 @@ class twoActEnv(gym.Env):
             self.np_random = default_rng()
             self.mig_rng = default_rng()
         
+        self.random_start = config.get('random_start', False)
+
+        ################################
+        # pop dynamic model parameters #
+        ################################
+
+        # growth parameters
         self.growth_k = np.float32(config.get("growth_k", 0.70))
         self.growth_xinf = np.float32(config.get("growth_xinf", 109))
         self.growth_sd = np.float32(config.get("growth_sd", 2.5))
         self.nmortality = np.float32(config.get("nmortality", 0.03))
+        self.delta_t = config.get("delta_t", 1/12)
 
+        # trap size-selective hazard rate parameters
+        # minnow traps
         self.trapm_pmax = np.float32(config.get("trapm_pmax", 0.00044))
         self.trapm_sigma = np.float32(config.get("trapm_sigma", 6.47))
         self.trapm_xmax = np.float32(config.get("trapm_xmax", 45.02))
-        #
+        # fukui traps
         self.trapf_pmax = np.float32(config.get("trapf_pmax", 0.00029))
         self.trapf_k = np.float32(config.get("trapf_k", 0.36))
         self.trapf_midpoint = np.float32(config.get("trapf_midpoint", 38.72))
-        #
-        self.traps_pmax = np.float32(config.get("traps_pmax", 0.00448))
-        self.traps_k = np.float32(config.get("traps_k", 0.33))
-        self.traps_midpoint = np.float32(config.get("traps_midpoint", 46.47))
+        # shrimp traps
+        #self.traps_pmax = np.float32(config.get("traps_pmax", 0.00448))
+        #self.traps_k = np.float32(config.get("traps_k", 0.33))
+        #self.traps_midpoint = np.float32(config.get("traps_midpoint", 46.47))
         
+        # initial adult and recruit sizes
         self.init_mean_recruit = config.get("init_mean_recruit", 9.31)
         self.init_sd_recruit = config.get("init_sd_recruit", 1.5)
+        self.init_mean_adult = config.get("init_mean_adult", 3.8)
+        self.init_sd_adult = config.get("init_sd_adult", 0.22)
+        self.init_n_adult = config.get("init_n_adult", 0)
         
+        # overwinter motrality
         self.w_mort_scale = config.get("w_mort_scale", 600)
+
+        # growth and density dependence
         self.K = config.get("K", 25000) # carrying capacity
-
         self.imm = config.get("imm", 5000) # mean colonization/immigration rate --> randomize 
-        
         self.r = config.get("r", 1) # intrinsic rate of growth
-
+        self.env_stoch = config.get("env_stoch", 0.1)
+        
+        # constants
         self.max_action = config.get("max_action", 3000)
         self.max_obs = config.get("max_obs", 2000)
-        
-        self.area = config.get("area", 30000)
-        self.loss_a = config.get("loss_a", 0.265)
-        self.loss_b = config.get("loss_b", 2.80)
-        self.loss_c = config.get("loss_c", 2.99)
-        
         self.minsize = config.get("minsize", 0)
         self.maxsize = config.get("maxsize", 110)
         self.nsize = config.get("nsize", 22)
         self.ntime = config.get("ntime", 9)
+        self.bndry = self.boundary()
+        self.midpts = self.midpoints()
         
-        self.delta_t = config.get("delta_t", 1/12)
-        self.env_stoch = config.get("env_stoch", 0.1)
-        
+
+        ###################
+        # reward function #
+        ###################
+
+        # action penalization
         self.action_reward_scale = np.array(config.get("action_reward_scale", [0.08, 0.08]))
         self.action_reward_exponent = config.get("action_reward_exponent", 1)
-        
+
+        # ecological change
+        self.area = config.get("area", 30000)
+        self.loss_a = config.get("loss_a", 0.265)
+        self.loss_b = config.get("loss_b", 2.80)
+        self.loss_c = config.get("loss_c", 2.99)
+
+                
+        #####################
+        # Initial variables #
+        #####################
+
         self.config = config
 
-        # Preserve these for reset
-        # self.observations = np.zeros(shape=9, dtype=np.float32)
-        # self.observations = (np.array([0, 0], dtype=np.float32), 1)
         self.reward = 0
         self.month_passed = 0
         self.curr_month = 3 #start with third month
         self.Tmax = config.get("Tmax", 100)
-                
-        # Initial variables
-        self.bndry = self.boundary()
-        self.state = np.zeros(self.nsize) # begin with popsize = 0
-        self.midpts = self.midpoints()
+
+        self.state = self.init_state()
         self.gm_ker = self.g_m_kernel()
         self.w_mort = self.w_mortality()
         self.w_mort_exp = np.exp(-self.w_mort)
         self.pmort = np.exp(-self.nmortality)
 
-        self.random_start = config.get('random_start', False)
-        self.curriculum_enabled = config.get('curriculum', False)
-
-        self.action_stacks = [] # storing whole year action -> store normalized action
-        self.variance_penalty_ratio = config.get('var_penalty_const', 1)
         self.non_local_crabs = []
         self.recruit_sizes = np.zeros(self.nsize)
 
-        # Action space
+
+        ################
+        # Action space #
+        ################
+
         # action -- # traps per month
+        self.action_stacks = [] # storing whole year action -> store normalized action
         self.action_space = spaces.Box(
             np.array([0, 0], dtype=np.float32),
             np.array(2*[self.max_action], dtype=np.float32),
             dtype=np.float32,
         )
 
-        self.max_mean_biomass = self.get_biomass_size()[-1]
 
+        #####################
+        # Observation space #
+        #####################
+
+        self.max_mean_biomass = self.get_biomass_size()[-1]
         self.observation_type = config.get('observation_type', 'count-biomass-time')
         self.observation_space = self.get_observations_space()
         self.observations = self.initial_observation()
@@ -119,7 +147,7 @@ class twoActEnv(gym.Env):
         self.crab_caught = []
         
         
-    def step(self,action):
+    def step(self, action):
 
         # size selective harvest rate, given action
         harvest_rate = (
@@ -198,34 +226,27 @@ class twoActEnv(gym.Env):
         else:
             self.total_episodes_seen += 1 
         
-        self.state = np.zeros(self.nsize) # begin with popsize = 0
         self.month_passed = 0
 
         # for tracking only
         self.reward = 0
 
-        # curriculumn learning
-        if self.curriculum_enabled:
-            # Increase difficulty slowly with training progress
-            progress = self.get_curriculum_progress()  # value between 0 and 1
-            low = int(self.max_obs * (0.4 - 0.2 * progress))   # gets wider over time
-            high = int(self.max_obs * (0.6 + 0.2 * progress))
-            low = max(0, low)
-            high = min(self.max_obs, high)
-        else:
-            low = 0
-            high = self.max_obs
-        
         if self.random_start:
-            self.init_n_adult = self.np_random.integers(low, high + 1)
+            self.init_n_adult = self.np_random.integers(0, self.max_obs + 1)
+            self.state = self.init_state()
+        else:
+            self.state = np.zeros(self.nsize)
 
         self.curr_month = 3
         self.observations = self.initial_observation()
 
         return self.observations, {}
 
-    #################
-    # helper functions
+
+    ####################
+    # helper functions #
+    ####################
+
     def get_observations_space(self):
         if self.observation_type == 'count-biomass-time':
             return spaces.Dict({
@@ -327,11 +348,7 @@ class twoActEnv(gym.Env):
         if self.observation_type == 'biomass-time':
             return {"crabs": np.array([mean_biomass], dtype=np.float32), "months": self.curr_month}
         
-    # calculate progress value for curriculum training
-    def get_curriculum_progress(self):
-        """Returns a value from 0.0 to 1.0 based on total episodes seen."""
-        return min(1.0, self.total_episodes_seen / 1000_000)
-
+    
     # set up boundary points of IPM mesh
     def boundary(self):
         boundary = self.minsize+np.arange(0,(self.nsize+1),1)*(self.maxsize-self.minsize)/self.nsize
@@ -341,6 +358,13 @@ class twoActEnv(gym.Env):
     def midpoints(self):
         midpoints = 0.5*(self.bndry[0:self.nsize]+self.bndry[1:(self.nsize+1)])
         return midpoints
+
+    # function for initial state
+    def init_state(self):
+        init_pop = (lognorm.cdf(self.bndry[1:(self.nsize+1)], s=self.init_sd_adult, scale=np.exp(self.init_mean_adult)) -
+            lognorm.cdf(self.bndry[0:self.nsize], s=self.init_sd_adult, scale=np.exp(self.init_mean_adult))) * self.init_n_adult
+
+        return init_pop
 
     # function for logistic size selectivity curve
     def size_sel_log(self):
@@ -394,7 +418,7 @@ class twoActEnv(gym.Env):
     def get_crab_caught(self):
         return self.crab_caught
     
-    #function for reward
+    # function for reward
     # two part reward function:
     # 1. impact on environment (function of crab density)
     # 2. penalty for how much effort we expended (function of action)
@@ -418,8 +442,4 @@ class twoActEnv(gym.Env):
                 * trap_cost(action, self.max_action, self.action_reward_exponent) 
             )
         )
-                # discourage high std in a year
-        if self.curr_month == 11:
-            action_std = np.std(self.action_stacks, axis=0)
-            reward -= self.variance_penalty_ratio * np.sum(action_std)
         return reward
