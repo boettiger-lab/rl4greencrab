@@ -5,7 +5,7 @@ import random
 from numpy.random import default_rng
 from gymnasium import spaces
 from gymnasium.spaces import Tuple, Box, Discrete, Dict
-from scipy.stats import norm
+from scipy.stats import norm, lognorm, gamma
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
@@ -48,17 +48,13 @@ class twoActEnv(gym.Env):
         
         self.init_mean_recruit = config.get("init_mean_recruit", 9.31)
         self.init_sd_recruit = config.get("init_sd_recruit", 1.5)
-        self.init_mean_adult = config.get("init_mean_adult", 47.9)
-        self.init_sd_adult = config.get("init_sd_adult", 8.1)
-        self.init_n_recruit = config.get("init_n_recruit", 0)
-        self.init_n_adult = config.get("init_n_adult", 0)
         
         self.w_mort_scale = config.get("w_mort_scale", 600)
-        self.K = config.get("K", 25000) #carrying capacity
+        self.K = config.get("K", 25000) # carrying capacity
 
         self.imm = config.get("imm", 5000) # mean colonization/immigration rate --> randomize 
         
-        self.r = config.get("r", 1) #intrinsic rate of growth
+        self.r = config.get("r", 1) # intrinsic rate of growth
 
         self.max_action = config.get("max_action", 3000)
         self.max_obs = config.get("max_obs", 2000)
@@ -68,9 +64,9 @@ class twoActEnv(gym.Env):
         self.loss_b = config.get("loss_b", 2.80)
         self.loss_c = config.get("loss_c", 2.99)
         
-        self.minsize = config.get("minsize", 5)
+        self.minsize = config.get("minsize", 0)
         self.maxsize = config.get("maxsize", 110)
-        self.nsize = config.get("nsize", 21)
+        self.nsize = config.get("nsize", 22)
         self.ntime = config.get("ntime", 9)
         
         self.delta_t = config.get("delta_t", 1/12)
@@ -91,20 +87,20 @@ class twoActEnv(gym.Env):
                 
         # Initial variables
         self.bndry = self.boundary()
-        self.state = self.init_state()
+        self.state = np.zeros(self.nsize) # begin with popsize = 0
         self.midpts = self.midpoints()
         self.gm_ker = self.g_m_kernel()
         self.w_mort = self.w_mortality()
         self.w_mort_exp = np.exp(-self.w_mort)
         self.pmort = np.exp(-self.nmortality)
 
-        self.monthly_size = np.zeros(shape=(self.nsize,1),dtype='object')
         self.random_start = config.get('random_start', False)
         self.curriculum_enabled = config.get('curriculum', False)
 
         self.action_stacks = [] # storing whole year action -> store normalized action
         self.variance_penalty_ratio = config.get('var_penalty_const', 1)
         self.non_local_crabs = []
+        self.recruit_sizes = np.zeros(self.nsize)
 
         # Action space
         # action -- # traps per month
@@ -124,66 +120,73 @@ class twoActEnv(gym.Env):
         
         
     def step(self,action):
-        #size selective harvest rate, given action
-        harvest_rate = (
-            1 - np.exp( -(
-                self.size_sel_norm()*action[0] 
-                + self.size_sel_log(self.trapf_pmax, self.trapf_midpoint, self.trapf_k)*action[1] 
-            ))
-        )
-        removed = np.zeros(shape=(self.nsize,1),dtype='object')
-        size_freq = np.zeros(shape=(self.nsize,1),dtype='object')
-        if self.curr_month == 3:
-            #add pop at t=1
-            size_freq[:,0] = self.state
-            #calculate removed and record observation at month = 3
-            removed[:,0] = [self.np_random.binomial(size_freq[k,0], harvest_rate[k]) for k in range(self.nsize)]
-            self.action_stacks = []
-        else:
-            size_freq[:] = [self.np_random.binomial(n=self.monthly_size[k].tolist(), p=self.pmort) for k in range(self.nsize)]
-            removed[:] = [self.np_random.binomial(size_freq[k].tolist(), harvest_rate[k]) for k in range(self.nsize)]
 
-        self.monthly_size = self.gm_ker@(size_freq[:] - removed[:]) # calculate for greencrab pop for next month
-        # update actions stacks
+        # size selective harvest rate, given action
+        harvest_rate = (
+            1 - np.exp( -(self.size_sel_norm() * action[0] + self.size_sel_log() * action[1]))
+        )
+
+        # create temporary size-structured pop
+        pop = np.zeros(shape=(self.nsize, 1), dtype='object')
+        pop[:,0] = self.state
+
+        # calculate number removed
+        removed = np.zeros(shape=(self.nsize, 1), dtype='object')
+        removed[:,0] = [self.np_random.binomial(pop[k,0], harvest_rate[k]) for k in range(self.nsize)]
+
+        if self.curr_month == 3:
+            self.action_stacks = []
+
+        # project one time step (growth and mortality)
+        next_pop = self.gm_ker @ (pop - removed)
+        
+        # add recruits
+        if self.curr_month == 5:
+            next_pop = next_pop + self.recruit_sizes.reshape(self.nsize, 1)
+        
+        self.state = np.maximum(next_pop.reshape(self.nsize), 0)
+
+        # update action stacks
         normalized_action = action / self.max_action * 2 - 1
         self.action_stacks.append(normalized_action)
-        
-        #update observation space
-        biomass = np.sum(self.get_biomass_size() * removed[:,0]) # get biomass
+
+        # update observation space
+        biomass = np.sum(self.get_biomass_size() * removed[:,0])
         crab_counts = np.sum(removed[:,0])
         mean_biomass = biomass/crab_counts if crab_counts != 0 else 0
         self.observations = self.update_observation(crab_counts, mean_biomass, removed)
         self.crab_caught = removed[:,0]
-        
-        #TODO: update self.state for every month or use different parameter for reward calculation
-        self.state = self.monthly_size.reshape(21,) # calculate crab popluation after remove crab caught
 
-        #calculate reward
+        # calculate reward
         self.reward = self.reward_func(action)
+
+        # iterate the month
         self.month_passed += 1
         self.curr_month += 1
 
-        #calculate new adult population after overwinter mortality, how do we deal with for single month? 
-        if self.curr_month > 11: 
-            new_adults = [self.np_random.binomial(size_freq[k,0],self.w_mort_exp[k]) for k in range(self.nsize) ]
+        # calculate new adult population after overwinter mortality
+        if self.curr_month > 11:
+            state_col = self.state.reshape(self.nsize, 1)
+            new_adults = [self.np_random.binomial(int(self.state[k]), self.w_mort_exp[k]) for k in range(self.nsize)]
 
-            #simulate new recruits for next year
-            local_recruits = self.np_random.normal(self.dd_growth(size_freq[:]),self.env_stoch)
-            
-            nonlocal_recruits = self.non_localrecurit(size_freq)
+            # simulate new recruits for next year
+            local_recruits = self.np_random.normal(self.dd_growth(state_col), self.env_stoch)
+            nonlocal_recruits = self.non_localrecurit(state_col)
             recruit_total = local_recruits + nonlocal_recruits
-    
+
             logging.debug('local recruits = {}'.format(local_recruits))
             logging.debug('nonlocal recruits = {}'.format(nonlocal_recruits))
-    
-            #get sizes of recruits
-            recruit_sizes = (norm.cdf(self.bndry[1:(self.nsize+1)],self.init_mean_recruit,self.init_sd_recruit)-\
-             norm.cdf(self.bndry[0:self.nsize],self.init_mean_recruit,self.init_sd_recruit))*recruit_total
 
-            #store new population size (and cap off at zero pop)
-            self.state = np.maximum(recruit_sizes + new_adults, 0)
-
-        if (self.curr_month > 11) : self.curr_month = 3 # jump to next year March
+            # get recruit vector for next year
+            var = self.init_sd_recruit ** 2
+            shape = self.init_mean_recruit ** 2 / var
+            rate = self.init_mean_recruit / var
+            self.recruit_sizes = (
+                (gamma.cdf(self.bndry[1:(self.nsize+1)], a=shape, scale=1/rate) -
+                 gamma.cdf(self.bndry[0:self.nsize], a=shape, scale=1/rate)) * recruit_total
+            )
+            self.state = np.maximum(new_adults, 0)
+            self.curr_month = 3
 
         done = bool(self.month_passed > self.Tmax)
 
@@ -195,7 +198,7 @@ class twoActEnv(gym.Env):
         else:
             self.total_episodes_seen += 1 
         
-        self.state = self.init_state()
+        self.state = np.zeros(self.nsize) # begin with popsize = 0
         self.month_passed = 0
 
         # for tracking only
@@ -222,7 +225,7 @@ class twoActEnv(gym.Env):
         return self.observations, {}
 
     #################
-    #helper functions
+    # helper functions
     def get_observations_space(self):
         if self.observation_type == 'count-biomass-time':
             return spaces.Dict({
@@ -237,11 +240,11 @@ class twoActEnv(gym.Env):
         elif self.observation_type == 'count-time':
             return spaces.Dict({
                "crabs": spaces.Box(
-                    low=np.array([0, 0]),  # Lower bounds: original obs (0)
-                    high=np.array([self.max_obs]),  # Upper bounds: obs max,
-                    shape=(2,),
+                    low=np.array([0]),
+                    high=np.array([self.max_obs]),
+                    shape=(1,),
                     dtype=np.float32
-                ), 
+                ),
                 "months": spaces.Discrete(12, start=1)
             })
         elif self.observation_type == 'size-time':
@@ -329,30 +332,22 @@ class twoActEnv(gym.Env):
         """Returns a value from 0.0 to 1.0 based on total episodes seen."""
         return min(1.0, self.total_episodes_seen / 1000_000)
 
-    #set up boundary points of IPM mesh
+    # set up boundary points of IPM mesh
     def boundary(self):
         boundary = self.minsize+np.arange(0,(self.nsize+1),1)*(self.maxsize-self.minsize)/self.nsize
         return boundary
 
-    #set up mid points of IPM mesh
+    # set up mid points of IPM mesh
     def midpoints(self):
         midpoints = 0.5*(self.bndry[0:self.nsize]+self.bndry[1:(self.nsize+1)])
         return midpoints
 
-    #function for initial state
-    def init_state(self):
-        init_pop = (norm.cdf(self.bndry[1:(self.nsize+1)],self.init_mean_adult,self.init_sd_adult)-\
-         norm.cdf(self.bndry[0:self.nsize],self.init_mean_adult,self.init_sd_adult))*self.init_n_adult+\
-        (norm.cdf(self.bndry[1:(self.nsize+1)],self.init_mean_recruit,self.init_sd_recruit)-\
-         norm.cdf(self.bndry[0:self.nsize],self.init_mean_recruit,self.init_sd_recruit))*self.init_n_recruit
-        return init_pop
-
-    #function for logistic size selectivity curve
-    def size_sel_log(self, trap_pmax, trap_midpts, trap_k):
-        size_sel = trap_pmax/(1+np.exp(-trap_k*(self.midpts-trap_midpts)))
+    # function for logistic size selectivity curve
+    def size_sel_log(self):
+        size_sel = self.trapf_pmax/(1+np.exp(-self.trapf_k*(self.midpts-self.trapf_midpoint)))
         return size_sel
 
-    #function for gaussian size selectivity curve
+    # function for gaussian size selectivity curve
     def size_sel_norm(self):
         size_sel = self.trapm_pmax*np.exp(-(self.midpts-self.trapm_xmax)**2/(2*self.trapm_sigma**2))
         return size_sel
@@ -371,12 +366,11 @@ class twoActEnv(gym.Env):
         wmort = self.w_mort_scale/self.midpts**2
         return wmort
 
-    #function for density dependent growth
+    # function for density dependent growth
     def dd_growth(self,popsize):
         dd_recruits = np.sum(popsize)*self.r*(1-np.sum(popsize)/self.K)
         return dd_recruits
 
-    # Calculate newborn green crab for the coming year
     # Calculate newborn green crab for the coming year
     def non_localrecurit(self, size_freq):
         # self.imm * self.np_random.lognormal()*(1-np.sum(size_freq[:])/self.K) # 0.2 for high 80000, 0.8 for low 8000 
