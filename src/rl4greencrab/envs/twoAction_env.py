@@ -129,22 +129,17 @@ class twoActEnv(gym.Env):
         )
 
         # create temporary size-structured pop
-        pop = np.zeros(shape=(self.nsize, 1), dtype='object')
-        pop[:,0] = self.state
+        pop = self.state.reshape(self.nsize, 1)
 
         # calculate number removed
-        removed = np.zeros(shape=(self.nsize, 1), dtype='object')
-        removed[:,0] = [self.np_random.binomial(pop[k,0], harvest_rate[k]) for k in range(self.nsize)]
+        removed = np.zeros(shape=(self.nsize, 1), dtype=np.float64)
+        removed[:,0] = [self.np_random.binomial(int(pop[k,0]), harvest_rate[k]) for k in range(self.nsize)]
 
         if self.curr_month == 4:
             self.action_stacks = []
 
-        # project one time step (growth and mortality)
-        D1 = self.D[self.curr_month - 4]
-        D2 = self.D[self.curr_month - 3]
-        survival = np.exp(-(D2 - D1) * (self.mort_beta + self.mort_alpha / self.midpts ** 2))
-        proj_matrix = self.g_kernel(D1, D2) * survival
-        next_pop = proj_matrix @ (pop - removed)
+        # project one time step using pre-computed matrix (growth * survival)
+        next_pop = self.proj_matrices[self.curr_month - 4] @ (pop - removed)
         
         # add recruits
         if self.curr_month == 5:
@@ -177,9 +172,7 @@ class twoActEnv(gym.Env):
             state_col = self.state.reshape(self.nsize, 1)
 
             # project forward based on growth and stochastic overwinter mortality
-            D1 = self.D[self.curr_month - 4]
-            D2 = self.D[0] + 1.0
-            next_pop = self.g_kernel(D1, D2) @ self.state
+            next_pop = self.overwinter_kernel @ self.state
             new_adults = [self.np_random.binomial(int(next_pop[k]), self.w_mort_exp[k]) for k in range(self.nsize)]
 
             # simulate new recruits for next year
@@ -248,6 +241,16 @@ class twoActEnv(gym.Env):
         self.init_mean_adult = np.float32(param_df.loc[index, 'init_mean_adult'])
         self.init_sd_adult = np.float32(param_df.loc[index, 'init_sd_adult'])
 
+        # pre-compute projection matrices for each monthly step (growth * survival)
+        # and the overwinter kernel; avoids recomputing g_kernel on every step() call
+        self.proj_matrices = []
+        for month in range(4, 11):
+            D1 = self.D[month - 4]
+            D2 = self.D[month - 3]
+            survival = np.exp(-(D2 - D1) * (self.mort_beta + self.mort_alpha / self.midpts ** 2))
+            self.proj_matrices.append(self.g_kernel(D1, D2) * survival)
+        self.overwinter_kernel = self.g_kernel(self.D[7], self.D[0] + 1.0)
+
         if not hasattr(self, "total_episodes_seen"):
             self.total_episodes_seen = 0
         else:
@@ -261,7 +264,7 @@ class twoActEnv(gym.Env):
         if self.random_start:
             self.init_n_adult = self.np_random.integers(0, self.max_obs + 1)
         else:
-            self.init_n_adult = config.get("init_n_adult", 0)
+            self.init_n_adult = self.config.get("init_n_adult", 0)
         self.state = self.init_state()
 
         self.curr_month = 4
@@ -407,15 +410,13 @@ class twoActEnv(gym.Env):
     def g_kernel(self, D1, D2):
         S_t  = (self.growth_A * self.growth_k / (2 * np.pi)) * np.sin(2 * np.pi * (D2 - self.growth_ds))
         S_t0 = (self.growth_A * self.growth_k / (2 * np.pi)) * np.sin(2 * np.pi * (D1 - self.growth_ds))
-        array = np.empty(shape=(self.nsize, self.nsize), dtype='object')
-        for i in range(self.nsize):
-            increment = (self.growth_xinf - self.midpts[i]) * (1 - np.exp(-self.growth_k * (D2 - D1) - S_t + S_t0))
-            mean = self.midpts[i] + increment
-            array[:,i] = (norm.cdf(self.bndry[1:(self.nsize+1)], mean, self.growth_sd) -
-                          norm.cdf(self.bndry[0:self.nsize], mean, self.growth_sd))
-        # normalize columns
-        for i in range(self.nsize):
-            array[:,i] = array[:,i] / np.sum(array[:,i])
+        increment = (self.growth_xinf - self.midpts) * (1 - np.exp(-self.growth_k * (D2 - D1) - S_t + S_t0))
+        means = self.midpts + increment  # (nsize,)
+        bndry_upper = self.bndry[1:(self.nsize+1)].reshape(-1, 1)
+        bndry_lower = self.bndry[0:self.nsize].reshape(-1, 1)
+        array = (norm.cdf(bndry_upper, means, self.growth_sd) -
+                 norm.cdf(bndry_lower, means, self.growth_sd))
+        array /= array.sum(axis=0, keepdims=True)
         return array
 
     # function for overwinter mortality

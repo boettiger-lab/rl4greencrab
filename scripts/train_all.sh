@@ -2,10 +2,10 @@
 
 echo "start training count-time"
 for seed in $(seq 1 5); do
-    CUDA_VISIBLE_DEVICES=0 nohup python train.py -f ../hyperpars/count-time/ppo.yaml --id $seed &
-    #CUDA_VISIBLE_DEVICES=0 nohup python train.py -f ../hyperpars/count-time/rppo.yaml --id $seed &
-    CUDA_VISIBLE_DEVICES=1 nohup python train.py -f ../hyperpars/count-time/td3.yaml --id $seed &
-    CUDA_VISIBLE_DEVICES=1 nohup python train.py -f ../hyperpars/count-time/tqc.yaml --id $seed &
+    CUDA_VISIBLE_DEVICES="" nohup python train.py -f ../hyperpars/count-time/ppo.yaml --id $seed &
+    #CUDA_VISIBLE_DEVICES="" nohup python train.py -f ../hyperpars/count-time/rppo.yaml --id $seed &
+    CUDA_VISIBLE_DEVICES="" nohup python train.py -f ../hyperpars/count-time/td3.yaml --id $seed &
+    CUDA_VISIBLE_DEVICES="" nohup python train.py -f ../hyperpars/count-time/tqc.yaml --id $seed &
 done
 
 #echo "start training count"
