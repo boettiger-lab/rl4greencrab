@@ -3,6 +3,7 @@ from huggingface_hub import HfApi
 
 from os.path import basename
 import pathlib
+import shutil
 
 def upload_to_hf(path, path_in_repo, repo, clean=False):
     api = HfApi()
@@ -15,3 +16,16 @@ def upload_to_hf(path, path_in_repo, repo, clean=False):
         repo_type="model")
     if clean:
         pathlib.Path(path).unlink()
+
+def upload_folder_to_hf(folder_path, path_in_repo, repo, clean=False, ignore_patterns=None):
+    api = HfApi()
+    if path_in_repo is None:
+        path_in_repo = basename(folder_path)
+    api.upload_folder(
+        folder_path=folder_path,
+        path_in_repo=path_in_repo,
+        repo_id=repo,
+        repo_type="model",
+        ignore_patterns=ignore_patterns)
+    if clean:
+        shutil.rmtree(folder_path)

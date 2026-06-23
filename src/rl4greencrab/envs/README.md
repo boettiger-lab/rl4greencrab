@@ -13,7 +13,7 @@ This dir contains a custom **Gymnasium** environment (`twoActEnv`) for simulatin
 - **Gymnasium-compatible** `Env` with `reset()` and `step()`
 - **Continuous 2D action space**: traps/effort per month for two actions
 - **Size-structured population dynamics** (21 size bins by default)
-- **Seasonal loop**: months advance from March (`curr_month=3`) through November, then recruitment + overwinter mortality
+- **Seasonal loop**: months advance from April (`curr_month=4`) through October, then recruitment + overwinter mortality
 - **Multiple observation modes** via `observation_type`:
   - `count-biomass-time`: number of crabs caught per trap (CPUE, continuous), mean biomass of the crabs caught (continuous), current month (discrete)
   - `count-time`: number of crabs caught per trap (CPUE, continuous), current month (discrete)
@@ -46,7 +46,7 @@ from rl4greencrab import TwoActNormalized
 # Environment configuration
 config = {
     'random_start':True,
-    'var_penalty_const': 0,
+    'param_csv': '/home/jovyan/rl4greencrab/data/posterior/params.csv'
     'observation_type': 'size-time'
 }
 

@@ -50,8 +50,7 @@ def sb3_train(config_file, **kwargs):
     ALGO = algorithm(options["algo"])
     POLICY = options.get("policy", "MlpPolicy")
     observations = options["config"]['observation_type']
-    variance = options["config"].get('var_penalty_const', 0)
-    model_id = options["algo"] + "-" + f'Var{variance}'  + "-(" + observations + ')-' + options["id"]
+    model_id = options["algo"] + "-(" + observations + ')-' + options["id"]
     model_config = options.get('model_config', {})
     policy_kwargs = model_config.get("policy_kwargs", {})
     
