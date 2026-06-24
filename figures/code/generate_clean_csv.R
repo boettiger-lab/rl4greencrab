@@ -52,31 +52,10 @@ get_nonlocal_sd <- function(string) {
   return(sd(as.numeric(numeric_vector)))
 }
 
-# read in data
-data_rppo_var <- clean_all(read.csv(
-  "model_evaluations/state2/RecurrentPPO_state2_var.csv"
-) %>% filter(months >= 3))
-data_td3_var <- clean_all(read.csv(
-  "model_evaluations/state2/PPO_state2_var.csv"
-) %>% filter(months >= 3))
-data_ppo_var <- clean_all(read.csv(
-  "model_evaluations/state2/TD3_state2_var.csv"
-) %>% filter(months >= 3))
-data_tqc_var <- clean_all(read.csv(
-  "model_evaluations/state2/TQC_state2_var.csv"
-) %>% filter(months >= 3))
-data_rppo <- clean_all(read.csv(
-  "model_evaluations/state2/RecurrentPPO_state2.csv"
-) %>% filter(months >= 3))
-data_td3 <- clean_all(read.csv(
-  "model_evaluations/state2/PPO_state2.csv"
-) %>% filter(months >= 3))
-data_ppo <- clean_all(read.csv(
-  "model_evaluations/state2/TD3_state2.csv"
-) %>% filter(months >= 3))
-data_tqc <- clean_all(read.csv(
-  "model_evaluations/state2/TQC_state2.csv"
-) %>% filter(months >= 3))
+# read in data of best TQC/count-biomass-time replicate
+data <- clean_all(read.csv(
+  "data/rl_policies/count-biomass-time/tqc_count-biomass-time_sim_3.csv")
+)
 
 
-write.csv(data_tqc, "model_evaluations/tqc_clean.csv")
+write.csv(data, "data/rl_policies/tqc_clean.csv")
