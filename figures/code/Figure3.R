@@ -75,6 +75,9 @@ convert_all <- function(data, params) {
 
 data <- convert_all(data, params)
 
+# change action to t+1
+data <- data[-c(1:5), ]
+
 # convert from wide to long
 data_long <- data %>% 
   pivot_longer(cols = c(act0_real, act1_real),
@@ -96,9 +99,9 @@ figure3 <- ggplot(data_long) +
   geom_point(aes(x = biomass_real, y = cpue_real, 
                  color = action)) +
   scale_color_viridis() +
-  labs(x = "mean biomass (g)", 
-       y = "CPUE (crabs per trap)",
-       color = "action\n(number\nof traps)") +
+  labs(x = "mean biomass (g), t - 1", 
+       y = "CPUE (crabs per trap), t - 1",
+       color = "action\n(number\nof traps), t") +
   scale_x_continuous(breaks = c(5, 10, 15),
                      labels = c(5, 10, 15)) +
   facet_grid(action_type ~ months, 
