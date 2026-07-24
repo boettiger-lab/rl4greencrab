@@ -144,7 +144,6 @@ notebooks/test.ipynb
 
 # data
 discretization/tqc_clean.csv
-data/constant_action
 data/rl_policies
 
 # saved agents
