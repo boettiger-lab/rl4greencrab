@@ -1,35 +1,43 @@
-library(tidyverse)
+library(httr)
+library(jsonlite)
+library(purrr)
+library(readr)
+library(dplyr)
 library(viridis)
 library(patchwork)
-library(purrr)
+library(tidyverse)
 
-# read in rl simulation data
-csv_files <- c(
-  Sys.glob("data/rl_policies/size-time/*.csv"),
-  Sys.glob("data/rl_policies/count/*.csv"),
-  Sys.glob("data/rl_policies/count-biomass-time/*.csv"),
-  Sys.glob("data/rl_policies/count-time/*.csv")
-)
+# set up connection to hugging face to read in data
+repo <- "boettiger-lab/rl4eco"
+base_path <- "rl4greencrab/data/rl_policies"
+subfolders <- c("size-time", "count", "count-biomass-time", "count-time")
 
-combined_df <- map(csv_files, function(filepath) {
-  filename <- basename(filepath)
-  
-  match <- regmatches(filename, regexec("^([^_]+)_(.+)_sim_(\\d+)\\.csv$", filename))[[1]]
-  
-  algorithm <- match[2]
-  obs_type  <- match[3]
-  replicate <- as.integer(match[4])
-  
-  df <- read.csv(filepath)
-  df <- df[df$t == 99, ]
-  
-  df$algorithm <- algorithm
-  df$obs_type  <- obs_type
-  df$replicate <- replicate
-  df
-}) %>%
-  compact() %>%
-  bind_rows()
+api_base <- paste0("https://huggingface.co/api/models/", repo, "/tree/main/")
+resolve_base <- paste0("https://huggingface.co/", repo, "/resolve/main/")
+
+# get list of csv files across all subfolders via the API
+csv_paths <- map(subfolders, function(sub) {
+  listing <- fromJSON(paste0(api_base, base_path, "/", sub))
+  listing$path[listing$type == "file" & grepl("\\.csv$", listing$path)]
+}) |> unlist()
+
+# read in rl simulation data and add metadata columns
+combined_df <- map_dfr(csv_paths, function(path) {
+  df <- read_csv(paste0(resolve_base, path), show_col_types = FALSE)
+  filename <- basename(path)
+  df |> mutate(
+    source_file = filename,
+    config = basename(dirname(path)), 
+    algorithm = sub("_.*", "", filename), 
+    sim = as.integer(sub(".*_sim_(\\d+)\\.csv", "\\1", filename))
+  )
+})
+
+# add columns for obs_type
+combined_df <- combined_df |>
+  mutate(
+    obs_type = sub("^[^_]+_(.*)_sim_.*", "\\1", source_file)
+  )
 
 # read in constant action data
 const_data <- read.csv("data/constant_action/const_agent_simulations.csv")
@@ -59,33 +67,103 @@ fill_colors <- c(
   "constant" = "black"
 )
 
-figure2 <- ggplot() +
-  geom_density(data = data_all[data_all$algorithm == "tqc" |
-                                 data_all$algorithm == "constant", ],
-               aes(x = rew, fill = obs_type),
+figure2_1 <- ggplot() +
+  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
+                                   data_all$obs_type == "count") |
+                                 c(data_all$algorithm == "constant"), ],
+               aes(x = rew, fill = algorithm),
                alpha = 0.4, adjust = 2) +
-  geom_vline(data = data_means[data_means$algorithm == "tqc" |
-                                 data_means$algorithm == "constant", ],
-             aes(xintercept = mean_reward, color = obs_type),
-             linewidth = 1, linetype = "dashed",
+  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
+                                   data_means$obs_type == "count") |
+                                 c(data_means$algorithm == "constant"), ],
+             aes(xintercept = mean_reward, color = algorithm),
+             linewidth = 1, linetype = "solid",
              show.legend = FALSE) +
   scale_fill_manual(
-    values = fill_colors,
-    labels = c("count" = expression(O[1]),
-               "count-time" = expression(O[1]^T),
-               "count-biomass-time" = expression(O[2]^T),
-               "size-time" = expression(O[22]^T),
-               "constant" = "constant\naction")
+    values = unname(fill_colors[c("constant", "count")])
   ) +
-  scale_color_manual(values = fill_colors) +
-  labs(x = "reward", y = "density", fill = "observation\ntype") +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
+  scale_color_manual(values = unname(fill_colors[c("constant", "count")])) +
+  labs(x = "", y = "density") +
   theme_minimal() +
-  theme(legend.title = element_text(hjust = 0.5),
-        legend.key.spacing.y = unit(0.2, "cm"))
+  theme(legend.position = "None")
+
+figure2_1t <- ggplot() +
+  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
+                                   data_all$obs_type == "count-time") |
+                                 c(data_all$algorithm == "constant"), ],
+               aes(x = rew, fill = algorithm),
+               alpha = 0.4, adjust = 2) +
+  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
+                                   data_means$obs_type == "count-time") |
+                                 c(data_means$algorithm == "constant"), ],
+             aes(xintercept = mean_reward, color = algorithm),
+             linewidth = 1, linetype = "solid",
+             show.legend = FALSE) +
+  scale_fill_manual(
+    values = unname(fill_colors[c("constant", "count-time")])
+  ) +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
+  scale_color_manual(values = unname(fill_colors[c("constant", 
+                                                   "count-time")])) +
+  labs(x = "", y = "density") +
+  theme_minimal() +
+  theme(legend.position = "None")
+
+figure2_2t <- ggplot() +
+  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
+                                   data_all$obs_type == "count-biomass-time") |
+                                 c(data_all$algorithm == "constant"), ],
+               aes(x = rew, fill = algorithm),
+               alpha = 0.4, adjust = 2) +
+  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
+                                   data_means$obs_type == "count-biomass-time") |
+                                 c(data_means$algorithm == "constant"), ],
+             aes(xintercept = mean_reward, color = algorithm),
+             linewidth = 1, linetype = "solid",
+             show.legend = FALSE) +
+  scale_fill_manual(
+    values = unname(fill_colors[c("constant", "count-biomass-time")])
+  ) +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
+  scale_color_manual(values = unname(fill_colors[c("constant", 
+                                                   "count-biomass-time")])) +
+  labs(x = "", y = "density") +
+  theme_minimal() +
+  theme(legend.position = "None")
+
+figure2_22 <- ggplot() +
+  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
+                                   data_all$obs_type == "size-time") |
+                                 c(data_all$algorithm == "constant"), ],
+               aes(x = rew, fill = algorithm),
+               alpha = 0.4, adjust = 2) +
+  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
+                                   data_means$obs_type == "size-time") |
+                                 c(data_means$algorithm == "constant"), ],
+             aes(xintercept = mean_reward, color = algorithm),
+             linewidth = 1, linetype = "solid",
+             show.legend = FALSE) +
+  scale_fill_manual(
+    values = unname(fill_colors[c("constant", "size-time")])
+  ) +
+  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
+  scale_color_manual(values = unname(fill_colors[c("constant", "size-time")])) +
+  labs(x = "reward", y = "density") +
+  theme_minimal() +
+  theme(legend.position = "None")
+
+common_x <- scale_x_continuous(limits = c(-15, 0))
+
+figure2 <- (figure2_1 + common_x) /
+  (figure2_1t + common_x) /
+  (figure2_2t + common_x) /
+  (figure2_22 + common_x) +
+  plot_layout(ncol = 1)
 
 
 ggsave("figures/figure2.svg",
-       figure2, height = 3, width = 4)
+       figure2, height = 4.2, width = 1.75)
 
 algo_names <- c(
   "tqc" = "Truncated Quantile Critic (TQC)",

@@ -99,9 +99,9 @@ figure3 <- ggplot(data_long) +
   geom_point(aes(x = biomass_real, y = cpue_real, 
                  color = action)) +
   scale_color_viridis() +
-  labs(x = "mean biomass (g), t - 1", 
-       y = "CPUE (crabs per trap), t - 1",
-       color = "action\n(number\nof traps), t") +
+  labs(x = expression("mean biomass (g), " * italic("t - 1")),
+       y = expression("CPUE (crabs per trap), " * italic("t - 1")),
+       color = expression("action\n(number\nof traps), " * italic(t))) +
   scale_x_continuous(breaks = c(5, 10, 15),
                      labels = c(5, 10, 15)) +
   facet_grid(action_type ~ months, 
