@@ -77,7 +77,7 @@ figure2_1 <- ggplot() +
                                    data_means$obs_type == "count") |
                                  c(data_means$algorithm == "constant"), ],
              aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 1, linetype = "solid",
+             linewidth = 0.75, linetype = "solid",
              show.legend = FALSE) +
   scale_fill_manual(
     values = unname(fill_colors[c("constant", "count")])
@@ -86,7 +86,8 @@ figure2_1 <- ggplot() +
   scale_color_manual(values = unname(fill_colors[c("constant", "count")])) +
   labs(x = "", y = "density") +
   theme_minimal() +
-  theme(legend.position = "None")
+  theme(legend.position = "None",
+        axis.text.x = element_blank())
 
 figure2_1t <- ggplot() +
   geom_density(data = data_all[c(data_all$algorithm == "tqc" &
@@ -98,7 +99,7 @@ figure2_1t <- ggplot() +
                                    data_means$obs_type == "count-time") |
                                  c(data_means$algorithm == "constant"), ],
              aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 1, linetype = "solid",
+             linewidth = 0.75, linetype = "solid",
              show.legend = FALSE) +
   scale_fill_manual(
     values = unname(fill_colors[c("constant", "count-time")])
@@ -108,7 +109,8 @@ figure2_1t <- ggplot() +
                                                    "count-time")])) +
   labs(x = "", y = "density") +
   theme_minimal() +
-  theme(legend.position = "None")
+  theme(legend.position = "None",
+        axis.text.x = element_blank())
 
 figure2_2t <- ggplot() +
   geom_density(data = data_all[c(data_all$algorithm == "tqc" &
@@ -120,7 +122,7 @@ figure2_2t <- ggplot() +
                                    data_means$obs_type == "count-biomass-time") |
                                  c(data_means$algorithm == "constant"), ],
              aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 1, linetype = "solid",
+             linewidth = 0.75, linetype = "solid",
              show.legend = FALSE) +
   scale_fill_manual(
     values = unname(fill_colors[c("constant", "count-biomass-time")])
@@ -130,7 +132,8 @@ figure2_2t <- ggplot() +
                                                    "count-biomass-time")])) +
   labs(x = "", y = "density") +
   theme_minimal() +
-  theme(legend.position = "None")
+  theme(legend.position = "None",
+        axis.text.x = element_blank())
 
 figure2_22 <- ggplot() +
   geom_density(data = data_all[c(data_all$algorithm == "tqc" &
@@ -142,7 +145,7 @@ figure2_22 <- ggplot() +
                                    data_means$obs_type == "size-time") |
                                  c(data_means$algorithm == "constant"), ],
              aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 1, linetype = "solid",
+             linewidth = 0.75, linetype = "solid",
              show.legend = FALSE) +
   scale_fill_manual(
     values = unname(fill_colors[c("constant", "size-time")])
@@ -163,7 +166,7 @@ figure2 <- (figure2_1 + common_x) /
 
 
 ggsave("figures/figure2.svg",
-       figure2, height = 4.2, width = 1.75)
+       figure2, height = 6.3, width = 2.625)
 
 algo_names <- c(
   "tqc" = "Truncated Quantile Critic (TQC)",
