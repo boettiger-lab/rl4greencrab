@@ -183,6 +183,7 @@ supplemental <- ggplot() +
              linetype = "dashed",
              show.legend = FALSE) +
   scale_fill_manual(
+    limits = c("constant", "count", "count-time", "count-biomass-time", "size-time"),
     values = fill_colors,
     labels = c("count" = expression(O[1]),
                "count-time" = expression(O[1]^T),
@@ -190,6 +191,7 @@ supplemental <- ggplot() +
                "size-time" = expression(O[22]^T),
                "constant" = "constant\naction")
   ) +
+  scale_x_continuous(limits = c(-20, 0)) +
   scale_color_manual(values = fill_colors) +
   labs(x = "reward", y = "density", fill = "observation\ntype") +
   facet_wrap(~algorithm, ncol = 1, 
