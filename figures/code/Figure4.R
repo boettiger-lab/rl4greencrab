@@ -86,9 +86,9 @@ data$month <- factor(data$month, levels = c("Apr", "May", "June", "July",
                                             "Aug", "Sep", "Oct"))
 
 figure4 <- ggplot(data) + 
-  geom_point(aes(x = biomass_real, y = cpue_real, 
-                 color = act_real)) +
-  scale_color_viridis(option = "magma") +
+  geom_density_2d_filled(aes(x = biomass_real, y = cpue_real, 
+                 fill = factor(act_real))) +
+  scale_fill_viridis_d(option = "magma") +
   labs(x = expression("mean biomass (g), " * italic("t - 1")),
        y = expression("CPUE (crabs per trap), " * italic("t - 1")),
        color = expression("action\n(number\nof traps), " * italic(t))) +
@@ -100,3 +100,19 @@ figure4 <- ggplot(data) +
 
 ggsave("figures/figure4.png",
        figure4, height = 3, width = 8)
+
+ggplot(data, aes(x = biomass_real, y = cpue_real, color = factor(act_real))) + 
+  # 1. Plot the actual data points colored by act_real
+  #geom_point(alpha = 0.5) +
+  
+  # 2. Draw an oval around each group
+  stat_ellipse(type = "t", level = 0.95, linewidth = 1) + 
+  
+  scale_color_viridis_d(option = "magma") +
+  labs(x = expression("mean biomass (g), " * italic("t - 1")),
+       y = expression("CPUE (crabs per trap), " * italic("t - 1")),
+       color = expression("action\n(number\nof traps), " * italic(t))) +
+  scale_x_continuous(breaks = c(5, 10, 15), labels = c(5, 10, 15)) +
+  facet_grid(action ~ month) +
+  theme_minimal() +
+  theme(legend.title = element_text(hjust = 0.5))
