@@ -260,6 +260,7 @@ class twoActEnv(gym.Env):
 
         # for tracking only
         self.reward = 0
+        self.non_local_crabs = []
 
         if self.random_start:
             self.init_n_adult = self.np_random.integers(0, self.max_obs + 1)
