@@ -41,7 +41,7 @@ df <- df %>%
 
 colnames(df)[1:3] <- c("t", "rep", "month")
 
-ggplot(data = df) +
+timeseries_plot <- ggplot(data = df) +
   geom_violin(aes(x = interaction(month, year), y = N, fill = factor(size), 
                   color = factor(size))) +
   scale_x_discrete(guide = "axis_nested") +
@@ -50,7 +50,7 @@ ggplot(data = df) +
   labs(x = "time (year/month)", y = "count", color = "crab size\n(mm)",
        fill = "crab size\n(mm)") +
   theme_minimal()
-
+ggsave("figures/figure1_timeseries.png", width = )
 
 
 
