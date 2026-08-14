@@ -25,7 +25,7 @@ csv_paths <- map(subfolders, function(sub) {
 combined_df <- map_dfr(csv_paths, function(path) {
   df <- read_csv(paste0(resolve_base, path), show_col_types = FALSE)
   filename <- basename(path)
-  df |> mutate(
+  df %>%  mutate(
     source_file = filename,
     config = basename(dirname(path)), 
     algorithm = sub("_.*", "", filename), 
@@ -34,10 +34,12 @@ combined_df <- map_dfr(csv_paths, function(path) {
 })
 
 # add columns for obs_type
-combined_df <- combined_df |>
+combined_df <- combined_df %>% 
   mutate(
     obs_type = sub("^[^_]+_(.*)_sim_.*", "\\1", source_file)
-  )
+  ) %>% 
+  filter(t == 99)
+  
 
 # read in constant action data
 const_data <- read.csv("data/constant_action/const_agent_simulations.csv")
@@ -156,7 +158,7 @@ figure3_22 <- ggplot() +
   theme_minimal() +
   theme(legend.position = "None")
 
-common_x <- scale_x_continuous(limits = c(-15, 0))
+common_x <- scale_x_continuous(limits = c(-15, -3))
 
 figure3 <- (figure3_1 + common_x) /
   (figure3_1t + common_x) /
@@ -194,7 +196,7 @@ supplemental <- ggplot() +
                "size-time" = expression(O[22]^T),
                "constant" = "constant\naction")
   ) +
-  scale_x_continuous(limits = c(-20, 0)) +
+  scale_x_continuous(limits = c(-20, -3)) +
   scale_color_manual(values = fill_colors) +
   labs(x = "reward", y = "density", fill = "observation\ntype") +
   facet_wrap(~algorithm, ncol = 1, 

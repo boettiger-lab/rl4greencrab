@@ -1,6 +1,7 @@
 library(tidyverse)
 library(viridis)
 library(patchwork)
+library(ggpubr)
 
 source("figures/code/clean_utils.R")
 source("figures/code/convert_utils.R")
@@ -50,58 +51,100 @@ month_names <- c("4" = "Apr", "5" = "May",
                  "6" = "June", "7" = "July", "8" = "Aug", 
                  "9" = "Sep", "10" = "Oct")
 
-# update order of action and month
-#data$action <- factor(data$action, levels = rev(levels(factor(data$action))))
-data_long$months <- factor(data_long$months, levels = c("Apr", "May", "June", 
-                                                        "July", "Aug", "Sep", 
-                                                        "Oct"))
+action_names <- c("act0_real" = "Minnow", "act1_real" = "Fukui")
 
-ggplot(data_long) +
-  geom_point(aes(x = biomass_real, y = cpue_real, color = a)) +
-  scale_color_viridis(option = "magma") +
-  facet_grid(action ~ months, labeller = labeller(months = month_names))
 
-ggplot(data_long) +
-  geom_density_2d_filled(aes(x = biomass_real, y = cpue_real, fill = factor(a))) +
-  scale_fill_viridis_d(option = "magma") +
-  facet_grid(action ~ months, labeller = labeller(months = month_names))
 
-figure5 <- ggplot(data) + 
-  geom_density_2d_filled(aes(x = biomass_real, y = cpue_real, 
-                 fill = factor(act_real))) +
-  scale_fill_viridis_d(option = "magma") +
+scale <- sort(unique(data_long$a))
+
+hull_plot <- ggplot(data_long, aes(x = biomass_real, y = cpue_real, 
+                                   color = factor(a))) +
+  stat_chull(aes(fill = factor(a)), alpha = 0.4, geom = "polygon") +
+  scale_fill_viridis_d(option = "magma",
+                       breaks = c(scale[1], scale[9], scale[18], scale[27]),
+                       labels = c(round(scale[1]), round(scale[9]), 
+                                  round(scale[18]), round(scale[27]))) +
+  scale_color_viridis_d(option = "magma",
+                        breaks = c(scale[1], scale[9], scale[18], scale[27]),
+                        labels = c(round(scale[1]), round(scale[9]), 
+                                   round(scale[18]), round(scale[27]))) +
   labs(x = expression("mean biomass (g), " * italic("t - 1")),
        y = expression("CPUE (crabs per trap), " * italic("t - 1")),
-       color = expression("action\n(number\nof traps), " * italic(t))) +
-  scale_x_continuous(breaks = c(5, 10, 15),
-                     labels = c(5, 10, 15)) +
-  facet_grid(action ~ month) +
-  theme(legend.title = element_text(hjust = 0.5))
-
-library(ggpubr)
-
-ggplot(data_long, aes(x = biomass_real, y = cpue_real, color = factor(a))) +
-  #geom_point() +
-  scale_fill_viridis_d(option = "magma") +
-  scale_color_viridis_d(option = "magma") +
-  stat_chull(aes(fill = factor(a)), alpha = 0.2, geom = "polygon") +
-  facet_grid(action ~ months, labeller = labeller(months = month_names))
-
-ggsave("figures/figure5.png",
-       figure5, height = 3, width = 8)
-
-ggplot(data, aes(x = biomass_real, y = cpue_real, color = factor(act_real))) + 
-  # 1. Plot the actual data points colored by act_real
-  #geom_point(alpha = 0.5) +
-  
-  # 2. Draw an oval around each group
-  stat_ellipse(type = "t", level = 0.95, linewidth = 1) + 
-  
-  scale_color_viridis_d(option = "magma") +
-  labs(x = expression("mean biomass (g), " * italic("t - 1")),
-       y = expression("CPUE (crabs per trap), " * italic("t - 1")),
-       color = expression("action\n(number\nof traps), " * italic(t))) +
-  scale_x_continuous(breaks = c(5, 10, 15), labels = c(5, 10, 15)) +
-  facet_grid(action ~ month) +
+       color = expression("action\n(number\nof traps), " * italic(t)),
+       fill = expression("action\n(number\nof traps), " * italic(t))) +
+  facet_grid(action ~ months, labeller = labeller(months = month_names,
+                                                  action = action_names)) +
   theme_minimal() +
   theme(legend.title = element_text(hjust = 0.5))
+
+ggsave("figures/supp_figure_cluster.png",
+       hull_plot, height = 3, width = 8)
+
+scale_sub <- sort(unique(data_long[data_long$months %in% c(4, 6, 8, 10), ]$a))
+
+hull_plot_sub <- ggplot(data_long[data_long$months %in% c(4, 6, 8, 10), ], 
+                        aes(x = biomass_real, y = cpue_real, 
+                                   color = factor(a))) +
+  stat_chull(aes(fill = factor(a)), alpha = 0.4, geom = "polygon") +
+  scale_fill_viridis_d(option = "magma",
+                       breaks = c(scale_sub[1], scale_sub[5], 
+                                  scale_sub[10], scale_sub[16]),
+                       labels = c(round(scale_sub[1]), round(scale_sub[5]), 
+                                  round(scale_sub[10]), round(scale_sub[16]))) +
+  scale_color_viridis_d(option = "magma",
+                        breaks = c(scale_sub[1], scale_sub[5], 
+                                   scale_sub[10], scale_sub[16]),
+                        labels = c(round(scale_sub[1]), round(scale_sub[5]), 
+                                   round(scale_sub[10]), round(scale_sub[16]))) +
+  labs(x = expression("mean biomass (g), " * italic("t - 1")),
+       y = expression("CPUE (crabs per trap), " * italic("t - 1")),
+       color = expression("action\n(number\nof traps), " * italic(t)),
+       fill = expression("action\n(number\nof traps), " * italic(t))) +
+  facet_grid(action ~ months, labeller = labeller(months = month_names,
+                                                  action = action_names)) +
+  ggtitle("A. Clustered policy") +
+  theme_minimal() +
+  theme(legend.title = element_text(hjust = 0.5))
+
+
+###############
+# reward plot #
+###############
+
+# read in constant action data
+const_data <- read.csv("data/constant_action/const_agent_simulations.csv") %>% 
+  filter(t == 99) %>% 
+  mutate(type = "constant")
+
+# read in top tqc algo
+top_data <- read.csv("data/rl_policies/count-biomass-time/tqc_count-biomass-time_sim_3.csv") %>% 
+  filter(t == 99) %>% 
+  mutate(type = "RL")
+
+# subset to final timestep
+data_sub <- data[data$t == 99, ] %>% 
+  mutate(type = "clustered")
+
+# combine all
+all_histo <- rbind(const_data[, c("rew", "type")],
+                   top_data[, c("rew", "type")],
+                   data_sub[, c("rew", "type")])
+
+histo_plot <- ggplot(data = all_histo) +
+  geom_density(aes(x = rew, fill = type), alpha = 0.4, 
+               adjust = 1.5) +
+  ggtitle("B. Clustered reward") +
+  labs(x = "reward", y = "density", fill = "policy type") +
+  theme_minimal()
+
+
+###########
+# combine #
+###########
+
+figure5 <- hull_plot_sub + histo_plot + plot_layout(ncol = 1)
+
+ggsave("figures/figure5.png",
+       figure5, height = 6, width = 6)
+
+
