@@ -2,8 +2,21 @@ library(tidyverse)
 library(viridis)
 library(patchwork)
 
-# read in cluter plot data
-data <- read.csv("data/cluster/centroid_plot_data.csv")
+source("figures/code/clean_utils.R")
+source("figures/code/convert_utils.R")
+
+# read in cluster centroid data
+centroids <- read.csv("data/cluster/centroids.csv")
+
+# read in cluster sim data
+cl_data <- read.csv("data/cluster/clustered_sim.csv")
+
+# separate CPUE and biomass
+clean <- cbind(cl_data, t(sapply(cl_data$crabs, clean_crab_pop)))
+rownames(clean) <- NULL
+
+colnames(clean)[which(colnames(clean) == "1")] <- "CPUE"
+colnames(clean)[which(colnames(clean) == "2")] <- "biomass"
 
 params <- list(
   max_action = 3000,
@@ -11,65 +24,22 @@ params <- list(
   smax = 110
 )
 
-#########################################
-# functions for translating data scales #
-#########################################
-
-# convert actions
-convert_action <- function(data, params, action_col) {
-  
-  data$act_real <- pmax(params$max_action * (1 + data[[action_col]]) / 2, 0)
-  
-  return(data)
-}
-
-# calculate biomass as a function of size
-calc_biomass <- function(y) {
-  
-  biomass <- max(0, -0.071 * y + 0.003 * y ^ 2 + 0.00002 * y ^ 3)
-  
-  return(biomass)
-}
-
-# convert biomass
-convert_biomass <- function(data, params, biomass_col) {
-  
-  bmin <- calc_biomass(params$smin)
-  bmax <- calc_biomass(params$smax)
-  
-  data$biomass_real <- (
-    (data[[biomass_col]] + 1) * (bmax - bmin) / 2 + bmin
-  )
-  
-  return(data)
-}
-
-# convert CPUE
-convert_cpue <- function(data, cpue_col) {
-  
-  data$cpue_real <- (data[[cpue_col]] + 1) / 2 * 100
-  
-  return(data)
-}
-
-# convert all
-convert_all <- function(data, params, action_col, biomass_col, cpue_col) {
-  
-  data <- convert_action(data, params, action_col)
-  
-  data <- convert_biomass(data, params, biomass_col)
-  
-  data <- convert_cpue(data, cpue_col)
-  
-  return(data)
-}
-
-
 ##########################
 # make scale conversions #
 ##########################
 
-data <- convert_all(data, params, "centroid_act", "biomass_x", "CPUE_x")
+data <- convert_all(clean, params)
+
+# convert to long
+data_long <- data %>% 
+  select(t, months, rew, rep, act0_real, 
+         act1_real, biomass_real, cpue_real) %>% 
+  pivot_longer(cols = -c(t, months, rew, rep, biomass_real, cpue_real),
+               names_to = "action",
+               values_to = "a")
+
+# remove 0 biomass
+data_long <- data_long[data_long$biomass_real > 0, ]
 
 
 ###############
@@ -81,11 +51,22 @@ month_names <- c("4" = "Apr", "5" = "May",
                  "9" = "Sep", "10" = "Oct")
 
 # update order of action and month
-data$action <- factor(data$action, levels = rev(levels(factor(data$action))))
-data$month <- factor(data$month, levels = c("Apr", "May", "June", "July",
-                                            "Aug", "Sep", "Oct"))
+#data$action <- factor(data$action, levels = rev(levels(factor(data$action))))
+data_long$months <- factor(data_long$months, levels = c("Apr", "May", "June", 
+                                                        "July", "Aug", "Sep", 
+                                                        "Oct"))
 
-figure4 <- ggplot(data) + 
+ggplot(data_long) +
+  geom_point(aes(x = biomass_real, y = cpue_real, color = a)) +
+  scale_color_viridis(option = "magma") +
+  facet_grid(action ~ months, labeller = labeller(months = month_names))
+
+ggplot(data_long) +
+  geom_density_2d_filled(aes(x = biomass_real, y = cpue_real, fill = factor(a))) +
+  scale_fill_viridis_d(option = "magma") +
+  facet_grid(action ~ months, labeller = labeller(months = month_names))
+
+figure5 <- ggplot(data) + 
   geom_density_2d_filled(aes(x = biomass_real, y = cpue_real, 
                  fill = factor(act_real))) +
   scale_fill_viridis_d(option = "magma") +
@@ -97,9 +78,17 @@ figure4 <- ggplot(data) +
   facet_grid(action ~ month) +
   theme(legend.title = element_text(hjust = 0.5))
 
+library(ggpubr)
+
+ggplot(data_long, aes(x = biomass_real, y = cpue_real, color = factor(a))) +
+  #geom_point() +
+  scale_fill_viridis_d(option = "magma") +
+  scale_color_viridis_d(option = "magma") +
+  stat_chull(aes(fill = factor(a)), alpha = 0.2, geom = "polygon") +
+  facet_grid(action ~ months, labeller = labeller(months = month_names))
 
 ggsave("figures/figure5.png",
-       figure4, height = 3, width = 8)
+       figure5, height = 3, width = 8)
 
 ggplot(data, aes(x = biomass_real, y = cpue_real, color = factor(act_real))) + 
   # 1. Plot the actual data points colored by act_real

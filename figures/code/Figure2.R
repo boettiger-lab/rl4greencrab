@@ -155,9 +155,9 @@ plot_B <- plot_N + plot_caught + plot_layout(ncol = 1, guides = "collect") +
                                                           size = 14)))
 
 # combine plots
-(wrap_elements(plot_A) / wrap_elements(plot_B))
+figure2 <- (wrap_elements(plot_A) / wrap_elements(plot_B))
 
-ggsave("figures/figure1_timeseries.png", width = )
+ggsave("figures/Figure2.png", figure2, dpi = 600, width = 7, height = 7)
 
 
 
