@@ -2,8 +2,11 @@ library(tidyverse)
 library(viridis)
 library(patchwork)
 
-# read in cluter plot data
-data <- read.csv("data/cluster/centroid_plot_data.csv")
+# read in data of best TQC/count-biomass-time replicate
+data <- read.csv("data/rl_policies/tqc_clean.csv")
+
+# remove anomalous biomass data
+data <- data[!c(data$biomass == -1 | data$biomass > -0.46), ]
 
 params <- list(
   max_action = 3000,
@@ -16,9 +19,10 @@ params <- list(
 #########################################
 
 # convert actions
-convert_action <- function(data, params, action_col) {
+convert_action <- function(data, params) {
   
-  data$act_real <- pmax(params$max_action * (1 + data[[action_col]]) / 2, 0)
+  data$act0_real <- pmax(params$max_action * (1 + data$act0) / 2, 0)
+  data$act1_real <- pmax(params$max_action * (1 + data$act1) / 2, 0)
   
   return(data)
 }
@@ -32,34 +36,34 @@ calc_biomass <- function(y) {
 }
 
 # convert biomass
-convert_biomass <- function(data, params, biomass_col) {
+convert_biomass <- function(data, params) {
   
   bmin <- calc_biomass(params$smin)
   bmax <- calc_biomass(params$smax)
   
   data$biomass_real <- (
-    (data[[biomass_col]] + 1) * (bmax - bmin) / 2 + bmin
+    (data$biomass + 1) * (bmax - bmin) / 2 + bmin
   )
   
   return(data)
 }
 
 # convert CPUE
-convert_cpue <- function(data, cpue_col) {
+convert_cpue <- function(data) {
   
-  data$cpue_real <- (data[[cpue_col]] + 1) / 2 * 100
+  data$cpue_real <- (data$CPUE + 1) / 2 * 100
   
   return(data)
 }
 
 # convert all
-convert_all <- function(data, params, action_col, biomass_col, cpue_col) {
+convert_all <- function(data, params) {
   
-  data <- convert_action(data, params, action_col)
+  data <- convert_action(data, params)
   
-  data <- convert_biomass(data, params, biomass_col)
+  data <- convert_biomass(data, params)
   
-  data <- convert_cpue(data, cpue_col)
+  data <- convert_cpue(data)
   
   return(data)
 }
@@ -69,7 +73,16 @@ convert_all <- function(data, params, action_col, biomass_col, cpue_col) {
 # make scale conversions #
 ##########################
 
-data <- convert_all(data, params, "centroid_act", "biomass_x", "CPUE_x")
+data <- convert_all(data, params)
+
+# change action to t+1
+data <- data[-c(1:5), ]
+
+# convert from wide to long
+data_long <- data %>% 
+  pivot_longer(cols = c(act0_real, act1_real),
+               names_to = "action_type",
+               values_to = "action")
 
 
 ###############
@@ -79,40 +92,25 @@ data <- convert_all(data, params, "centroid_act", "biomass_x", "CPUE_x")
 month_names <- c("4" = "Apr", "5" = "May",
                  "6" = "June", "7" = "July", "8" = "Aug", 
                  "9" = "Sep", "10" = "Oct")
+action_names <- c("act1_real" = "Fukui traps", 
+                  "act0_real" = "Minnow traps")
 
-# update order of action and month
-data$action <- factor(data$action, levels = rev(levels(factor(data$action))))
-data$month <- factor(data$month, levels = c("Apr", "May", "June", "July",
-                                            "Aug", "Sep", "Oct"))
-
-figure4 <- ggplot(data) + 
-  geom_density_2d_filled(aes(x = biomass_real, y = cpue_real, 
-                 fill = factor(act_real))) +
-  scale_fill_viridis_d(option = "magma") +
+figure4 <- ggplot(data_long) + 
+  geom_point(aes(x = biomass_real, y = cpue_real, 
+                 color = action)) +
+  scale_color_viridis() +
   labs(x = expression("mean biomass (g), " * italic("t - 1")),
        y = expression("CPUE (crabs per trap), " * italic("t - 1")),
        color = expression("action\n(number\nof traps), " * italic(t))) +
   scale_x_continuous(breaks = c(5, 10, 15),
                      labels = c(5, 10, 15)) +
-  facet_grid(action ~ month) +
+  facet_grid(action_type ~ months, 
+             labeller = labeller(months = month_names, 
+                                 action_type = action_names)) +
   theme(legend.title = element_text(hjust = 0.5))
 
 
 ggsave("figures/figure4.png",
        figure4, height = 3, width = 8)
 
-ggplot(data, aes(x = biomass_real, y = cpue_real, color = factor(act_real))) + 
-  # 1. Plot the actual data points colored by act_real
-  #geom_point(alpha = 0.5) +
-  
-  # 2. Draw an oval around each group
-  stat_ellipse(type = "t", level = 0.95, linewidth = 1) + 
-  
-  scale_color_viridis_d(option = "magma") +
-  labs(x = expression("mean biomass (g), " * italic("t - 1")),
-       y = expression("CPUE (crabs per trap), " * italic("t - 1")),
-       color = expression("action\n(number\nof traps), " * italic(t))) +
-  scale_x_continuous(breaks = c(5, 10, 15), labels = c(5, 10, 15)) +
-  facet_grid(action ~ month) +
-  theme_minimal() +
-  theme(legend.title = element_text(hjust = 0.5))
+

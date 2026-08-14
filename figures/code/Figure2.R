@@ -1,208 +1,101 @@
-library(httr)
-library(jsonlite)
-library(purrr)
-library(readr)
-library(dplyr)
+library(tidyverse)
 library(viridis)
 library(patchwork)
-library(tidyverse)
+library(stringr)
+library(legendry)
 
-# set up connection to hugging face to read in data
-repo <- "boettiger-lab/rl4eco"
-base_path <- "rl4greencrab/data/rl_policies"
-subfolders <- c("size-time", "count", "count-biomass-time", "count-time")
+#########################
+# no action time series #
+#########################
 
-api_base <- paste0("https://huggingface.co/api/models/", repo, "/tree/main/")
-resolve_base <- paste0("https://huggingface.co/", repo, "/resolve/main/")
+# read in data with no action
+data <- read.csv("data/constant_action/no_agent_simulations.csv")
 
-# get list of csv files across all subfolders via the API
-csv_paths <- map(subfolders, function(sub) {
-  listing <- fromJSON(paste0(api_base, base_path, "/", sub))
-  listing$path[listing$type == "file" & grepl("\\.csv$", listing$path)]
-}) |> unlist()
+# remove times before colonization
+data <- data[c(data$t > 7 & data$t < 99), ]
 
-# read in rl simulation data and add metadata columns
-combined_df <- map_dfr(csv_paths, function(path) {
-  df <- read_csv(paste0(resolve_base, path), show_col_types = FALSE)
-  filename <- basename(path)
-  df |> mutate(
-    source_file = filename,
-    config = basename(dirname(path)), 
-    algorithm = sub("_.*", "", filename), 
-    sim = as.integer(sub(".*_sim_(\\d+)\\.csv", "\\1", filename))
-  )
-})
+sizes <- seq(5, 110, 5)
 
-# add columns for obs_type
-combined_df <- combined_df |>
-  mutate(
-    obs_type = sub("^[^_]+_(.*)_sim_.*", "\\1", source_file)
-  )
+# reformat crab pop
+parse_array <- function(x) {
+  x %>% 
+    str_remove_all("[\\[\\]]") %>% 
+    str_replace_all("\\\\n", " ") %>% 
+    str_trim() %>% 
+    str_split("\\s+")  
+}
 
-# read in constant action data
-const_data <- read.csv("data/constant_action/const_agent_simulations.csv")
+# parse every row, convert to numeric, bind into a matrix
+parsed <- lapply(data$crab_pop, function(s) as.numeric(parse_array(s)[[1]]))
+df <- as.data.frame(cbind(do.call(rbind, parsed), data$t, data$rep, 
+                          data$months))
 
-# combine all data
-data_all <- rbind(
-  combined_df[, c("rew", "algorithm", "obs_type")],
-  data.frame(
-    rew = const_data$rew,
-    algorithm = "constant",
-    obs_type  = "constant"
-  )
-)
-
-# get means
-data_means <- data_all %>% 
-  group_by(obs_type, algorithm) %>% 
-  summarise(mean_reward = mean(rew))
+# add year
+year_seq <- rep(1:13, each = 7)
+df$year <- rep(year_seq, 100)
 
 
-##########
-# reward #
-##########
-fill_colors <- c(
-  setNames(viridis(4), c("count", "count-time", 
-                         "count-biomass-time", "size-time")),
-  "constant" = "black"
-)
+df <- df %>% 
+  mutate(small_crabs = rowSums(across(1:13)),
+         large_crabs = rowSums(across(14:22))) %>% 
+  select(V23, V24, V25, year, small_crabs, large_crabs) %>% 
+  pivot_longer(cols = -c(V23, V24, V25, year),
+               names_to = "size",
+               values_to = "N")
 
-figure2_1 <- ggplot() +
-  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
-                                   data_all$obs_type == "count") |
-                                 c(data_all$algorithm == "constant"), ],
-               aes(x = rew, fill = algorithm),
-               alpha = 0.4, adjust = 2) +
-  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
-                                   data_means$obs_type == "count") |
-                                 c(data_means$algorithm == "constant"), ],
-             aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 0.75, linetype = "solid",
-             show.legend = FALSE) +
-  scale_fill_manual(
-    values = unname(fill_colors[c("constant", "count")])
-  ) +
-  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
-  scale_color_manual(values = unname(fill_colors[c("constant", "count")])) +
-  labs(x = "", y = "density") +
-  theme_minimal() +
-  theme(legend.position = "None",
-        axis.text.x = element_blank())
+colnames(df)[1:3] <- c("t", "rep", "month")
 
-figure2_1t <- ggplot() +
-  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
-                                   data_all$obs_type == "count-time") |
-                                 c(data_all$algorithm == "constant"), ],
-               aes(x = rew, fill = algorithm),
-               alpha = 0.4, adjust = 2) +
-  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
-                                   data_means$obs_type == "count-time") |
-                                 c(data_means$algorithm == "constant"), ],
-             aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 0.75, linetype = "solid",
-             show.legend = FALSE) +
-  scale_fill_manual(
-    values = unname(fill_colors[c("constant", "count-time")])
-  ) +
-  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
-  scale_color_manual(values = unname(fill_colors[c("constant", 
-                                                   "count-time")])) +
-  labs(x = "", y = "density") +
-  theme_minimal() +
-  theme(legend.position = "None",
-        axis.text.x = element_blank())
+# set axis labels
+lev <- levels(interaction(df$month, df$year))
+month_part <- as.integer(sub("\\..*", "", lev))
+year_part  <- sub(".*\\.", "", lev)
 
-figure2_2t <- ggplot() +
-  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
-                                   data_all$obs_type == "count-biomass-time") |
-                                 c(data_all$algorithm == "constant"), ],
-               aes(x = rew, fill = algorithm),
-               alpha = 0.4, adjust = 2) +
-  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
-                                   data_means$obs_type == "count-biomass-time") |
-                                 c(data_means$algorithm == "constant"), ],
-             aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 0.75, linetype = "solid",
-             show.legend = FALSE) +
-  scale_fill_manual(
-    values = unname(fill_colors[c("constant", "count-biomass-time")])
-  ) +
-  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
-  scale_color_manual(values = unname(fill_colors[c("constant", 
-                                                   "count-biomass-time")])) +
-  labs(x = "", y = "density") +
-  theme_minimal() +
-  theme(legend.position = "None",
-        axis.text.x = element_blank())
+disp <- ifelse(month_part %% 2 == 1,
+               paste0(month_part, ".", year_part),
+               paste0(" ", ".", year_part))
+names(disp) <- lev
 
-figure2_22 <- ggplot() +
-  geom_density(data = data_all[c(data_all$algorithm == "tqc" &
-                                   data_all$obs_type == "size-time") |
-                                 c(data_all$algorithm == "constant"), ],
-               aes(x = rew, fill = algorithm),
-               alpha = 0.4, adjust = 2) +
-  geom_vline(data = data_means[c(data_means$algorithm == "tqc" &
-                                   data_means$obs_type == "size-time") |
-                                 c(data_means$algorithm == "constant"), ],
-             aes(xintercept = mean_reward, color = algorithm),
-             linewidth = 0.75, linetype = "solid",
-             show.legend = FALSE) +
-  scale_fill_manual(
-    values = unname(fill_colors[c("constant", "size-time")])
-  ) +
-  scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
-  scale_color_manual(values = unname(fill_colors[c("constant", "size-time")])) +
-  labs(x = "reward", y = "density") +
-  theme_minimal() +
-  theme(legend.position = "None")
+# plot entire time series
+timeseries_plot <- ggplot(data = df) +
+  geom_violin(aes(x = interaction(month, year), y = N, fill = factor(size), 
+                  color = factor(size))) +
+  scale_x_discrete(guide = "axis_nested", labels = disp) +
+  scale_color_discrete(labels = c("> 65", "<= 65")) +
+  scale_fill_discrete(labels = c("> 65", "<= 65")) +
+  labs(x = "time (year/month)", y = "crab abundance", color = "crab size\n(mm)",
+       fill = "crab size\n(mm)") +
+  theme_minimal()
 
-common_x <- scale_x_continuous(limits = c(-15, 0))
+# plot year 6
+plot_year6 <- ggplot(data = df[df$year == 6, ]) +
+  geom_violin(aes(x = factor(month), y = N, fill = factor(size), 
+                  color = factor(size))) +
+  scale_color_discrete(labels = c("> 65", "<= 65")) +
+  scale_fill_discrete(labels = c("> 65", "<= 65")) +
+  labs(x = "month", y = "crab abundance", color = "crab size\n(mm)",
+       fill = "crab size\n(mm)") +
+  scale_y_continuous(breaks = c(0, 20000, 40000)) +
+  ggtitle("Year 6") +
+  theme_minimal() + 
+  theme(plot.background = element_rect(color = "black", fill = "white", 
+                                       linewidth = 1),
+        legend.position = "None",
+        axis.text = element_text(size = 6),
+        axis.title = element_text(size = 8),
+        title = element_text(size = 10))
 
-figure2 <- (figure2_1 + common_x) /
-  (figure2_1t + common_x) /
-  (figure2_2t + common_x) /
-  (figure2_22 + common_x) +
-  plot_layout(ncol = 1)
+plot_A <- timeseries_plot + 
+  inset_element(plot_year6, left = 0.6, bottom = 0.6, right = 0.98, top = 0.98)
+
+########################
+# 50 traps time series #
+########################
+
+# read in data with 50 traps
+data_t50 <- read.csv("data/constant_action/t50_agent_simulations.csv")
 
 
-ggsave("figures/figure2.svg",
-       figure2, height = 6.3, width = 2.625)
+ggsave("figures/figure1_timeseries.png", width = )
 
-algo_names <- c(
-  "tqc" = "Truncated Quantile Critic (TQC)",
-  "td3" = "Twin-delayed Deep Deterministic (TD3)",
-  "ppo" = "Proximal Policy Optimization (PPO)",
-  "constant" = "Constant Action"
-)
 
-supplemental <- ggplot() +
-  geom_density(data = data_all, 
-               aes(x = rew, fill = obs_type), 
-               alpha = 0.4, 
-               adjust = 2) +
-  geom_vline(data = data_means, 
-             aes(xintercept = mean_reward, color = obs_type),
-             linewidth = 1, 
-             linetype = "dashed",
-             show.legend = FALSE) +
-  scale_fill_manual(
-    limits = c("constant", "count", "count-time", "count-biomass-time", "size-time"),
-    values = fill_colors,
-    labels = c("count" = expression(O[1]),
-               "count-time" = expression(O[1]^T),
-               "count-biomass-time" = expression(O[2]^T),
-               "size-time" = expression(O[22]^T),
-               "constant" = "constant\naction")
-  ) +
-  scale_x_continuous(limits = c(-20, 0)) +
-  scale_color_manual(values = fill_colors) +
-  labs(x = "reward", y = "density", fill = "observation\ntype") +
-  facet_wrap(~algorithm, ncol = 1, 
-             labeller = as_labeller(algo_names)) + 
-  theme_minimal() +
-  theme(legend.title = element_text(hjust = 0.5),
-        legend.key.spacing.y = unit(0.2, "cm"))
-
-ggsave("figures/supp_figure_reward.png",
-       supplemental, height = 8, width = 4)
 
