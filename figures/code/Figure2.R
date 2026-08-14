@@ -60,8 +60,10 @@ timeseries_plot <- ggplot(data = df) +
   geom_violin(aes(x = interaction(month, year), y = N, fill = factor(size), 
                   color = factor(size))) +
   scale_x_discrete(guide = "axis_nested", labels = disp) +
-  scale_color_discrete(labels = c("> 65", "<= 65")) +
-  scale_fill_discrete(labels = c("> 65", "<= 65")) +
+  scale_color_manual(labels = c("> 65", "<= 65"), values = c("firebrick",
+                                                             "goldenrod")) +
+  scale_fill_manual(labels = c("> 65", "<= 65"), values = c("firebrick",
+                                                            "goldenrod")) +
   labs(x = "time (year/month)", y = "crab abundance", color = "crab size\n(mm)",
        fill = "crab size\n(mm)") +
   theme_minimal()
@@ -70,9 +72,11 @@ timeseries_plot <- ggplot(data = df) +
 plot_year6 <- ggplot(data = df[df$year == 6, ]) +
   geom_violin(aes(x = factor(month), y = N, fill = factor(size), 
                   color = factor(size))) +
-  scale_color_discrete(labels = c("> 65", "<= 65")) +
-  scale_fill_discrete(labels = c("> 65", "<= 65")) +
-  labs(x = "month", y = "crab abundance", color = "crab size\n(mm)",
+  scale_color_manual(labels = c("> 65", "<= 65"), values = c("firebrick",
+                                                             "goldenrod")) +
+  scale_fill_manual(labels = c("> 65", "<= 65"), values = c("firebrick",
+                                                            "goldenrod")) +
+  labs(x = "month", y = "crab\nabundance", color = "crab size\n(mm)",
        fill = "crab size\n(mm)") +
   scale_y_continuous(breaks = c(0, 20000, 40000)) +
   ggtitle("Year 6") +
@@ -82,18 +86,76 @@ plot_year6 <- ggplot(data = df[df$year == 6, ]) +
         legend.position = "None",
         axis.text = element_text(size = 6),
         axis.title = element_text(size = 8),
-        title = element_text(size = 10))
+        title = element_text(size = 8))
 
 plot_A <- timeseries_plot + 
-  inset_element(plot_year6, left = 0.6, bottom = 0.6, right = 0.98, top = 0.98)
+  # inset_element(plot_year6, left = 0.6, bottom = 0.6, 
+  #               right = 0.98, top = 0.98) +
+  plot_annotation(title = "A.",
+                  theme = theme(plot.title = element_text(face = "bold", 
+                                                        size = 14)))
 
 ########################
 # 50 traps time series #
 ########################
 
-# read in data with 50 traps
-data_t50 <- read.csv("data/constant_action/t50_agent_simulations.csv")
+# read in data with 50 traps and subset to year 3
+data_t50 <- read.csv("data/constant_action/t50_agent_simulations.csv")[65:71, ]
 
+# parse caught crabs and true N
+caught <- as.data.frame(
+  cbind(do.call(rbind, lapply(data_t50$crabs, 
+                              function(s) as.numeric(parse_array(s)[[1]]))))
+) %>% 
+  mutate(month = 4:10,
+         type = "caught") %>% 
+  pivot_longer(cols = -c(month, type),
+               names_to = "size", 
+               values_to = "N")
+caught$size <- as.numeric(gsub("\\D", "", caught$size)) 
+
+true <- as.data.frame(
+  cbind(do.call(rbind, lapply(data_t50$crab_pop, 
+                              function(s) as.numeric(parse_array(s)[[1]]))))
+) %>% 
+  mutate(month = 4:10,
+         type = "true") %>% 
+  pivot_longer(cols = -c(month, type),
+               names_to = "size", 
+               values_to = "N")
+true$size <- as.numeric(gsub("\\D", "", true$size)) 
+  
+plot_caught <- ggplot(data = caught[caught$month %in% c(5, 7, 9), ]) +
+  geom_col(aes(x = size, y = N, fill = as.factor(month))) +
+  facet_wrap(~ month) +
+  ggtitle("Observed crab count (50 traps)") +
+  scale_x_continuous(breaks = c(0, 5, 10, 15, 20),
+                     labels = c(0, sizes[5], sizes[10], sizes[15], sizes[20])) +
+  labs(x = "size (mm)", y = "count",
+       fill = "month") +
+  theme_minimal() +
+  theme(strip.text = element_blank(),
+        strip.background = element_blank())
+
+plot_N <- ggplot(data = true[true$month %in% c(5, 7, 9), ]) +
+  geom_col(aes(x = size, y = N, fill = as.factor(month))) +
+  facet_wrap(~ month) +
+  ggtitle("True crab abundance") +
+  scale_x_continuous(breaks = c(0, 5, 10, 15, 20),
+                     labels = c(0, sizes[5], sizes[10], sizes[15], sizes[20])) +
+  labs(x = "", y = "abundance",
+       fill = "month") +
+  theme_minimal() +
+  theme(strip.text = element_blank(),
+        strip.background = element_blank())
+
+plot_B <- plot_N + plot_caught + plot_layout(ncol = 1, guides = "collect") +
+  plot_annotation(title = "B.",
+                  theme = theme(plot.title = element_text(face = "bold", 
+                                                          size = 14)))
+
+# combine plots
+(wrap_elements(plot_A) / wrap_elements(plot_B))
 
 ggsave("figures/figure1_timeseries.png", width = )
 
