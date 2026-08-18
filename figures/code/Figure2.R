@@ -128,10 +128,11 @@ true$size <- as.numeric(gsub("\\D", "", true$size))
 plot_caught <- ggplot(data = caught[caught$month %in% c(5, 7, 9), ]) +
   geom_col(aes(x = size, y = N, fill = as.factor(month))) +
   facet_wrap(~ month) +
-  ggtitle("Observed crab count (50 traps)") +
+  ggtitle("Harvested crab count (50 traps)") +
   scale_x_continuous(breaks = c(0, 5, 10, 15, 20),
                      labels = c(0, sizes[5], sizes[10], sizes[15], sizes[20])) +
-  labs(x = "size (mm)", y = "count",
+  labs(x = expression("size (mm), " * italic(y)), 
+                      y = expression("harvested count, " * italic(h[y])),
        fill = "month") +
   theme_minimal() +
   theme(strip.text = element_blank(),
@@ -143,7 +144,7 @@ plot_N <- ggplot(data = true[true$month %in% c(5, 7, 9), ]) +
   ggtitle("True crab abundance") +
   scale_x_continuous(breaks = c(0, 5, 10, 15, 20),
                      labels = c(0, sizes[5], sizes[10], sizes[15], sizes[20])) +
-  labs(x = "", y = "abundance",
+  labs(x = "", y = expression("abundance, " * italic(s[y])),
        fill = "month") +
   theme_minimal() +
   theme(strip.text = element_blank(),
