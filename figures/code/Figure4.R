@@ -2,6 +2,8 @@ library(tidyverse)
 library(viridis)
 library(patchwork)
 
+source("figures/code/convert_utils.R")
+
 # read in data of best TQC/count-biomass-time replicate
 data <- read.csv("data/rl_policies/tqc_clean.csv")
 
@@ -53,6 +55,7 @@ figure4 <- ggplot(data_long) +
   facet_grid(action_type ~ months, 
              labeller = labeller(months = month_names, 
                                  action_type = action_names)) +
+  theme_minimal() +
   theme(legend.title = element_text(hjust = 0.5))
 
 
