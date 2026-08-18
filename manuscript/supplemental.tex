@@ -1,0 +1,321 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{setspace}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[
+backend=biber,
+style=apa,
+sorting=nyt
+]{biblatex}
+\addbibresource{references.bib}
+
+\title{Supplemental Information: Reinforcement learning for exploratory conservation policy analysis}
+
+\doublespacing
+
+\linenumbers
+
+\begin{document}
+
+\date{}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\date{}
+
+\section{Description of transition function and state dynamics}
+
+European green crab population dynamics form the transition function, $P(s_{t+1}|s_t,a_t, M(t))$, that describes how the state of the system changes from $s_t$ to $s_{t+1}$ as a result of action $a_t$ and conditional upon the month, $M(t)$. The state $\textbf{s}_t$ is a vector of size-structured green crab population abundance at time $t$, discretized to 22 size classes of size $y$. The population changes through time due to growth, natural mortality, removal, and annual recruitment. The described model is adapted from \cite{keller2026integrated}. Uncertainty related to growth, natural mortality, and removal are propagated from the model results of Keller et al. 2026 to the transition dynamics in RL agent training and model evaluation (Table S1). Fixed values are chosen for parameters related to population growth in the transition dynamics (Table S2).
+
+%The green crab removal process form the observation function, $Z(o_{t+1}|a_t,s_{t+1})$, that describes how observations $o_{t+1}$ are produced given that action $a_t$ led to state $s_{t+1}$.  
+
+
+\subsection{European green crab population dynamics}
+
+The state, or size-structured population abundance $\textbf{s}_t$, transitions on a monthly time interval from $t$ to $t+1$. Since the rates of green crab growth and mortality vary throughout the year and recruitment is modeled as an annual event, these transitions depend upon the month associated with $t$, $M(t)$. Additionally, since removal typically only occurs during the trapping season in non-winter months, we only include $M(t) \in \{4 \dots 10 \}$, where four is associated with April and 10 is associated with October. Transitioning from $M(t) = 10$ to  $M(t+1) = 4$ involves seasonal growth and overwinter mortality.
+
+\subsubsection{Trapping season population dynamics}
+
+If $M(t)\neq 10$, the state transitions from $\textbf{s}_t$ to $\textbf{s}_{t+1}$ are defined by size-dependent natural mortality, seasonal growth in body size, and removal. An integral projection model (IPM) is used to project the population forward in time using a growth and mortality kernel, $K_t(y',y)$, that is the product of a time-dependent growth kernel, $G_t(y',y)$, and size-dependent natural mortality, $S(y)$:
+
+\begin{equation}
+K_t(y',y) = G_t(y',y) \times S(y) \qquad \text{for } M(t) \in \{4\dots9\}
+\end{equation}
+
+We use a seasonal growth model that modifies the traditional von Bertalanffy growth model to incorporate seasonal growth oscillations by including a sine function with a period of one year \parencite{beverton2012dynamics, somers1988seasonally}. This time-dependent growth function allows for a non-linear rate of growth across seasons, including faster growth in the summer months and slower growth in the winter months. The below growth equation describes incremental growth from size $y$ to $y'$ \parencite{white2016fitting}. Here, $d_t$ and $d_{t+1}$ are the year fraction associated with $t$ and $t+1$ (i.e., $d_t = 0$ for Julian day 91, $d_t = 0.5$ for Julian day 274), and $\mu^G_{y,t+1}$ is the mean size at $t+1$, given as size $y$ at $t$. $y_{\infty}$ is the asymptotic average size, $k$ is a measure of the exponential rate of approach to the asymptotic size, $A$ modulates the amplitude of the growth oscillations, and $d_s$ is the time (fraction of a year) between $M(t) = 0$ (April) and the start of the convex portion of the sinusoidal growth oscillation (i.e., when the growth rate starts to slow as winter approaches) \parencite{garcia2012technical}.
+
+\begin{equation}
+\mu^G_{y,t+1} = y + (y_{\infty}-y)(1-\text{exp}(-k\Delta t-f(d_{t+1})+f(d_t))
+\end{equation}
+\begin{equation}
+f(a) = \frac{Ak}{2\pi} \text{sin}(2\pi(a-d_s)) 
+\end{equation}
+
+Using the large sample approximation, we distribute individuals following a normal distribution across sizes. The growth kernel, $G_t(y',y)$, is therefore described as:
+
+\begin{equation}
+G_t(y',y) = q\times\phi(x'; \mu^G_{y, t+1}, \sigma_G^2)
+\end{equation}
+where $\sigma_G$ is the standard deviation in the growth rate, and $\phi$ is the normal probability density function. The constant, $q$, is used to normalize the kernel due to the truncated range of size, such that $\int G_t(y’, y) dy’ = 1$.
+
+The rate of natural mortality decreases with size, as smaller crabs have lower intra- and inter-specific competitive abilities and are more susceptible to predation and cannibalism \parencite{maszczyk2018body, grosholz2021stage}. Natural survival during the non-winter season, $S$, is described as: 
+
+\begin{equation}
+S(y) = \text{exp}\left(-\Delta t(\beta+\frac{\alpha}{y^2})\right)
+\end{equation}
+where $\beta$ is the unitless intensity of size-independent natural mortality, $\alpha$ (which has units of length) is a scalar that modulates the intensity of size-dependent natural mortality, and $\Delta t$ is the fraction of a year between $d_t$ and $d_{t+1}$ \parencite{carlson2010bayesian}.
+
+This growth and natural mortality kernel, $K_t(y',y)$, is then used to project the population of crabs that have survived the removal process to $t+1$.
+
+\begin{equation}
+\textbf{s}_{t+1} = K_t(y',y) \times (\textbf{s}_t-\textbf{h}_t)  \qquad \text{for } M(t) \in \{4\dots9\} \label{eq:harvest1}
+\end{equation}
+
+Here, $\textbf{h}_t$ is the count of crabs removed in each size class is a function of the removal action, $a_t$. See ``Removal process" section below for more information.
+
+\subsubsection{Overwinter population dynamics}
+
+At the onset of winter at $M(t)= 10$, the dynamics for the transition from $t$ to $t+1$ (i.e., $M(t) = 10$ to $M(t+1) = 4$) change and include the entering of recruits into the population and size-selective overwinter natural mortality. First, recruitment is modeled as an annual event, where juveniles enter the population from two sources:  density-dependent recruitment from local adults (i.e., local recruitment) and colonization events from adults beyond the local population (i.e., non-local recruitment). The expected number of local recruits, $\hat{J}^L_t$, is a function of the total number of adults at $t$ across all sizes, $\sum_ys_{t,y}$, the intrinsic rate of population growth, $\psi$, and carrying capacity, $\omega$:
+
+\begin{equation}
+\hat{J}^L_t = \sum_ys_{t,y}\times \psi \times (1-\sum_ys_{t,y}/\omega) \qquad \text{for } M(t) =10
+\end{equation}
+
+To account for environmental variation, the realized number of local recruits, $J^L_t$, is drawn from a Binomial distribution, with standard deviation, $\sigma^E$:
+
+\begin{equation}
+J_t^L \sim \text{Binomial}(\hat{J}^L_t, \sigma^E) \qquad \text{for } M(t) =10
+\end{equation}
+
+The number of non-local recruits, $J^N_t$, varies by orders of magnitude from year-to-year, as colonization rates and region-scale population dynamics are driven by variable ocean temperatures and oceanographic events like El Niño \parencite{yamada2021ocean, keller2026integrated}. Non-local recruitment is therefore modeled as a stochastic event, where the probability of a large non-local recruitment event is $p_L$ and the probability of a small non-local recruitment event is $1-p_L$. 
+
+\begin{equation}
+\lambda_t \sim \text{Bernoulli}(p_L) \qquad \text{for } M(t) =10
+\end{equation}
+
+The abundance of non-local recruits, $J^N$, is therefore a function of the mean number of colonizing recruits ($\mu^L$ and $\mu^S$, for large and small recruitment events, respectively), the standard deviation of colonizing recruits ($\sigma^L$ and $\sigma^S$, for large and small recruitment events, respectively), the total number of adults at $t$, $\sum_ys_{t,y}$, and carrying capacity, $\omega$:
+
+\begin{equation}
+\gamma_t \sim \text{Normal}(\mu^L,\sigma^L) \qquad \text{for } \lambda_t =1; M(t) =10
+\end{equation}
+\begin{equation}
+\gamma_t \sim \text{Normal}(\mu^S,\sigma^S) \qquad \text{for } \lambda_t =0; M(t) =10
+\end{equation}
+\begin{equation}
+J^N = \gamma_t \times (1 - \sum_ys_{t,y} / \omega) \qquad \text{for } M(t) =10
+\end{equation}
+
+The total number of recruits $J_t$ entering the population is therefore:
+
+\begin{equation}
+J_t = J_t^L + J_t^N
+\end{equation}
+
+This recruit abundance is distributed to size classes based on the mean recruit size, $\mu^J$, and standard deviation of recruit size, $\sigma^J$. $\textbf{j}_t$ is the vector of size-structured recruit abundance.
+
+\begin{equation}
+\textbf{j}_t = \phi(y; \mu^R, \sigma^R) \times J_t \qquad \text{for } M(t) =10
+\end{equation}
+
+Most crabs will settle from their planktonic larval stage in January to April \parencite{yamada2005growth}. The recruit abundance vector \textbf{$\textbf{j}_t$} annually enters the population at a time point in May, $t = 5$, when 1) it can be assumed that the larvae have already settled as juveniles (i.e., mean initial recruit size, $\mu^R$, is greater than zero) and 2) well before the recruits grow into an observable size.
+
+Like many ectotherms, green crab growth is strongly seasonal, with the growth rate slowing to near zero in the winter due to decreases in temperature, light, and food availability \parencite{contreras2003population, keller2026integrated}. The seasonal growth kernel accounts for this slower winter growth rate:
+
+\begin{equation}
+\textbf{s}'_t = K_t(y',y) (\textbf{s}_t-\textbf{h}_t) \qquad \text{for } M(t) =10
+\end{equation}
+
+Due to thermal stress and starvation, the intensity of overwinter natural mortality is likely stronger than other times of the year and is size-selective; smaller animals tend to have lower energy reserves than larger animals and use reserves more rapidly due to the allometry of metabolic rate \parencite{hurst2007causes, henderson1988size}. The abundance of crabs surviving the interval, $s_{t+1,y}$, is drawn from a Binomial distribution, where $m^o$ scales the instantaneous probability of mortality for each size $y$, and $s_{t,y}$ corresponds to size $y$ of vector $\textbf{s}_t$.
+
+
+\begin{equation}
+s_{t+1,y} \sim \text{Binomial}(s'_{t,y,}, e^{-m^o / y^2}) \qquad \text{for } M(t) =10\label{eq:harvest2}
+\end{equation}
+
+To initialize the simulation at $t=1$, the population begins with an initial population of adults (age 1+). Here, $\mu^A$ and $\sigma^A$ are the log-mean size and log-standard deviation of adults, respectively, $\phi_L$ is the log-normal probability density function, and $I^A$ is the initial abundance of adults. For RL agent training, $I^A$ is randomly drawn from a uniform distribution between 0 and 2000 for each episode, and during model evaluation, $I^A = 0$ to allow for comparison across RL algorithms and observation types.
+
+\begin{equation}
+\textbf{s}_t = \phi_L(y; \mu^A, \sigma^A) \times I^A \qquad \text{for } t=1
+\end{equation}
+
+\subsection{Removal process}
+
+The action $a_t$ taken at time $t$ corresponds to the number of traps of two trap types - Minnow traps and Fukui traps - used to remove green crab, such that $a_t=\{a_t^M, a_t^F\}$. This removal process describes the calculation of the number of removed crabs, $\textbf{h}_t$ (Equations \eqref{eq:harvest1} and \eqref{eq:harvest2}).
+
+Removal through trapping is described as a size-selective hazard rate, $V(y)$, representing the instantaneous intensity of capture \parencite{ergon2018utility} (Figure S1). The shape and magnitude of this size-selective hazard rate varies among the two trap types used for removal: Fukui and Minnow traps. Fukui traps capture larger crabs at higher rates than smaller crabs. The hazard rate of Fukui traps, $V^F(y)$, is modeled as a logistic function of crab size:
+
+\begin{equation}
+V^F(y) = \frac{v^{\text{max}}_F}{1+\text{exp}\left\{-v^k_F(y-v^0_F)\right\}}
+\end{equation}
+
+The Minnow trap mesh size is smaller than the maximum crab size, so this trap's size-selective hazard rate, $V^M(y)$, follows a bell-shaped curve \parencite{jorgensen2009size}:
+
+\begin{equation}
+V^M(y) = v^{\text{max}}_M \times \text{exp}(-\frac{(y-v^{A}_M)^2}{2 v^{\sigma}_M})
+\end{equation}
+
+The total harvest rate at $t$, $p_t(y)$, is a function of the action, or the number of traps of each type $a_t=\{a_t^M, a_t^F\}$:
+
+\begin{equation}
+p_t(y) = 1 - \text{exp}(-(V^M(y) \times a_t^M + V^F(y)\times a_t^F)) 
+\end{equation}
+
+The number of removed crabs, $h_{t,y}$, of each size $y$ at $t$ is drawn from a Binomial distribution as a function of the size-structured abundance, or state $s_{t,y}$, at $t$:
+
+\begin{equation}
+h_{t,y} \sim \text{Binomial}(s_{t,y},p_t(y))
+\end{equation}
+
+\newpage
+
+\section{Parameter values}
+
+Below are parameter values used in the transition function and state dynamics, $P$, and in the reward function $r$.
+
+\renewcommand{\thetable}{S\arabic{table}}
+\begin{longtable}{||l p{9cm} l l||}
+\caption{Posterior summaries of $\sigma$, the set of parameters used to propagate uncertainty from the model results of Keller et al. 2026 to the transition dynamics in the reinforcement learning (RL) environment, $P$. While the mean and standard deviation of the posterior is provided below, one draw, $\sigma^i$, is used for each episode of the RL environment simulation.}
+ \hline
+ \textbf{Symbol} & \textbf{Description} & \textbf{Mean} & \textbf{sd} \\ [0.5ex]
+ \hline\hline
+ $y_\infty$ & Asymptotic average crab size. & 80.5 & 0.91 \\ 
+ \hline
+ $k$ & Annual exponential rate of approach to asymptotic size. & 1.21 & 0.075 \\ 
+ \hline
+ $A$ & Parameter modulating the amplitude of seasonal growth oscillations. & 1.54 & 0.16 \\ 
+ \hline
+ $d_s$ & The time (fraction of a year) between $M(t) = 1$ (April) and the start of the convex portion of the sinusoidal growth oscillation (i.e., when the growth rate starts to slow as winter approaches). & 0.24 & 0.020 \\ 
+ \hline
+ $\sigma^G$ & Standard deviation in crab growth rate. & 2.82 & 0.22 \\ 
+ \hline
+ $\beta$ & Intensity of size-independent natural mortality. & 0.0018 & 0.0017 \\ 
+ \hline
+ $\alpha$ & Scalar modulating the intensity of size-dependent natural mortality. & 9.50 & 9.42 \\ 
+ \hline
+ $\mu^R$ & Mean recruit body size upon entrance to population. & 10.74 & 2.68\\ 
+ \hline
+ $\sigma^R$ & Standard deviation of recruit body size upon entrance to population. & 5.02 & 0.83 \\ 
+ \hline
+ $\mu^A$ & Log-mean adult body size at start of simulation, $t=1$. & 3.80 & 0.045 \\ 
+ \hline
+ $\sigma^A$ & Log-standard deviation of adult body size at start of simulation, $t=1$. & 0.22 & 0.019 \\ 
+ \hline
+ $v_F^{\text{max}}$ & Maximum harvest mortality hazard rate of Fukui traps. & 0.00018 & 1.5e-05 \\ 
+ \hline
+ $v_F^{k}$ & Steepness of change from the minimum to the maximum hazard rate for Fukui traps. & 0.50 & 0.19 \\ 
+ \hline
+ $v_F^{0}$ & Midpoint of change from the minimum to the maximum hazard rate for Fukui traps. & 35.34 & 1.98 \\ 
+ \hline
+ $v_M^{\text{max}}$ & Maximum harvest mortality hazard rate of Minnow traps. & 0.00039 & 6.17e-05 \\ 
+ \hline
+ $v_M^{A}$ & Crab size associated with maximum hazard rate with Minnow traps. & 45.12 & 0.67 \\ 
+ \hline
+ $v_M^{\sigma}$ & Width parameter in the Minnow size-selectivity hazard rate function. & 6.50 & 0.38 \\ 
+ \hline
+ \end{longtable}
+
+\renewcommand{\thetable}{S\arabic{table}}
+\begin{longtable}{||l p{9cm} l||}
+\caption{Notation, description, and value of fixed parameters used in the transition function, $P$, and state dynamics.}
+ \hline
+ \textbf{Symbol} & \textbf{Description} & \textbf{Value} \\ [0.5ex]
+ \hline\hline
+ $\psi$ & Intrinsic rate of population growth. & 1 \\ 
+ \hline
+ $\omega$ & Population carrying capacity. & 25000 \\ 
+ \hline
+ $\sigma^E$ & Standard deviation allowing environmental variation in density-dependent recruitment. & 0.1 \\ 
+ \hline
+ $p_L$ & Probability of a large non-local recruitment event. & 0.2 \\ 
+ \hline
+ $\mu^L$ & Mean number of colonizing recruits for a large recruitment event. & 80000 \\ 
+ \hline
+ $\mu^S$ & Mean number of colonizing recruits for a small recruitment event. & 8000 \\ 
+ \hline
+ $\sigma^L$ & Standard deviation of colonizing recruits for a large recruitment event. & 10000 \\ 
+ \hline
+ $\sigma^S$ & Standard deviation of colonizing recruits for a small recruitment event. & 1000 \\ 
+ \hline
+ $m^o$ & Scalar that modulates the intensity of size-dependent overwinter mortality. & 600 \\ 
+ \hline
+ \end{longtable}
+
+\renewcommand{\thetable}{S\arabic{table}}
+\begin{table}[h] 
+\centering
+\caption{Notation and value of parameters used in the reward function, $r$.}
+\vspace{10pt}
+\begin{tabular}{|c|c|} 
+ \hline
+ \textbf{Symbol} & \textbf{Value} \\ [0.5ex]
+ \hline\hline
+ $c^\alpha$ & -0.265 \\ 
+ \hline
+ $c^\gamma$ & 2.80 \\ 
+ \hline
+ $c^\beta$ & 2.99 \\ 
+ \hline
+ $A$ & 30000 \\ 
+ \hline
+ $c^\phi$ & 0.08 \\ 
+ \hline
+\end{tabular}
+\end{table}
+
+\section{Green crab biomass calculation}
+
+The relationship between mean biomass (mass in grams) and size-structured abundance (size in mm carapace width) of harvested crabs, $B(\textbf{h})$, is drawn from a biomass-size equation described in \cite{grosholz2021stage}, where $S(\textbf{h})$ is the vector of carapace widths associated with size $y$:
+
+\begin{equation}
+B(\textbf{h}) = \frac{1}{\sum_yh_y} (-0.071\times S(\textbf{h}) + 0.003\times S(\textbf{h})^2 + 0.0002\times S(\textbf{h})^3) 
+\end{equation}
+
+\newpage
+
+\section{Supplemental Figures}
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{supp_sizesel.png}
+    \caption{Posterior estimates of size-structured capture probabilities for Minnow and Fukui traps.}
+\end{figure}
+
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{supp_figure_biomass.png}
+    \caption{Relationship between biomass and crab size.}
+\end{figure}
+
+\clearpage 
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=0.8\textheight, keepaspectratio]{supp_figure_reward.png}
+    \caption{Distribution of cumulative reward across 500 model evaluations of ten reinforcement learning (RL) agent replicates for each RL algorithm and observation type. Dashed vertical lines indicate mean cumulative reward across episodes for each algorithm/observation type.}
+\end{figure}
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{supp_figure_cluster.png}
+    \caption{Simulated discrete cluster policies ($\pi^*_C$) relating the action, $a_t = \{a_t^M, a_t^F\}$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_{t,y}}{a^M_t+a^F_t}, B(\textbf{h}_t),M(t)\}$).}
+\end{figure}
+
+
+\newpage 
+
+\printbibliography[]
+
+\end{document}

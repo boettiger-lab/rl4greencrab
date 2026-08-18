@@ -1,0 +1,189 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage[
+backend=biber,
+style=apa,
+sorting=nyt
+]{biblatex}
+\addbibresource{references.bib}
+
+\title{Reinforcement learning for exploratory conservation policy analysis}
+
+\doublespacing
+
+\linenumbers
+
+\begin{document}
+
+\date{}
+
+\maketitle
+
+\section{Abstract}
+
+\section{Introduction}
+
+Deep learning not only changing research methods but also changing the process of research, example: exploratory data analysis, reviewing literature/policy documents, etc
+
+How DL has been applied in ecology, particularly reinforcement learning
+
+Optimal control: historically a trade-off between simple models and action spaces with exact solutions, and complex models where the action space is limited to the imagination of researchers (i.e., MSE)
+
+Reinforcement learning is useful here
+
+As it’s increasingly used, we’re presented with two challenges: right-sizing model complexity and interpreting the results
+1. When does model complexity and inclusion of biological + observation process realism matter in decision-making? It's appealing from a biological/ecological inference perspective to include as much biological realism as possible, and from a decision-making perspective, more realism can mean more realistic (and better) actions. But at a certain point, this biological/observation realism likely introduces noise into the solution. RL can help us iterate on model/MDP complexity to understand this trade-off/boundary.
+2. Continuous MDPs are traditionally computationally intractable to solve, hence why we need approximation approaches. One classic solution is to discretize the problem (i.e., state, action, or belief space) before it is solved. But this can be problematic because these discretizations can be made arbitrarily and we want to find solutions given the entire space of the problem. However, continuous/high-dimensional solutions can be difficult to interpret and/or not actionable. Here we want to discretize the solution space, rather than the problem space
+
+Green crab
+Size strongly regulates both population dynamics, the response to actions, and the observation-generating process
+Hard to manage: local populations are driven by regional scale dynamics, very stochastic recruitment processes often tied to region-scale oceanographic conditions
+
+
+\section{Methods}
+
+\subsection{Markov decision processes}
+
+Markov decision processes (MDPs) are useful for modeling sequential decision-making problems under uncertainty in stochastic systems \parencite{bellman1957markovian}. MDPs are described by a tuple $<S, A, P, r, T>$, where $S$ is the state space representing possible configurations of the system, $A$ is the set of all possible actions that control the state dynamics, $P$ describes the state dynamics of the system (i.e., $P(s_{t+1}|s_t,a_t)$ representing the probability of transitioning to state $s_{t+1}$, given the action $a_t$ is applied to state $s_t$), $r$ is the reward as a function of the state and action (i.e., $r(s_t, a_t)$), and $T$ is the time horizon over which actions are implemented. Desirable actions and states receive higher rewards. If the state space $S$ is imperfectly observed, the MDP becomes a partially observable Markov decision process (PoMDP), where the above tuple now contains $O$ and $Z$. Here, $O$ is the set of possible observations of the state, and $Z$ is the observation function (i.e., $Z(o_{t+1}|a_t,s_{t+1})$ representing the probability of observing $o_{t+1}$, given that action $a_t$ led to state $s_{t+1}$) \parencite{chades2021primer}.
+
+Markov decision processes are often solved exactly using methods like stochastic dynamic programming \parencite{marescot2013complex}, finding an optimal policy $\pi*: O \rightarrow A$ that maps a decision (i.e., action) to each possible observation. In contrast, reinforcement learning (RL) approximates this policy function, yet has few restrictions on what comprises a state or action in that they may be continuous or discrete and single- or multi-dimensional, for example. Briefly, RL is comprised of two components: an environment and an agent (Figure 1). The agent receives an observation $o_t$ of the environment and performs an action $a_t$ that causes the environment to transition to a new state and return a reward $r$ to the agent. The goal of the agent is to learn the optimal policy $\pi*$ ($a_t|o_{t-1}$) that maximizes its expected cumulative reward. A more extensive description of deep reinforcement learning can be found in \textcite{lapeyrolerie2022deep}. 
+
+\subsection{European green crab biology and management}
+
+European green crab (\textit{Carcinus maenas}) population dynamics are characterized by complex, size-structured demography and stochastic recruitment events \parencite{keller2026integrated}. Natural mortality varies as a function of size, due to strong negative intra-specific adult-juvenile interactions like cannibalism \parencite{grosholz2021stage, romano2017cannibalism}, size-structured competition with native crabs \parencite{mcdonald2001competitive, jensen2007biotic}, and uneven vulnerability to thermal stress and starvation \parencite{hurst2007causes, henderson1988size}. The rate of growth in body size is also size-dependent, with smaller crabs molting at a much higher frequency than larger crabs \parencite{yamada2005growth}. Additionally, green crab population dynamics are driven not only by local reproduction but also strongly by regional-scale processes, and rates of colonization can vary by orders of magnitude from year to year \parencite{yamada2021ocean} (Figure 2A). While green crabs occupy sheltered bays and estuaries as adults, planktonic larvae enter the open ocean and can travel hundreds of kilometers from their source during certain oceanographic conditions like El Niño \parencite{du2024dispersal, engel2025larval}. 
+
+Both observation and control of a green crab population occurs through removal trapping, such that the actions of managers both alter the state dynamics and generate observations. The population is also partially observable, as these trap observations are not only imperfect measurements of adult abundance, but the size-selectivity of the traps leaves all size classes below a certain threshold completely unobserved \parencite{keller2026integrated}. Due to this size-selective trapping, as the population changes in size structure over time, the availability for removal and knowledge about the system also change over time (Figure 2B). Importantly, size-selective removal can have consequential interactions with the size-structured demography of green crabs; removal of larger crabs can increase the survival of juveniles, also known as overcompensation or the ``hydra effect", as demonstrated by an eradication program that resulted in an increase in population abundance in response to removal \parencite{grosholz2021stage}.
+
+\subsection{PoMDP formulation}
+
+Here we describe how the green crab decision problem is represented as a partially observable Markov decision process (PoMDP). We adapt a size-structured population dynamics and removal model developed in \cite{keller2026integrated} to describe the state dynamics, $P(\textbf{s}_{t+1}|\textbf{s}_t,a_t, M(t))$. In the context of reinforcement learning, the state dynamics, $P$, are synonymous with the RL environment with which an RL agent interacts (Figure 1). Here, the state, $\textbf{s}_t$, is a vector of size-structured abundance discretized into 22 size bins. The population changes through time due to seasonal growth in body size, natural mortality, removal, and annual recruitment. Natural mortality, harvest mortality, and the abundance of local and non-local recruits entering the population are all stochastic processes, and the abundance of non-local, colonizing recruits is drawn from a bimodal distribution with two means separated by an order of magnitude to represent colonization variability across El Niño and non-El Niño years. The model uses a monthly time step from $t$ to $t+1$, and the dynamics depend upon the month, $M(t)$ due to seasonal variation in population processes. More detail can be found in the Supplemental Information.
+
+In addition to process variation (i.e., stochasticity in rates of population growth, colonization, removal), the state dynamics, $P$, also account for parametric uncertainty. The Bayesian posterior estimated by \cite{keller2026integrated}, $\sigma$, is propagated into the RL environment such that each simulation episode of the environment uses posterior sample $i$ (i.e., $P^i(\textbf{s}_{t+1}|\textbf{s}_t,a_t, M(t), \sigma^i)$) (Table S1).
+
+\subsubsection{Action space}
+
+We assume a decision maker chooses the action, $a_t$, or number of traps to set in month $t$ based on observation $o_{t-1}$. The decision maker has two trap types to use, Minnow and Fukui traps ($a_t=\{a_t^M, a_t^F\}$), with different size-selective removal rates (Figure S1). The Minnow trap removal rate follow a bell-shaped curve as a function of size, as the mesh size is smaller than the maximum crab size, and Fukui trap removal rate follow a logistic curve as a function of size (Figure 1). Neither trap type catches crabs with a carapace width smaller than ~30 mm. The available actions range continuously from 0 to 3000 traps for both $a_t^M$ and $a_t^F$. 
+
+\subsubsection{Observation space}
+
+To understand the appropriate observation complexity for optimal control in green crab management, we consider a set of four observation spaces with different amounts and types of information. These observations are all based on $h_{t,y}$, the count of harvested crabs of size $y$. The process by which the count of harvested crabs, $h_{t,y}$, is generated from the size-structured abundance, $\textbf{s}_t$ and removal action, $a_t$ (i.e., $P(\textbf{h}_t | a_t, \textbf{s}_t)$) is further described in the Supplemental Information.
+
+The first observation type, $O_1$, is the one-dimensional catch per unit effort (CPUE) of harvested crabs of all size classes $O_1 = \frac{\sum_yh_{t,y}}{a^M_t+a^F_t}$. The second observation type, $O^T_1$, includes both the one-dimensional CPUE of harvested crabs and the month associated with $t$, $O^T_1 = \{\frac{\sum_yh_{t,y}}{a^M_t+a^F_t}, M(t)\}$. The third observation type, $O^T_2$, includes the one-dimensional CPUE of harvested crabs, mean biomass of harvested crabs, and the month associated with $t$, $O^T_2 = \{\frac{\sum_yh_{t,y}}{a^M_t+a^F_t}, B(\textbf{h}_t),M(t)\}$. The function relating mean biomass to the size-structured count of removed crabs, $B(\textbf{h})$, can be found in the supplemental information. Finally, the fourth observation type, $O^T_{22}$, includes the 22-dimensional, size-structured CPUE of harvested crabs and the month associated with $t$, $O^T_{22} = \{\frac{h_{t,y}}{a^M_t+a^F_t}, M(t)\}$.
+
+\subsubsection{Reward function}
+
+Due to the green crab's long distance dispersal and high potential for recolonization after removal, eradication of green crab is typically not considered achievable \parencite{tummon2024rebound}. Instead, the goal of ``functional eradication" has emerged as a pragmatic objective, where the invader population is suppressed below levels that cause unacceptable ecological effects, while balancing the need to minimize removal costs \parencite{green2021functional}.
+
+We therefore formulate the reward function, $r(\textbf{s}_t, a_t)$, as the sum of the reward associated with ecological change, $r^E(\textbf{s}_t)$, and the reward associated with removal cost, $r^C(a_t)$, with higher values corresponding to more desirable outcomes:
+
+\begin{equation}
+r(\textbf{s}_t, a_t) = r^E(\textbf{s}_t) + r^C(a_t)
+\end{equation}
+
+The shape of the relationship between biomass and ecological impact, $r^E(B(\textbf{s}_t))$, is likely nonlinear and depends upon the impacted resource \parencite{bradley2019disentangling, grosholz2000impacts}. Here we consider a sigmoidal relationship between biomass and ecological impact, which may be consistent with the effect of green crab on eelgrass shoot density, where the impact of green crab foraging behavior is minimal until a threshold at which ecological integrity declines \parencite{davis1998quantifying}:
+
+\begin{equation}
+r^E(\textbf{s}_t) = \frac{c^\alpha}{1 - \text{exp}(c^\gamma \times(B(\textbf{s}_t) /A-c^\beta))}
+\end{equation}
+
+Here, $A$ is the area of the habitat, such that the reward can be interpreted as a function of green crab density.
+
+Reward also scales linearly as a function of removal effort:
+
+\begin{equation}
+r^C(a_t) = c^\phi\times(a_t^M + a_t^F)
+\end{equation}
+
+Parameter values for the above reward functions are chosen to reflect a decision maker who values minimizing ecological change more than minimizing the cost of removal, such that the minimum possible value for $r^E(\textbf{s}_t)$ (-0.265 - 0) is 1.65x greater than the minimum possible value for $r^C(a_t)$ (-0.16 - 0). Values for reward function parameters can be found in the Supplemental Information.
+
+\subsection{Optimizing removal policies}
+
+Here we describe methods used to calculate or approximate the optimal policy function, $\pi*: O \rightarrow A$ that maps an action to an observation.
+
+\subsubsection{Reinforcement learning-based policies}
+
+The reinforcement learning-based policies use a neural network to define the relationship between the observation, $o_t$, and action $a_t$:
+
+\begin{equation}
+a_t = f_{\theta}(o_t)
+\end{equation}
+
+where $f_\theta$ is the neural network with parameters $\theta$. Reinforcement learning was used to optimize four different observation spaces of varying observation type and complexity, $O_1$, $O_1^T$, $O^2_2$, and $O_{22}^T$, and a different set of parameters, $\theta$, were optimized for each observation space. 
+
+Optimizing these neural network weights, $\theta$, involves \textit{training} the agent, a process where the agent collects data on interactions with the environment and learns actions to encourage or avoid, given an observation and the reward it receives \parencite{lapeyrolerie2022deep}. Multiple algorithms exist for training RL agents. We trained RL agents for each observation space with three algorithms: Proximal Policy Optimization (PPO), Truncated Quantile Critic (TQC), and Twin-delayed Deep Deterministic (TD3). 
+
+We use actor-critic RL policies. This structure has two main components: the Actor ($\pi_\theta$): Responsible for mapping the observation $o_t$ (and hidden state $h_t$) to a probability distribution over actions $a_t$ and the Critic (Value Function): Estimates the value function $V(s)$, which represents the expected long-term return from the current state. Each time actor outputs an action and interact with the environment, $V(s)$ will estimate the long-term reward for current policies and help to determine next policy update direction and maganitue.
+
+PPO \parencite{schulman2017ppo}: use default parameter \texttt{net\_arch = dict(pi=[64, 64], vf=[64, 64])} For both actor and critics network: two hidden layers and 64 units on each layer. PPO use one critics and one actor. Train for 10000000 timesteps.
+
+TQC \parencite{kuznetsov2020tqc}: use default parameter \texttt{net\_arch = [256, 256]}. This means two hidden layers and each layer has 256 units. Both Actor (Policy) network and the Critic Network has the same structure. We use 2 Critics for training. Trained for 10000000 timesteps.
+
+TD3 \parencite{fujimoto2018addressing}: use default parameter \texttt{net\_arch = [400, 300]}. Using two hidden layer first layer with 400 units and second layer with 300 units. TD3 use two critics and one actor with ReLU activation function. 
+
+RecurrentPPO: RecurrentPPO is a PPO using additional LSTM layer. Long Short-Term Memory(LSTM) layer allow agent to remember past events which help to deal with Partially Observable Markov Decision Processes (POMDPs). Here, I use parameters \texttt{net\_arch = pi: [256, 256], vf: [256, 256]} and \texttt{lstm\_hidden\_size = 256}. so I first have one layer of LSTM layer with 256 units, one actor with two 256 units layers, and one critics with two 256 units layers.
+
+ADD INFORMATION ABOUT TRAINING TIME? CONVERGENCE CRITERIA? SOFTWARE?
+
+\subsubsection{Optimal constant policy}
+
+To build a reference point for understanding the performance of RL-based policies, we calculated a constant, observation-invariant policy that assumes the same action will be applied at every time step $t$ that maximizes the reward.
+
+\subsection{Policy evaluation}
+
+To enable interpretation of the RL policies and neural network weights, $\theta$, we simulated the action $a_t$ associated with an observation $o_t$ for $n = 500$ episodes of 100 time steps, recording the actions, observations, reward, and state at each time step. To allow comparison across algorithms and observation spaces, we used the same draws from the stochastic elements of the environment (i.e., environmental stochasticity during density-dependent recruitment, abundance of colonizing non-local recruits, etc) for each episode (is this true??).
+
+\subsection{Generating actionable policies}
+
+\section{Results}
+
+\section{Discussion}
+
+Trade-off between interpretability and performance
+
+Are the model complexity results just an outcome of neural network size? Or that the reward is a function of biomass?
+
+\section{Figures}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{Figure1_conceptual-01.png}
+    \caption{Conceptual figure highlighting the relationship between the reinforcement learning environment and agent. The environment describes 1) the state dynamics (i.e., $P(s_{t+1}|s_t, a_t, M(t))$), where the size-structured green crab abundance, $\textbf{s}_t$, changes in response to removal, $a_t$, and month-varying (i.e., $M(t)$) internal population dynamic processes, 2) the process of generating observations, $o_t$, from the state, $\textbf{s}_t$, and 3) the reward generated as a function of the action $a_t$ and state $\textbf{s}_t$. The agent receives observations and rewards from the environment to learn the function $f_\theta$, or neural network weights, that maps an action to an observation, $\pi*: O \rightarrow A$.}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{Figure2.png}
+    \caption{\textbf{\textit{A.}} Simulated distribution of size-structured crab abundance over time (13 years, seven months/year) across 100 episodes, if no action is taken (i.e., $a_t = \{a_t^M = 0, a_t^F = 0\}$). \textbf{\textit{B.}} True size-structured distribution of crabs, $s_{y}$ during months $M(t) = \{5, 7, 9\}$ and size-structured count of harvested crabs, $h_y$, in traps ($a_t = \{a_t^M = 50, a_t^F = 50\}$) from one simulated episode.}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{Figure3.png}
+    \caption{Distribution of cumulative reward for each observation type using the TQC reinforcement learning algorithm (500 model evaluations for each of ten trained RL agents per observation type). Dashed vertical line indicates mean cumulative reward for each observation type across simulated episodes.}
+\end{figure}
+
+\newpage
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figure4.png}
+    \caption{Simulated RL-based policies ($\pi^*_{R}$) relating the action, $a_t = \{a_t^M, a_t^F\}$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_{t,y}}{a^M_t+a^F_t}, B(\textbf{h}_t),M(t)\}$). Each point represents each of 500 model evaluations with the best-performing RL agent trained with the TQC RL algorithm. Policies are shown for each month, $M(t)$ and for each trap type, Minnow traps and Fukui traps.}
+\end{figure}
+
+\newpage
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figure5.png}
+    \caption{\textbf{\textit{A.}} Simulated discrete cluster policies ($\pi^*_C$) relating the action, $a_t = \{a_t^M, a_t^F\}$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_{t,y}}{a^M_t+a^F_t}, B(\textbf{h}_t),M(t)\}$). \textbf{\textit{B.}} Distribution of cumulative reward of 500 model evaluations with the clustered policy ($\pi^*_C$), constant action, and highest performing RL agent replicate with the TQC reinforcement learning algorithm.}
+\end{figure}
+
+\newpage
+
+\printbibliography[]
+
+\end{document}
