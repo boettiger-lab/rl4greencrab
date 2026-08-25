@@ -154,11 +154,11 @@ figure3_22 <- ggplot() +
   ) +
   scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
   scale_color_manual(values = unname(fill_colors[c("constant", "size-time")])) +
-  labs(x = "reward", y = "density") +
+  labs(x = "cumulative reward", y = "density") +
   theme_minimal() +
   theme(legend.position = "None")
 
-common_x <- scale_x_continuous(limits = c(-15, -3))
+common_x <- scale_x_continuous(limits = c(-20, -3))
 
 figure3 <- (figure3_1 + common_x) /
   (figure3_1t + common_x) /
@@ -198,7 +198,7 @@ supplemental <- ggplot() +
   ) +
   scale_x_continuous(limits = c(-20, -3)) +
   scale_color_manual(values = fill_colors) +
-  labs(x = "reward", y = "density", fill = "observation\ntype") +
+  labs(x = "cumulative reward", y = "density", fill = "observation\ntype") +
   facet_wrap(~algorithm, ncol = 1, 
              labeller = as_labeller(algo_names)) + 
   theme_minimal() +
