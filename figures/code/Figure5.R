@@ -102,9 +102,10 @@ hull_plot_sub <- ggplot(data_long[data_long$months %in% c(4, 6, 8, 10), ],
        fill = expression("action\n(number\nof traps), " * italic(t))) +
   facet_grid(action ~ months, labeller = labeller(months = month_names,
                                                   action = action_names)) +
-  ggtitle("A. Clustered policy") +
+  ggtitle("A. Discrete, cluster-based policy") +
   theme_minimal() +
-  theme(legend.title = element_text(hjust = 0.5))
+  theme(legend.title = element_text(hjust = 0.5),
+        plot.title = element_text(size = 12))
 
 
 ###############
@@ -123,19 +124,25 @@ top_data <- read.csv("data/rl_policies/count-biomass-time/tqc_count-biomass-time
 
 # subset to final timestep
 data_sub <- data[data$t == 99, ] %>% 
-  mutate(type = "clustered")
+  mutate(type = "discrete")
 
 # combine all
 all_histo <- rbind(const_data[, c("rew", "type")],
                    top_data[, c("rew", "type")],
                    data_sub[, c("rew", "type")])
 
+# change order of items in legend
+all_histo$type <- factor(all_histo$type, 
+                         levels = c("constant", "RL", "discrete"))
+
 histo_plot <- ggplot(data = all_histo) +
   geom_density(aes(x = rew, fill = type), alpha = 0.4, 
                adjust = 1.5) +
-  ggtitle("B. Clustered reward") +
-  labs(x = "reward", y = "density", fill = "policy type") +
-  theme_minimal()
+  ggtitle("B. Cumulative reward") +
+  labs(x = "cumulative reward", y = "density", fill = "policy type") +
+  scale_fill_manual(values = c("black", "green4", "cornflowerblue")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12))
 
 
 ###########
