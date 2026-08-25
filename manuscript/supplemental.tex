@@ -148,7 +148,7 @@ To initialize the simulation at $t=1$, the population begins with an initial pop
 
 \subsection{Removal process}
 
-The action $a_t$ taken at time $t$ corresponds to the number of traps of two trap types - Minnow traps and Fukui traps - used to remove green crab, such that $a_t=\{a_t^M, a_t^F\}$. This removal process describes the calculation of the number of removed crabs, $\textbf{h}_t$ (Equations \eqref{eq:harvest1} and \eqref{eq:harvest2}).
+The action $a_t$ taken at time $t$ corresponds to the number of traps of two trap types - Minnow traps and Fukui traps - used to remove green crab, such that $a_t=\{a_M, a_F\}_t$. This removal process describes the calculation of the number of removed crabs, $\textbf{h}_t$ (Equations \eqref{eq:harvest1} and \eqref{eq:harvest2}).
 
 Removal through trapping is described as a size-selective hazard rate, $V(y)$, representing the instantaneous intensity of capture \parencite{ergon2018utility} (Figure S1). The shape and magnitude of this size-selective hazard rate varies among the two trap types used for removal: Fukui and Minnow traps. Fukui traps capture larger crabs at higher rates than smaller crabs. The hazard rate of Fukui traps, $V^F(y)$, is modeled as a logistic function of crab size:
 
@@ -162,10 +162,10 @@ The Minnow trap mesh size is smaller than the maximum crab size, so this trap's 
 V^M(y) = v^{\text{max}}_M \times \text{exp}(-\frac{(y-v^{A}_M)^2}{2 v^{\sigma}_M})
 \end{equation}
 
-The total harvest rate at $t$, $p_t(y)$, is a function of the action, or the number of traps of each type $a_t=\{a_t^M, a_t^F\}$:
+The total harvest rate at $t$, $p_t(y)$, is a function of the action, or the number of traps of each type $a_t=\{a_M, a_F\}_t$:
 
 \begin{equation}
-p_t(y) = 1 - \text{exp}(-(V^M(y) \times a_t^M + V^F(y)\times a_t^F)) 
+p_t(y) = 1 - \text{exp}(-(V^M(y) \times a_{t,M} + V^F(y)\times a_{t,F})) 
 \end{equation}
 
 The number of removed crabs, $h_{t,y}$, of each size $y$ at $t$ is drawn from a Binomial distribution as a function of the size-structured abundance, or state $s_{t,y}$, at $t$:
@@ -286,7 +286,7 @@ B(\textbf{h}) = \frac{1}{\sum_yh_y} (-0.071\times S(\textbf{h}) + 0.003\times S(
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5\textwidth]{supp_sizesel.png}
-    \caption{Posterior estimates of size-structured capture probabilities for Minnow and Fukui traps.}
+    \caption{Posterior estimates of size-structured capture probabilities for Minnow ($a_M$) and Fukui ($a_F$) traps. Solid line corresponds to the posterior mean, and shaded area corresponds to the 95\% credibility interval.}
 \end{figure}
 
 
@@ -310,7 +310,7 @@ B(\textbf{h}) = \frac{1}{\sum_yh_y} (-0.071\times S(\textbf{h}) + 0.003\times S(
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{supp_figure_cluster.png}
-    \caption{Simulated discrete cluster policies ($\pi^*_C$) relating the action, $a_t = \{a_t^M, a_t^F\}$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_{t,y}}{a^M_t+a^F_t}, B(\textbf{h}_t),M(t)\}$).}
+    \caption{Simulated discrete, cluster policies ($\pi^*_D$) relating the action, $a^D = \{a_M, a_F\}^D$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_y}{a_M+a_F}, B(\textbf{h}),M(t)\}$).}
 \end{figure}
 
 
