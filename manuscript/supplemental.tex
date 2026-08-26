@@ -176,7 +176,18 @@ h_{t,y} \sim \text{Binomial}(s_{t,y},p_t(y))
 
 \newpage
 
-\section{Parameter values}
+\section{Green crab biomass calculation}
+
+The relationship between mean biomass (mass in grams) and size-structured abundance (size in mm carapace width) of harvested crabs, $B(\textbf{h})$, is drawn from a biomass-size equation described in \cite{grosholz2021stage}, where $S(\textbf{h})$ is the vector of carapace widths associated with size $y$:
+
+\begin{equation}
+B(\textbf{h}) = \frac{1}{\sum_yh_y} (-0.071\times S(\textbf{h}) + 0.003\times S(\textbf{h})^2 + 0.0002\times S(\textbf{h})^3) 
+\end{equation}
+
+\newpage
+
+
+\section{Supplemental Tables}
 
 Below are parameter values used in the transition function and state dynamics, $P$, and in the reward function $r$.
 
@@ -270,13 +281,42 @@ Below are parameter values used in the transition function and state dynamics, $
 \end{tabular}
 \end{table}
 
-\section{Green crab biomass calculation}
-
-The relationship between mean biomass (mass in grams) and size-structured abundance (size in mm carapace width) of harvested crabs, $B(\textbf{h})$, is drawn from a biomass-size equation described in \cite{grosholz2021stage}, where $S(\textbf{h})$ is the vector of carapace widths associated with size $y$:
-
-\begin{equation}
-B(\textbf{h}) = \frac{1}{\sum_yh_y} (-0.071\times S(\textbf{h}) + 0.003\times S(\textbf{h})^2 + 0.0002\times S(\textbf{h})^3) 
-\end{equation}
+\renewcommand{\thetable}{S\arabic{table}}
+\begin{table}[h] 
+\centering
+\caption{Cumulative reward for reinforcement learning-based policies ($\pi^*_R$) trained with the PPO, TD3, and TQC RL algorithms. The mean cumulative reward is provided, along with the variance in cumulative reward across simulated episodes ($\sigma_E$) and variance in mean cumulative reward across replicated trained RL agents for each observation type ($\sigma_R$). Figures in the main text show results for the TQC algorithm.}
+\vspace{10pt}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|} 
+ \hline
+ \textbf{Algorithm} & \textbf{Observation type} & \textbf{Reward (mean)} & \textbf{Reward ($\sigma_E$)} & \textbf{Reward ($\sigma_R$)} \\ [0.5ex]
+ \hline\hline
+ PPO & $O_1$ & -7.84 & 3.22 & 0.25 \\ 
+ \hline
+ PPO & $O_1^T$ & -8.56 & 9.00 & 2.48 \\ 
+ \hline
+ PPO & $O_2^T$ & -7.66 & 6.42 & 1.38 \\ 
+ \hline
+ PPO & $O_{22}^T$ & -8.19 & 3.32 & 0.37 \\ 
+ \hline\hline
+ TD3 & $O_1$ & -12.41 & 39.3 & 36.58 \\ 
+ \hline
+ TD3 & $O_1^T$ & -16.18 & 38.45 & 32.51 \\ 
+ \hline
+ TD3 & $O_2^T$ & -7.92 & 3.43 & 0.35 \\ 
+ \hline
+ TD3 & $O_{22}^T$ & -13.22 & 26.93 & 28.10 \\ 
+ \hline\hline
+ TQC & $O_1$ & -9.51 & 10.42 & 8.00 \\ 
+ \hline
+ TQC & $O_1^T$ & -9.58 & 6.05 & 0.53 \\ 
+ \hline
+ TQC & $O_2^T$ & -7.53 & 2.91 & 0.03 \\ 
+ \hline
+ TQC & $O_{22}^T$ & -9.06 & 6.66 & 1.35 \\ 
+ \hline
+\end{tabular}
+\end{table}
 
 \newpage
 
@@ -310,7 +350,7 @@ B(\textbf{h}) = \frac{1}{\sum_yh_y} (-0.071\times S(\textbf{h}) + 0.003\times S(
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth, height=0.9\textheight, keepaspectratio]{supp_figure_cluster.png}
-    \caption{Simulated discrete, cluster policies ($\pi^*_D$) relating the action, $a^D = \{a_M, a_F\}^D$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_y}{a_M+a_F}, B(\textbf{h}),M(t)\}$).}
+    \caption{Simulated discrete, cluster policies ($\pi^*_D$) relating the action, $a^D = \{a_M, a_F\}^D$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_y}{a_M+a_F}, B(\textbf{h}),M(t)\}$).} Legend includes a subset of discrete actions displayed in the figure. 
 \end{figure}
 
 

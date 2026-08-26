@@ -98,7 +98,7 @@ Reward also scales linearly as a function of removal effort:
 r^C(a_t) = c^\phi\times(a_t^M + a_t^F)
 \end{equation}
 
-Parameter values for the above reward functions are chosen to reflect a decision maker who values minimizing ecological change more than minimizing the cost of removal, such that the minimum possible value for $r^E(\textbf{s}_t)$ (-0.265 - 0) is 1.65x greater than the minimum possible value for $r^C(a_t)$ (-0.16 - 0). Values for reward function parameters can be found in the Supplemental Information.
+Parameter values for the above reward functions are chosen to reflect a decision maker who values minimizing ecological change more than minimizing the cost of removal, such that the minimum possible value for $r^E(\textbf{s}_t)$ (-0.265 - 0) is 1.65x greater than the minimum possible value for $r^C(a_t)$ (-0.16 - 0). Values for reward function parameters can be found in Table S3.
 
 \subsection{Optimizing removal policies}
 
@@ -122,7 +122,7 @@ To build a reference point for understanding the performance of RL-based policie
 
 \subsection{Policy evaluation}
 
-To enable interpretation of the RL policies and neural network weights, $\theta$, we simulated $n = 500$ episodes of 100 time steps of the environment and applied RL policy, $\pi^*_R$ (i.e., action $a_t$ associated with an observation $o_t$), for each of ten replicate trained RL agents for each algorithm/observation type combination. We recorded the actions, observations, and state at each time step, as well as the cumulative reward at the end of each episode at $t = 100$. To allow comparison across algorithms and observation types, we used the same draws from the stochastic elements of the environment (i.e., environmental stochasticity during density-dependent recruitment, abundance of colonizing non-local recruits, etc) and the same sequence of parameter values sampled from the \cite{keller2026integrated} posterior distribution, $\sigma$.
+To enable interpretation of the RL policies and neural network weights, $\theta$, we simulated $n = 500$ episodes of 100 time steps of the environment and applied RL policy, $\pi^*_R$ (i.e., action $a_t$ associated with an observation $o_t$), for each of ten replicate trained RL agents for each algorithm/observation type combination. Hereafter, "policy evaluation" refers to application of a policy during simulated episodes of the environment. We recorded the actions, observations, and state at each time step, as well as the cumulative reward at the end of each episode at $t = 100$. To allow comparison across algorithms and observation types, we used the same draws from the stochastic elements of the environment (i.e., environmental stochasticity during density-dependent recruitment, abundance of colonizing non-local recruits, etc) and the same sequence of parameter values sampled from the \cite{keller2026integrated} posterior distribution, $\sigma$.
 
 \subsection{Generating actionable policies}
 
@@ -132,11 +132,72 @@ To compare the discrete policy, $\pi^*_D$, to the RL-based policy, $\pi^*_R$, an
 
 \section{Results}
 
+\subsection{Reinforcement learning environment}
+
+We developed a reinforcement learning environment for an agent to interact with and learn an optimal policy, $\pi^*_R$, that maps an action to an observation. The environment reflects size-structured European green crab population dynamics and a size-structured observation process and is conceptually equivalent to a combination of the state dynamics ($P(s_{t+1}|s_t, a_t, M(t))$) and observation function ($Z(o_{t+1}|a_t, s_{t+1}$) in a partially observable Markov decision process (Figure 1).
+
+The environment simulates an episode, or 100 time steps of the population dynamics and observation process. Across the episode, the total crab abundance reaches an equilibrium near carrying capacity, yet stochasticity in inter-annual colonization rates leads to variable abundance across episodes (Figure 2A). The mean size of crabs increases as the crabs grow, with the abundance of crabs >65 mm increasing within each year (months 4-10) (Figure 2A). The opportunity for crabs to be observed changes within the year as the crabs grow into trappable size classes (Figure 2). The size structure of observed crabs (Figure 2B, bottom panel) is therefore not proportionate to the true size structure of crabs (Figure 2A, top panel).
+
+\subsection{Right-sizing model complexity}
+
+To find the observation complexity that yields the highest-performing reinforcement learning policy, we created four separate environments that produced different observation types of increasing complexity, $O_1$, $O_1^T$, $O_2^T$, and $O_{22}^T$. We trained RL agents using three different algorithms on each observation type. For each observation type-algorithm combination, ten replicate agents were trained to account for stochasticity in the training process. We then compared the cumulative reward across 500 simulated episodes (i.e., policy evaluations) by applying the RL-based policy, $\pi^*_R$ for each observation type-algorithm combination and trained RL agent replicate. 
+
+The highest performing observation type for all RL algorithms was $O_2^T$ (Figure 3; Figure S3; Table 1). With this medium-complexity observation type, the RL agent observed the month ($M(t)$), catch per unit effort (CPUE) across all crab sizes, and the mean biomass of caught crabs. The RL-based policy, $\pi^*_R$ with all observation types out-performed the constant action policy, $\pi^*_C$, that applies the same action at every time step, invariant of the observation (Table 1). Yet the RL-based policy with the low-complexity observation types ($O_1$ and $O_1^T$) that did not contain any information about crab size only marginally out-performed the constant action policy (Figure 3; Table 1). The highest performing RL algorithm with the $O_2^T$ observation was the Truncated Quantile Critic algorithm (TQC), although the Proximal Policy Optimization algorithm (PPO) was consistently high performing across all observation types (Figure S3; Table S4). The mean cumulative reward varied across the ten replicate trained RL agents for each observation type-algorithm combination (Table 1). Both the low complexity observation type ($O_1$) and TD3 RL algorithm produced particularly high between-replicate variance (Table 1; Table S4).
+
+\subsection{Reinforcement learning-based policies}
+
+The highest-performing RL-based policy using the medium-complexity observation type ($O^T_2$) and the TQC algorithm relates the optimal removal effort at $t$ ($a_t = {a_M, a_F}_t$) to observations of catch per unit effort (CPUE) and mean biomass at $t-1$ for each month $M(t)$ throughout the trapping season (April-October) (Figure 4). To understand the neural network weights, $\theta$, associated with the trained RL agent, we simulated 500 episodes of 100 time steps of the environment and applied RL policy, $\pi^*_R$ (i.e., action $a_t$ associated with an observation $o_t$). The simulated actions and observations demonstrate that the optimal action varies strongly over time as the size structure of the crab population changes (Figure 4). For Minnow traps ($a_M$) that target medium-sized crabs (Figure S1), very few traps should be set in the months of April-August, and the optimal trapping intensity depends primarily on the catch per unit effort (CPUE) in the months of September and October (Figure 4). For Fukui traps ($a_F$) that target medium- and large-sized crabs (Figure S1), the optimal trapping intensity varies across all three observation dimensions: month ($M(t)$), catch per unit effort (CPUE), and mean biomass of caught crabs (Figure 4).
+
+\subsection{Actionable, reinforcement learning-informed policies}
+
+We used $k$-means clustering to generate a discrete, simplified policy, $\pi^*_D$, informed by the continuous, reinforcement learning-based policy (Figure 5A; Figure S4). This simplified policy takes a continuous observation ($O^T_2$), finds the closest cluster centroid in Euclidean space, and maps the continuous observation to a discrete action, $a^D$ (Figure 5A). Though simpler than the RL-based policy, this discrete, actionable policy does not decline in performance. Applying the discrete, cluster-based policy during policy evaluations produces a cumulative reward nearly equal in performance to the RL-based policy (Figure 5B; Table 1).
+
+
 \section{Discussion}
 
-Trade-off between interpretability and performance
+Can find limited trade-off between interpretability and performance
+
+medium complexity wins
 
 Are the model complexity results just an outcome of neural network size? Or that the reward is a function of biomass?
+
+attempt to merge statistical ecology and decision analysis; propagating parameter uncertainty and process variation
+
+RL algorithms have different flavors; PPO was consistently high performing and low variance across trained agent replicates
+
+assumed a reward function (especially the relative weights for minimizing ecological damage vs. removal cost); need structured approaches to generate a decision-relevant objective function that reflects the values of a decision maker
+
+\newpage
+
+\section{Tables}
+
+\begin{table}[h] 
+\centering
+\caption{Cumulative reward for reinforcement learning-based policies ($\pi^*_R$) trained with the TQC RL algorithm; constant, observation-invariant policy ($\pi^*_C$); and discrete, cluster-based policy ($\pi^*_D$). The mean cumulative reward is provided, along with the variance in cumulative reward across simulated episodes ($\sigma_E$) and variance in mean cumulative reward across replicated trained RL agents for each observation type ($\sigma_R$). The mean cumulative reward and variance in reward across episodes is provided for the top-performing RL agent replicate used to generate the discrete, cluster-based policy, $\pi^*_D$.}
+\vspace{10pt}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|c|c|} 
+ \hline
+ \textbf{Policy type} & \textbf{Observation type} & \textbf{Reward (mean)} & \textbf{Reward ($\sigma_E$)} & \textbf{Reward ($\sigma_R$)} \\ [0.5ex]
+ \hline\hline
+ $\pi^*_R$ & $O_1$ & -9.51 & 10.42 & 8.00 \\ 
+ \hline
+ $\pi^*_R$ & $O_1^T$ & -9.58 & 6.05 & 0.53 \\ 
+ \hline
+ $\pi^*_R$ & $O_2^T$ & -7.53 & 2.91 & 0.03 \\ 
+ \hline
+ $\pi^*_R$ & $O_{22}^T$ & -9.06 & 6.66 & 1.35 \\ 
+ \hline\hline
+ $\pi^*_C$ & - & -9.65 & 3.02 & - \\ 
+ \hline\hline
+ $\pi^*_R$ (top-performing replicate) & $O_2^T$ & -7.30 & 2.35 & - \\ 
+ \hline
+ $\pi^*_D$ & - & -7.37 & 2.60 & - \\ 
+ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
 
 \section{Figures}
 
@@ -146,35 +207,39 @@ Are the model complexity results just an outcome of neural network size? Or that
     \caption{Conceptual figure highlighting the relationship between the reinforcement learning environment and agent. The environment describes 1) the state dynamics (i.e., $P(s_{t+1}|s_t, a_t, M(t))$), where the size-structured green crab abundance, $\textbf{s}_t$, changes in response to removal, $a_t$, and month-varying (i.e., $M(t)$) internal population dynamic processes, 2) the process of generating observations, $o_t$, from the state, $\textbf{s}_t$, and 3) the reward generated as a function of the action $a_t$ and state $\textbf{s}_t$. The agent receives observations and rewards from the environment to learn the function $f_\theta$, or neural network weights, that maps an action to an observation, $\pi^*: O \rightarrow A$.}
 \end{figure}
 
+\clearpage
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{Figure2.png}
     \caption{\textbf{\textit{A.}} Simulated distribution of size-structured crab abundance over time (13 years, seven months/year) across 100 episodes, if no action is taken (i.e., $a = \{a_M = 0, a_F = 0\}$). \textbf{\textit{B.}} True size-structured distribution of crabs, $s_{y}$ during months $M(t) = \{5, 7, 9\}$ and size-structured count of harvested crabs, $h_y$, in traps ($a = \{a_M = 50, a_F = 50\}$) from one simulated episode.}
 \end{figure}
 
+\clearpage
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{Figure3.png}
-    \caption{Distribution of cumulative reward for each observation type using the TQC reinforcement learning algorithm (500 model evaluations for each of ten trained RL agents per observation type). Dashed vertical line indicates mean cumulative reward for each observation type across simulated episodes.}
+    \caption{Distribution of cumulative reward for each observation type using the TQC reinforcement learning algorithm (500 policy evaluations for each of ten trained RL agents per observation type). Dashed vertical line indicates mean cumulative reward for each observation type across simulated episodes.}
 \end{figure}
 
-\newpage
+\clearpage
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{figure4.png}
-    \caption{Simulated RL-based policies ($\pi^*_{R}$) relating the action, $a_t = \{a_M, a_F\}_t$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_y}{a_M+a_F}, B(\textbf{h}),M(t)\}$). Each point represents each of 500 model evaluations with the best-performing RL agent trained with the TQC RL algorithm. Policies are shown for each month, $M(t)$ and for each trap type, Minnow traps and Fukui traps.}
+    \caption{Simulated RL-based policies ($\pi^*_{R}$) relating the action, $a_t = \{a_M, a_F\}_t$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_y}{a_M+a_F}, B(\textbf{h}),M(t)\}$). Each point represents each of 500 policy evaluations with the best-performing RL agent replicate trained with the TQC RL algorithm. Policies are shown for each month, $M(t)$ and for each trap type, Minnow traps and Fukui traps.}
 \end{figure}
 
-\newpage
+\clearpage
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{figure5.png}
-    \caption{\textbf{\textit{A.}} Simulated discrete cluster policies ($\pi^*_D$) relating the discrete action, $a^D = \{a_M, a_F\}^D$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_y}{a_M+a_F}, B(\textbf{h}),M(t)\}$). \textbf{\textit{B.}} Distribution of cumulative reward of 500 model evaluations with the clustered policy ($\pi^*_D$), constant action, and highest performing RL agent replicate with the TQC reinforcement learning algorithm.}
+    \caption{\textbf{\textit{A.}} Simulated discrete cluster-based policies ($\pi^*_D$) relating the discrete action, $a^D = \{a_M, a_F\}^D$, to the observation of catch per unit effort (CPUE), mean biomass, and month (i.e., $O^T_2 = \{\frac{\sum_yh_y}{a_M+a_F}, B(\textbf{h}),M(t)\}$). Legend includes a subset of discrete actions displayed in the figure. \textbf{\textit{B.}} Distribution of cumulative reward of 500 policy evaluations with the discrete, cluster-based policy ($\pi^*_D$), constant action policy ($\pi^*_C$), and highest performing RL agent replicate with the TQC reinforcement learning algorithm ($\pi^*_R$).}
 \end{figure}
 
-\newpage
+\clearpage
 
 \printbibliography[]
 
