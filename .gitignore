@@ -141,3 +141,7 @@ manuscript/*.pdf
 saved_agents/
 
 notebooks/test.ipynb
+
+
+# project specific
+data/
