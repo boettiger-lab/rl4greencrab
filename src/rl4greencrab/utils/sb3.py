@@ -40,7 +40,11 @@ def sb3_train(config_file, **kwargs):
         options = {**options, **kwargs}
         # updates / expands on yaml options with optional user-provided input
 
-    if "n_envs" in options:
+    if options.get("gpu_env", False):
+        from rl4greencrab.envs.sb3_vec import SB3GPUVecEnv
+        env = SB3GPUVecEnv(options["config"], num_envs=options.get("gpu_n_envs", 1024), seed=options.get("seed"))
+        print(f'GPU env config: {options["config"]}')
+    elif "n_envs" in options:
         env = make_vec_env(
             options["env_id"], options["n_envs"], env_kwargs={"config": options["config"]}
         )

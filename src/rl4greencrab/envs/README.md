@@ -70,3 +70,31 @@ model.learn(
     progress_bar=True,
 )
 ```
+---
+
+## GPU version: `TwoActGPU`
+
+`gpu_env.py` contains `TwoActGPU`, a batched PyTorch port of `twoActEnv` / `TwoActNormalized` that runs thousands of envs at once on the GPU. It takes the same `config` dict. Kernels, selectivity curves, initial state and reward match the CPU env to float32 precision, and episode returns agree statistically (`tests/test_gpu_env.py`).
+
+```python
+from rl4greencrab import TwoActGPU, GPUPPO, gpu_evaluate
+
+config = {'random_start': True, 'observation_type': 'count-time',
+          'param_csv': 'data/posterior/params.csv'}
+env = TwoActGPU(config, num_envs=4096, seed=0)        # normalized=False for natural units
+obs, _ = env.reset()                                   # {"crabs": (B, k), "months": (B,)}
+obs, reward, terminated, truncated, info = env.step(actions)   # actions: (B, 2) tensor, auto-reset
+
+model = GPUPPO(env).learn(10_000_000)                  # PPO, entirely on the GPU
+returns = gpu_evaluate(lambda o: model.predict(o)[0], env)
+model.save('agent')                                    # GPUPPO.load('agent.pt').predict(obs) works with the CPU env too
+```
+
+From the command line, with the existing hyperparameter files: `python scripts/train_gpu.py -f hyperpars/count-time/ppo.yaml [--n-envs 4096]`.
+
+To use SB3 algorithms (TD3, TQC, RecurrentPPO) with the GPU simulator, add `gpu_env: True` (and optionally `gpu_n_envs`) to a yaml file for `scripts/train.py`, or use `rl4greencrab.envs.sb3_vec.SB3GPUVecEnv` directly. Training is then limited by SB3's numpy-based loop rather than by the simulator.
+
+Differences from the CPU env:
+- One `torch.Generator` (`seed=`) drives all randomness, so trajectories are not draw-for-draw identical to the numpy env, and there is no separate migration RNG.
+- `reset_recruits` (default `True`): every episode starts with zero recruits. The CPU env never clears its recruit vector on `reset()`, so there an episode's first-year recruits leak in from the previous episode's final winter (a bug). `False` reproduces the CPU behavior.
+- Normalized actions are clipped to [-1, 1] inside `step()`.
