@@ -1,0 +1,3 @@
+--tag conv-eff-s0 --seed 0 --n-envs 512 --n-steps 256 --batch-size 2048
+--tag conv-eff-s1 --seed 1 --n-envs 512 --n-steps 256 --batch-size 2048
+--tag conv-eff-s2 --seed 2 --n-envs 512 --n-steps 256 --batch-size 2048

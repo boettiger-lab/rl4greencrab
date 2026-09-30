@@ -1,0 +1,12 @@
+--tag conv-default-s0 --seed 0
+--tag conv-default-s1 --seed 1
+--tag conv-default-s2 --seed 2
+--tag conv-g999-s0 --seed 0 --gamma 0.999
+--tag conv-g999-s1 --seed 1 --gamma 0.999
+--tag conv-g999-s2 --seed 2 --gamma 0.999
+--tag conv-g999-h4-s0 --seed 0 --gamma 0.999 --hist 4
+--tag conv-g999-h4-s1 --seed 1 --gamma 0.999 --hist 4
+--tag conv-g999-h4-s2 --seed 2 --gamma 0.999 --hist 4
+--tag conv-g999-h4-big-s0 --seed 0 --gamma 0.999 --hist 4 --net 256,256 --anneal
+--tag conv-g999-h4-big-s1 --seed 1 --gamma 0.999 --hist 4 --net 256,256 --anneal
+--tag conv-g999-h4-big-s2 --seed 2 --gamma 0.999 --hist 4 --net 256,256 --anneal

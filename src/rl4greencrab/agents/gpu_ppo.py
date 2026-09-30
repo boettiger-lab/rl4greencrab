@@ -33,6 +33,8 @@ DEFAULTS = dict(
     vf_coef=0.5,
     max_grad_norm=0.5,
     target_kl=None,
+    anneal_lr=False,      # linearly decay the learning rate to 0 over `learn()`
+    squash=False,         # act with tanh(u), u ~ Gaussian, instead of clipping u to [-1, 1]
 )
 
 ACTIVATIONS = {"Tanh": nn.Tanh, "ReLU": nn.ReLU, "Sigmoid": nn.Sigmoid}
@@ -108,6 +110,9 @@ class GPUPPO:
         start = time.time()
 
         for update in range(n_updates):
+            if hp["anneal_lr"]:
+                for group in self.opt.param_groups:
+                    group["lr"] = hp["learning_rate"] * (1 - update / n_updates)
             ret_sum = torch.zeros((), device=self.device)
             ret_n = torch.zeros((), device=self.device)
 
@@ -117,9 +122,11 @@ class GPUPPO:
                     d = pol.dist(x)
                     a = d.sample()
                     obs_buf[t], act_buf[t] = x, a
+                    # with squash, the tanh Jacobian is the same under old and new policy,
+                    # so it cancels in the PPO ratio and log-probs can stay in u-space
                     logp_buf[t] = d.log_prob(a).sum(-1)
                     val_buf[t] = pol.value(x)
-                    obs, r, done, _, _ = env.step(a)  # env clips to [-1, 1], like SB3
+                    obs, r, done, _, _ = env.step(torch.tanh(a) if hp["squash"] else a)  # env clips to [-1, 1], like SB3
                     x = env.flatten_obs(obs)
                     rew_buf[t], done_buf[t] = r, done.float()
                     ep_ret += r
@@ -187,8 +194,14 @@ class GPUPPO:
 
     # ---- inference ----
 
-    def predict(self, observation, state=None, episode_start=None, deterministic=True):
-        """SB3-style predict for a single (numpy dict) observation or a batch of GPU obs dicts."""
+    def predict(self, observation, state=None, episode_start=None, deterministic=True, flat=False):
+        """SB3-style predict for a single (numpy dict) observation, a batch of GPU obs dicts,
+        or (flat=True) a batch of already-flattened observation tensors."""
+        if flat:
+            with torch.no_grad():
+                d = self.policy.dist(observation)
+                a = d.mean if deterministic else d.sample()
+                return (torch.tanh(a) if self.hp.get("squash") else a.clamp(-1, 1)), None
         single = not torch.is_tensor(observation["crabs"]) and np.ndim(observation["crabs"]) == 1
         obs = {k: torch.as_tensor(np.asarray(v) if not torch.is_tensor(v) else v, device=self.device)
                for k, v in observation.items()}
@@ -199,7 +212,8 @@ class GPUPPO:
             x = torch.cat([x, nn.functional.one_hot(obs["months"].long().view(-1), N_MONTHS).float()], -1)
         with torch.no_grad():
             d = self.policy.dist(x)
-            a = (d.mean if deterministic else d.sample()).clamp(-1, 1)
+            a = d.mean if deterministic else d.sample()
+            a = torch.tanh(a) if self.hp.get("squash") else a.clamp(-1, 1)
         if single:
             return a[0].cpu().numpy(), None
         return a, None

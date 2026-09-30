@@ -1,0 +1,16 @@
+--tag rob-wide-s0 --seed 0 --scenario wide --steps 1.5e8
+--tag rob-wide-h4-s0 --seed 0 --scenario wide --hist 4 --steps 1.5e8
+--tag rob-curr-h4-s0 --seed 0 --scenario wide --hist 4 --curriculum 0.5 --steps 1.5e8
+--tag rob-oracle-s0 --seed 0 --scenario wide --oracle --steps 1.5e8
+--tag rob-wide-s1 --seed 1 --scenario wide --steps 1.5e8
+--tag rob-wide-h4-s1 --seed 1 --scenario wide --hist 4 --steps 1.5e8
+--tag rob-curr-h4-s1 --seed 1 --scenario wide --hist 4 --curriculum 0.5 --steps 1.5e8
+--tag rob-oracle-s1 --seed 1 --scenario wide --oracle --steps 1.5e8
+--tag spec-s01 --seed 0 --test-scenario 1 --steps 7.5e7
+--tag spec-s02 --seed 0 --test-scenario 2 --steps 7.5e7
+--tag spec-s03 --seed 0 --test-scenario 3 --steps 7.5e7
+--tag spec-s04 --seed 0 --test-scenario 4 --steps 7.5e7
+--tag spec-s05 --seed 0 --test-scenario 5 --steps 7.5e7
+--tag spec-s06 --seed 0 --test-scenario 6 --steps 7.5e7
+--tag spec-s07 --seed 0 --test-scenario 7 --steps 7.5e7
+--tag spec-s08 --seed 0 --test-scenario 8 --steps 7.5e7

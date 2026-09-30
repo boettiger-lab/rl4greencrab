@@ -97,6 +97,22 @@ class TwoActGPU:
         # previous episode); set False to reproduce that behavior.
         self.reset_recruits = config.get("reset_recruits", True)
 
+        # Per-episode invasion-scenario parameters. Each is fixed at its config
+        # value unless config["scenario_ranges"][name] gives a range to draw it
+        # from at every reset: [lo, hi] (uniform) or [lo, hi, "log"] (log-uniform).
+        #   init_n_adult  initial adult abundance (a range overrides random_start)
+        #   K             carrying capacity
+        #   r             local recruitment rate
+        #   mig_scale     multiplier on the mean number of non-local migrants
+        #   p_big         probability of a large migration pulse in a year
+        self.scenario_defaults = {"K": self.K, "r": self.r, "mig_scale": config.get("mig_scale", 1.0),
+                                  "p_big": config.get("p_big", 0.2)}
+        self.scenario_ranges = dict(config.get("scenario_ranges", {}))
+        # observe_scenario: append the drawn scenario parameters (scaled to [-1, 1]
+        # over their ranges) to the observation, as an "oracle" information bound
+        self.observe_scenario = config.get("observe_scenario", False)
+        self.scenario_obs_ranges = dict(config.get("scenario_obs_ranges", self.scenario_ranges))
+
         param_df = config.get("param_df")
         if param_df is None:
             if "param_csv" not in config:
@@ -121,7 +137,8 @@ class TwoActGPU:
 
         self.obs_dim = self.nsize if "size" in self.observation_type else (2 if self.observation_type.startswith("count-biomass") else 1)
         self.has_time = self.observation_type.endswith("time")
-        self.flat_obs_dim = self.obs_dim + (N_MONTHS if self.has_time else 0)
+        self.n_scenario_obs = len(self.scenario_obs_ranges) if self.observe_scenario else 0
+        self.flat_obs_dim = self.obs_dim + (N_MONTHS if self.has_time else 0) + self.n_scenario_obs
 
         # per-env state
         B, n = num_envs, self.nsize
@@ -135,6 +152,8 @@ class TwoActGPU:
         self.sel_norm = torch.zeros(B, n, **z)         # minnow trap hazard per trap
         self.sel_log = torch.zeros(B, n, **z)          # fukui trap hazard per trap
         self.recruit_dist = torch.zeros(B, n, **z)     # size distribution of recruits
+        self.scenario = {k: torch.full((B,), float(v), **z) for k, v in self.scenario_defaults.items()}
+        self.scenario["init_n_adult"] = torch.zeros(B, **z)
         self.obs = self._initial_obs()
         self._arange = torch.arange(B, device=self.device)
 
@@ -199,11 +218,17 @@ class TwoActGPU:
         return self._clone_obs(self.obs), reward, done, done.clone(), info
 
     def flatten_obs(self, obs):
-        """(B, flat_obs_dim) tensor: crabs ++ one_hot(months, 12), as SB3's CombinedExtractor sees it."""
-        if not self.has_time:
-            return obs["crabs"]
-        months = torch.nn.functional.one_hot(obs["months"], N_MONTHS).to(self.dtype)
-        return torch.cat([obs["crabs"], months], dim=-1)
+        """(B, flat_obs_dim) tensor: crabs ++ one_hot(months, 12) [++ scenario], as SB3's CombinedExtractor sees it."""
+        parts = [obs["crabs"]]
+        if self.has_time:
+            parts.append(torch.nn.functional.one_hot(obs["months"], N_MONTHS).to(self.dtype))
+        if self.observe_scenario:
+            parts.append(obs["scenario"])
+        return torch.cat(parts, dim=-1) if len(parts) > 1 else parts[0]
+
+    def set_scenario_ranges(self, ranges):
+        """Change the scenario sampling ranges used by future resets (e.g. for a curriculum)."""
+        self.scenario_ranges = dict(ranges)
 
     def spaces(self):
         """Single-env gymnasium (observation_space, action_space), identical to the CPU env's."""
@@ -236,19 +261,28 @@ class TwoActGPU:
 
         total = pop.sum(-1)
         B = self.num_envs
-        local = self.r * total * (1 - total / self.K) + self.env_stoch * self._randn(B)
-        big = torch.rand(B, generator=self.gen, device=self.device, dtype=self.dtype) < 0.2
-        migrants = torch.where(big, 80000 + 10000 * self._randn(B), 8000 + 1000 * self._randn(B))
-        nonlocal_ = (migrants * (1 - total / self.K)).clamp(min=0)
+        sc = self.scenario
+        local = sc["r"] * total * (1 - total / sc["K"]) + self.env_stoch * self._randn(B)
+        big = torch.rand(B, generator=self.gen, device=self.device, dtype=self.dtype) < sc["p_big"]
+        migrants = sc["mig_scale"] * torch.where(big, 80000 + 10000 * self._randn(B), 8000 + 1000 * self._randn(B))
+        nonlocal_ = (migrants * (1 - total / sc["K"])).clamp(min=0)
         recruits = self.recruit_dist * (local + nonlocal_).unsqueeze(-1)
 
         self.recruit_sizes = torch.where(w, recruits, self.recruit_sizes)
         self.pop = torch.where(w, new_adults.clamp(min=0), pop)
         self.curr_month = torch.where(winter, 4, self.curr_month)
 
-    def _reset_envs(self, mask, draw=None):
+    def _reset_envs(self, mask, draw=None, chunk=16384):
         """Draw fresh posterior parameters and initial state for envs where mask is True."""
-        idx = mask.nonzero(as_tuple=True)[0]
+        idx_all = mask.nonzero(as_tuple=True)[0]
+        # chunked so the float64 kernel temporaries stay small for very large batches
+        for i in range(0, idx_all.numel(), chunk):
+            self._reset_idx(idx_all[i:i + chunk], None if draw is None else draw[i:i + chunk])
+        init = self._initial_obs()
+        for k in self.obs:
+            self.obs[k] = torch.where(mask.view(-1, *[1] * (init[k].dim() - 1)), init[k], self.obs[k])
+
+    def _reset_idx(self, idx, draw=None):
         m = idx.numel()
         if draw is None:
             draw = torch.randint(0, self.posterior.shape[0], (m,), generator=self.gen, device=self.device)
@@ -281,20 +315,26 @@ class TwoActGPU:
         if self.reset_recruits:
             self.recruit_sizes[idx] = 0
 
+        for name in self.scenario:
+            if name in self.scenario_ranges:
+                self.scenario[name][idx] = self._draw(self.scenario_ranges[name], m)
+            elif name != "init_n_adult":
+                self.scenario[name][idx] = float(self.scenario_defaults[name])
+
         # initial adults: lognormal size distribution
-        if self.random_start:
+        if "init_n_adult" in self.scenario_ranges:
+            n_adult = self.scenario["init_n_adult"][idx].double()
+        elif self.random_start:
             n_adult = torch.randint(0, self.max_obs + 1, (m,), generator=self.gen, device=self.device).double()
         else:
             n_adult = torch.full((m,), float(self.init_n_adult), dtype=torch.float64, device=self.device)
+        self.scenario["init_n_adult"][idx] = n_adult.to(self.dtype)
         mu, s = col(p["init_mean_adult"]), col(p["init_sd_adult"])
         lncdf = lambda b: torch.special.ndtr((torch.log(b) - mu) / s)
         self.pop[idx] = ((lncdf(up) - lncdf(lo)) * col(n_adult)).to(self.dtype)
 
         self.curr_month[idx] = 4
         self.month_passed[idx] = 0
-        init = self._initial_obs()
-        for k in self.obs:
-            self.obs[k] = torch.where(mask.view(-1, *[1] * (init[k].dim() - 1)), init[k], self.obs[k])
 
     def _growth_kernel(self, p, D1, D2):
         """Seasonal von Bertalanffy growth kernels, (m, T, n, n); column j = source size bin."""
@@ -336,14 +376,36 @@ class TwoActGPU:
             crabs = bio
         else:
             crabs = count
-        return {"crabs": crabs.to(self.dtype)}
+        obs = {"crabs": crabs.to(self.dtype)}
+        if self.observe_scenario:
+            obs["scenario"] = self._scenario_obs()
+        return obs
 
     def _initial_obs(self):
         fill = -1.0 if self.normalized else 0.0
         obs = {"crabs": torch.full((self.num_envs, self.obs_dim), fill, dtype=self.dtype, device=self.device)}
         if self.has_time:
             obs["months"] = torch.full((self.num_envs,), 4, dtype=torch.long, device=self.device)
+        if self.observe_scenario:
+            obs["scenario"] = self._scenario_obs()
         return obs
+
+    def _scenario_obs(self):
+        cols = []
+        for name, rng in self.scenario_obs_ranges.items():
+            lo, hi = float(rng[0]), float(rng[1])
+            v = self.scenario[name]
+            if len(rng) > 2 and rng[2] == "log":
+                v, lo, hi = torch.log(v.clamp(min=1e-12)), np.log(lo), np.log(hi)
+            cols.append(2 * (v - lo) / max(hi - lo, 1e-12) - 1)
+        return torch.stack(cols, -1).to(self.dtype)
+
+    def _draw(self, rng, m):
+        lo, hi = float(rng[0]), float(rng[1])
+        u = torch.rand(m, generator=self.gen, device=self.device, dtype=torch.float64)
+        if len(rng) > 2 and rng[2] == "log":
+            return torch.exp(np.log(lo) + u * (np.log(hi) - np.log(lo))).to(self.dtype)
+        return (lo + u * (hi - lo)).to(self.dtype)
 
     def _randn(self, n):
         return torch.randn(n, generator=self.gen, device=self.device, dtype=self.dtype)

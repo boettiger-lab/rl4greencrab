@@ -1,0 +1,13 @@
+--tag v2-A-s0 --seed 0 --anneal --steps 1.5e8
+--tag v2-A-s1 --seed 1 --anneal --steps 1.5e8
+--tag v2-A-s2 --seed 2 --anneal --steps 1.5e8
+--tag v2-B-s0 --seed 0 --anneal --squash --steps 1.5e8
+--tag v2-B-s1 --seed 1 --anneal --squash --steps 1.5e8
+--tag v2-B-s2 --seed 2 --anneal --squash --steps 1.5e8
+--tag v2-C-s0 --seed 0 --anneal --squash --hist 4 --steps 1.5e8
+--tag v2-C-s1 --seed 1 --anneal --squash --hist 4 --steps 1.5e8
+--tag v2-C-s2 --seed 2 --anneal --squash --hist 4 --steps 1.5e8
+--tag v2-D-s0 --seed 0 --anneal --squash --hist 4 --net 256,256 --steps 1.5e8
+--tag v2-D-s1 --seed 1 --anneal --squash --hist 4 --net 256,256 --steps 1.5e8
+--tag v2-E-s0 --seed 0 --anneal --squash --n-envs 512 --n-steps 256 --batch-size 2048 --steps 5e7 --eval-every 2e6
+--tag v2-E-s1 --seed 1 --anneal --squash --n-envs 512 --n-steps 256 --batch-size 2048 --steps 5e7 --eval-every 2e6

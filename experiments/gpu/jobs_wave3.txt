@@ -1,0 +1,20 @@
+--tag big-wide-s0 --seed 0 --scenario wide --net 256,256 --steps 4e8
+--tag big-wide-h16-s0 --seed 0 --scenario wide --hist 16 --net 256,256 --steps 4e8
+--tag big-curr-s0 --seed 0 --scenario wide --curriculum 0.5 --net 256,256 --steps 4e8
+--tag big-oracle-s0 --seed 0 --scenario wide --oracle --net 256,256 --steps 4e8
+--tag spec-s09 --seed 0 --test-scenario 9 --steps 7.5e7
+--tag spec-s10 --seed 0 --test-scenario 10 --steps 7.5e7
+--tag spec-s11 --seed 0 --test-scenario 11 --steps 7.5e7
+--tag spec-s12 --seed 0 --test-scenario 12 --steps 7.5e7
+--tag spec-s13 --seed 0 --test-scenario 13 --steps 7.5e7
+--tag spec-s14 --seed 0 --test-scenario 14 --steps 7.5e7
+--tag spec-s15 --seed 0 --test-scenario 15 --steps 7.5e7
+--tag spec-s16 --seed 0 --test-scenario 16 --steps 7.5e7
+--tag spec-s17 --seed 0 --test-scenario 17 --steps 7.5e7
+--tag spec-s18 --seed 0 --test-scenario 18 --steps 7.5e7
+--tag spec-s19 --seed 0 --test-scenario 19 --steps 7.5e7
+--tag spec-s20 --seed 0 --test-scenario 20 --steps 7.5e7
+--tag spec-s21 --seed 0 --test-scenario 21 --steps 7.5e7
+--tag spec-s22 --seed 0 --test-scenario 22 --steps 7.5e7
+--tag spec-s23 --seed 0 --test-scenario 23 --steps 7.5e7
+--tag spec-s24 --seed 0 --test-scenario 24 --steps 7.5e7
