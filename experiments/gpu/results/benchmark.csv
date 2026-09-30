@@ -1,0 +1,10 @@
+what,setup,rate,unit
+simulator,"CPU TwoActNormalized, 1 process",6469.950947731295,env-steps/s
+simulator,"CPU TwoActNormalized, 20 processes (SubprocVecEnv)",18498.997896556757,env-steps/s
+simulator,"GPU TwoActGPU, 1024 envs",1969436.810631712,env-steps/s
+simulator,"GPU TwoActGPU, 4096 envs",4902251.958830692,env-steps/s
+simulator,"GPU TwoActGPU, 16384 envs",5838303.251299318,env-steps/s
+simulator,"GPU TwoActGPU, 65536 envs",5869962.260646857,env-steps/s
+ppo,"SB3 PPO, 12 envs, DummyVecEnv (repo setup)",2909.4839478846666,steps/s
+ppo,"SB3 PPO, 20 envs, SubprocVecEnv",4629.8603970596305,steps/s
+ppo,"GPUPPO, 4096 envs",385101.57878826204,steps/s

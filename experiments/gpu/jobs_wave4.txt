@@ -1,0 +1,4 @@
+--tag big-wide-s1 --seed 1 --scenario wide --net 256,256 --steps 4e8
+--tag big-oracle-s1 --seed 1 --scenario wide --oracle --net 256,256 --steps 4e8
+--tag big-curr-s1 --seed 1 --scenario wide --curriculum 0.5 --net 256,256 --steps 4e8
+--tag big-wide-h16-s1 --seed 1 --scenario wide --hist 16 --net 256,256 --steps 4e8
