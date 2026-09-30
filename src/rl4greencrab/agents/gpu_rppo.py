@@ -218,6 +218,10 @@ class GPURecurrentPPO:
     def __init__(self, env, seed=None, tensorboard_log=None, policy_kwargs=None, **hyperparams):
         self.env, self.device = env, env.device
         self.hp = {**DEFAULTS, **hyperparams}
+        if self.hp.get("tf32"):
+            # TF32 tensor cores for the networks; the simulator does not use matmul, so it is unaffected
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
         self.hp["n_steps"] = env.Tmax + 1  # whole, aligned episodes per rollout
         if seed is not None:
             torch.manual_seed(seed)

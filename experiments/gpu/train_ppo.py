@@ -33,6 +33,8 @@ ap.add_argument("--actor", default="gru", choices=["gru", "transformer"])
 ap.add_argument("--critic", default="recurrent", choices=["recurrent", "privileged"])
 ap.add_argument("--aux-coef", type=float, default=0.0, help="auxiliary loss: predict privileged state from memory")
 ap.add_argument("--tf", default="64,2,4", help="transformer d_model,layers,heads")
+ap.add_argument("--tf32", action="store_true", help="TF32 tensor cores for the networks")
+ap.add_argument("--cuda-graph", action="store_true", help="capture the simulator step in a CUDA graph")
 ap.add_argument("--gamma", type=float, default=0.99)
 ap.add_argument("--lam", type=float, default=0.95)
 ap.add_argument("--ent", type=float, default=0.0)
@@ -54,17 +56,18 @@ if args.test_scenario is not None:
 if args.oracle:
     overrides.update(observe_scenario=True, scenario_obs_ranges=WIDE)
 wrap = (lambda e: HistoryObs(e, args.hist)) if args.hist else None
-env = make_env(args.obs, num_envs=args.n_envs, seed=args.seed, **overrides)
+env = make_env(args.obs, num_envs=args.n_envs, seed=args.seed, cuda_graph=args.cuda_graph, **overrides)
 env = wrap(env) if wrap else env
 if args.recurrent:
     model = GPURecurrentPPO(env, seed=args.seed, learning_rate=args.lr, n_epochs=args.epochs, gamma=args.gamma,
                             gae_lambda=args.lam, ent_coef=args.ent, anneal_lr=args.anneal,
-                            n_seq_minibatches=args.seq_minibatches, aux_coef=args.aux_coef,
+                            n_seq_minibatches=args.seq_minibatches, aux_coef=args.aux_coef, tf32=args.tf32,
                             policy_kwargs=dict(hidden=int(args.net.split(",")[0]), actor_type=args.actor, critic_type=args.critic,
                                                transformer=dict(zip(("d", "layers", "heads"), map(int, args.tf.split(","))))))
 else:
   model = GPUPPO(env, seed=args.seed, learning_rate=args.lr, n_steps=args.n_steps, batch_size=args.batch_size,
                n_epochs=args.epochs, gamma=args.gamma, gae_lambda=args.lam, ent_coef=args.ent, anneal_lr=args.anneal, squash=args.squash,
+               tf32=args.tf32,
                policy_kwargs=dict(net_arch=[int(h) for h in args.net.split(",")], activation=args.act))
 
 

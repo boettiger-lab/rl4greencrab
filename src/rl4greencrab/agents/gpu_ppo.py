@@ -35,6 +35,7 @@ DEFAULTS = dict(
     target_kl=None,
     anneal_lr=False,      # linearly decay the learning rate to 0 over `learn()`
     squash=False,         # act with tanh(u), u ~ Gaussian, instead of clipping u to [-1, 1]
+    tf32=False,           # allow TF32 tensor-core matmuls in the networks
 )
 
 ACTIVATIONS = {"Tanh": nn.Tanh, "ReLU": nn.ReLU, "Sigmoid": nn.Sigmoid}
@@ -78,6 +79,10 @@ class GPUPPO:
         self.env = env
         self.device = env.device
         self.hp = {**DEFAULTS, **hyperparams}
+        if self.hp.get("tf32"):
+            # TF32 tensor cores for the networks; the simulator does not use matmul, so it is unaffected
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
         if seed is not None:
             torch.manual_seed(seed)
         policy_kwargs = dict(policy_kwargs or {})

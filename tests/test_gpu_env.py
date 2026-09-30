@@ -114,3 +114,19 @@ def test_month_sequence_matches_cpu(normalized):
         cpu_months.append(cpu.step(action)[0]["months"])
         gpu_months.append(g.step(torch.zeros(2, 2, device=g.device))[0]["months"][0].item())
     assert cpu_months == gpu_months
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA graphs need a GPU")
+def test_cuda_graph_matches_eager():
+    cfg = {"random_start": True, "observation_type": "size-time", "param_df": param_df}
+    out = []
+    for graph in (False, True):
+        g = TwoActGPU(cfg, num_envs=256, device="cuda", seed=3, cuda_graph=graph)
+        obs, _ = g.reset()
+        total = torch.zeros(256, device="cuda")
+        for _ in range(2 * 101):  # two episodes: covers capture and a post-capture auto-reset
+            a = torch.stack([obs["crabs"].mean(-1), 0.1 * (obs["months"] - 7)], -1)
+            obs, r, done, _, _ = g.step(a)
+            total += r
+        out.append(total.cpu())
+    assert torch.equal(out[0], out[1])

@@ -56,6 +56,7 @@ class TwoActGPU:
         dtype=torch.float32,
         seed=None,
         normalized=True,
+        cuda_graph=False,
     ):
         config = config or {}
         self.config = config
@@ -63,6 +64,9 @@ class TwoActGPU:
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.dtype = dtype
         self.normalized = normalized
+        # capture the per-step dynamics in a CUDA graph (removes kernel-launch overhead)
+        self.cuda_graph = bool(cuda_graph) and self.device.type == "cuda"
+        self._graph, self._graph_calls = None, 0
 
         self.gen = torch.Generator(device=self.device)
         if seed is None:
@@ -156,8 +160,14 @@ class TwoActGPU:
         self.scenario = {k: torch.full((B,), float(v), **z) for k, v in self.scenario_defaults.items()}
         self.scenario["init_n_adult"] = torch.zeros(B, **z)
         self.theta = torch.zeros(B, len(PARAM_COLS), **z)  # standardized posterior draw of each env
+        self.curr_month_prev = self.curr_month.clone()
         self.obs = self._initial_obs()
         self._arange = torch.arange(B, device=self.device)
+        # all envs reset together and share the horizon, so episode ends are known on the
+        # host (no device sync per step)
+        self._t = 0
+        self._done_true = torch.ones(B, dtype=torch.bool, device=self.device)
+        self._done_false = torch.zeros(B, dtype=torch.bool, device=self.device)
 
     # ------------------------------------------------------------------ #
     # public API
@@ -167,7 +177,8 @@ class TwoActGPU:
         """Reset all envs. Returns (obs, info)."""
         if seed is not None:
             self.gen.manual_seed(seed)
-        self._reset_envs(torch.ones(self.num_envs, dtype=torch.bool, device=self.device))
+        self._reset_envs(self._done_true)
+        self._t = 0
         return self._clone_obs(self.obs), {}
 
     def step(self, action):
@@ -178,6 +189,23 @@ class TwoActGPU:
         As in the CPU env, terminated == truncated at the end of an episode.
         """
         action = torch.as_tensor(action, dtype=self.dtype, device=self.device)
+        out = self._graph_step(action) if self.cuda_graph else self._dynamics(action)
+        obs, reward = self._clone_obs(out["obs"]), out["reward"].clone()
+        self._t += 1
+        info = {}
+        if self._t > self.Tmax:
+            done = self._done_true
+            info["final_obs"] = self._clone_obs(obs)
+            self._reset_envs(done)
+            self._t = 0
+            obs = self._clone_obs(self.obs)
+        else:
+            done = self._done_false
+            self.obs = obs
+        return obs, reward, done.clone(), done.clone(), info
+
+    def _dynamics(self, action):
+        """One month for all envs. Updates state tensors in place (required for CUDA graph replay)."""
         if self.normalized:
             a = self.max_action * (1 + action.clamp(-1, 1)) / 2
         else:
@@ -188,11 +216,13 @@ class TwoActGPU:
         harvest_rate = (1 - torch.exp(-hazard)).clamp(0, 1)
         removed = torch.binomial(torch.floor(self.pop), harvest_rate, generator=self.gen)
 
-        # growth + survival for this month, recruits arrive in May
+        # growth + survival for this month, recruits arrive in May. The projection is an
+        # elementwise multiply-and-sum rather than a matmul so that TF32 matmul settings
+        # used for neural networks never reduce the precision of the population dynamics.
         P = self.proj[self._arange, self.curr_month - 4]
-        next_pop = torch.bmm(P, (self.pop - removed).unsqueeze(-1)).squeeze(-1)
+        next_pop = (P * (self.pop - removed).unsqueeze(-2)).sum(-1)
         next_pop = next_pop + (self.curr_month == 5).unsqueeze(-1) * self.recruit_sizes
-        self.pop = next_pop.clamp(min=0)
+        self.pop.copy_(next_pop.clamp(min=0))
 
         # observation; month is set below, after the month advances
         crab_counts = removed.sum(-1)
@@ -202,22 +232,35 @@ class TwoActGPU:
 
         reward = self._reward(a)
 
-        self.curr_month_prev = self.curr_month
+        self.curr_month_prev.copy_(self.curr_month)
         self.month_passed += 1
-        self.curr_month = self.curr_month + 1
+        self.curr_month += 1
         self._overwinter(self.curr_month > 10)
         if self.has_time:
             # twoActEnv reports the month just trapped; TwoActNormalized builds its obs
             # after the base step, so it reports the upcoming month (5, ..., 10, 4)
             obs["months"] = (self.curr_month if self.normalized else self.curr_month_prev).clone()
+        return {"obs": obs, "reward": reward}
 
-        done = self.month_passed > self.Tmax
-        info = {}
-        self.obs = obs
-        if done.any():
-            info["final_obs"] = self._clone_obs(obs)
-            self._reset_envs(done)
-        return self._clone_obs(self.obs), reward, done, done.clone(), info
+    def _graph_step(self, action, warmup=3):
+        """Run _dynamics eagerly for a few warm-up steps (on a side stream), then capture it once and replay."""
+        if self._graph is None:
+            if self._graph_calls < warmup:
+                self._graph_calls += 1
+                s = torch.cuda.Stream()
+                s.wait_stream(torch.cuda.current_stream())
+                with torch.cuda.stream(s):
+                    out = self._dynamics(action)
+                torch.cuda.current_stream().wait_stream(s)
+                return out
+            self._g_action = action.clone()
+            g = torch.cuda.CUDAGraph()
+            with torch.cuda.graph(g):
+                self._g_out = self._dynamics(self._g_action)
+            self._graph = g
+        self._g_action.copy_(action)
+        self._graph.replay()
+        return self._g_out
 
     def flatten_obs(self, obs):
         """(B, flat_obs_dim) tensor: crabs ++ one_hot(months, 12) [++ scenario], as SB3's CombinedExtractor sees it."""
@@ -269,7 +312,7 @@ class TwoActGPU:
         """Apply overwinter survival and draw next year's recruits for envs in `winter`."""
         pop = self.pop
         w = winter.unsqueeze(-1)
-        grown = torch.bmm(self.overwinter, pop.unsqueeze(-1)).squeeze(-1)
+        grown = (self.overwinter * pop.unsqueeze(-2)).sum(-1)
         # zero trials outside winter so those draws are near-free
         new_adults = torch.binomial(
             torch.where(w, torch.floor(grown), 0.0), self.w_mort_exp.expand_as(grown).contiguous(), generator=self.gen
@@ -284,9 +327,9 @@ class TwoActGPU:
         nonlocal_ = (migrants * (1 - total / sc["K"])).clamp(min=0)
         recruits = self.recruit_dist * (local + nonlocal_).unsqueeze(-1)
 
-        self.recruit_sizes = torch.where(w, recruits, self.recruit_sizes)
-        self.pop = torch.where(w, new_adults.clamp(min=0), pop)
-        self.curr_month = torch.where(winter, 4, self.curr_month)
+        self.recruit_sizes.copy_(torch.where(w, recruits, self.recruit_sizes))
+        self.pop.copy_(torch.where(w, new_adults.clamp(min=0), pop))
+        self.curr_month.copy_(torch.where(winter, 4, self.curr_month))
 
     def _reset_envs(self, mask, draw=None, chunk=16384):
         """Draw fresh posterior parameters and initial state for envs where mask is True."""

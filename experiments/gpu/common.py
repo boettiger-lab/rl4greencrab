@@ -52,10 +52,10 @@ def point(pt):
 os.makedirs(RESULTS, exist_ok=True)
 
 
-def make_env(obs_type="count-biomass-time", num_envs=4096, seed=0, **overrides):
+def make_env(obs_type="count-biomass-time", num_envs=4096, seed=0, cuda_graph=False, **overrides):
     cfg = {"random_start": True, "observation_type": obs_type, "param_df": PARAMS, "reset_recruits": True}
     cfg.update(overrides)
-    return TwoActGPU(cfg, num_envs=num_envs, seed=seed)
+    return TwoActGPU(cfg, num_envs=num_envs, seed=seed, cuda_graph=cuda_graph)
 
 
 @torch.no_grad()
