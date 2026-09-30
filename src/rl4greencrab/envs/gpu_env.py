@@ -122,6 +122,7 @@ class TwoActGPU:
         self.posterior = torch.tensor(
             param_df[PARAM_COLS].to_numpy(dtype=np.float32), dtype=torch.float64, device=self.device
         )
+        self.post_mean, self.post_std = self.posterior.mean(0), self.posterior.std(0).clamp(min=1e-12)
 
         # IPM mesh and fixed size-dependent quantities
         f64 = dict(dtype=torch.float64, device=self.device)
@@ -154,6 +155,7 @@ class TwoActGPU:
         self.recruit_dist = torch.zeros(B, n, **z)     # size distribution of recruits
         self.scenario = {k: torch.full((B,), float(v), **z) for k, v in self.scenario_defaults.items()}
         self.scenario["init_n_adult"] = torch.zeros(B, **z)
+        self.theta = torch.zeros(B, len(PARAM_COLS), **z)  # standardized posterior draw of each env
         self.obs = self._initial_obs()
         self._arange = torch.arange(B, device=self.device)
 
@@ -226,6 +228,20 @@ class TwoActGPU:
             parts.append(obs["scenario"])
         return torch.cat(parts, dim=-1) if len(parts) > 1 else parts[0]
 
+    @property
+    def privileged_dim(self):
+        return len(self.scenario_obs_ranges) + self.nsize + len(PARAM_COLS)
+
+    def privileged(self):
+        """
+        Hidden information for training-time use only (e.g. a privileged critic or
+        auxiliary prediction targets): scenario parameters scaled to [-1, 1] over
+        their ranges, log population by size bin, and the standardized posterior draw.
+        """
+        parts = [self._scenario_obs()] if self.scenario_obs_ranges else []
+        parts += [torch.log1p(self.pop) / 5, self.theta]
+        return torch.cat(parts, -1)
+
     def set_scenario_ranges(self, ranges):
         """Change the scenario sampling ranges used by future resets (e.g. for a curriculum)."""
         self.scenario_ranges = dict(ranges)
@@ -287,6 +303,7 @@ class TwoActGPU:
         if draw is None:
             draw = torch.randint(0, self.posterior.shape[0], (m,), generator=self.gen, device=self.device)
         p = {name: self.posterior[draw, i] for i, name in enumerate(PARAM_COLS)}
+        self.theta[idx] = ((self.posterior[draw] - self.post_mean) / self.post_std).to(self.dtype)
         col = lambda v: v.unsqueeze(-1)  # (m,) -> (m, 1) for broadcasting over size bins
 
         x = self.midpts64
@@ -391,6 +408,8 @@ class TwoActGPU:
         return obs
 
     def _scenario_obs(self):
+        if not self.scenario_obs_ranges:
+            return torch.zeros(self.num_envs, 0, dtype=self.dtype, device=self.device)
         cols = []
         for name, rng in self.scenario_obs_ranges.items():
             lo, hi = float(rng[0]), float(rng[1])

@@ -29,6 +29,10 @@ ap.add_argument("--anneal", action="store_true")
 ap.add_argument("--squash", action="store_true", help="tanh-squashed Gaussian actions")
 ap.add_argument("--recurrent", action="store_true", help="GRU policy (GPURecurrentPPO); --net sets GRU hidden size")
 ap.add_argument("--seq-minibatches", type=int, default=8)
+ap.add_argument("--actor", default="gru", choices=["gru", "transformer"])
+ap.add_argument("--critic", default="recurrent", choices=["recurrent", "privileged"])
+ap.add_argument("--aux-coef", type=float, default=0.0, help="auxiliary loss: predict privileged state from memory")
+ap.add_argument("--tf", default="64,2,4", help="transformer d_model,layers,heads")
 ap.add_argument("--gamma", type=float, default=0.99)
 ap.add_argument("--lam", type=float, default=0.95)
 ap.add_argument("--ent", type=float, default=0.0)
@@ -55,8 +59,9 @@ env = wrap(env) if wrap else env
 if args.recurrent:
     model = GPURecurrentPPO(env, seed=args.seed, learning_rate=args.lr, n_epochs=args.epochs, gamma=args.gamma,
                             gae_lambda=args.lam, ent_coef=args.ent, anneal_lr=args.anneal,
-                            n_seq_minibatches=args.seq_minibatches,
-                            policy_kwargs=dict(hidden=int(args.net.split(",")[0])))
+                            n_seq_minibatches=args.seq_minibatches, aux_coef=args.aux_coef,
+                            policy_kwargs=dict(hidden=int(args.net.split(",")[0]), actor_type=args.actor, critic_type=args.critic,
+                                               transformer=dict(zip(("d", "layers", "heads"), map(int, args.tf.split(","))))))
 else:
   model = GPUPPO(env, seed=args.seed, learning_rate=args.lr, n_steps=args.n_steps, batch_size=args.batch_size,
                n_epochs=args.epochs, gamma=args.gamma, gae_lambda=args.lam, ent_coef=args.ent, anneal_lr=args.anneal, squash=args.squash,

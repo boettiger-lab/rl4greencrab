@@ -1,0 +1,9 @@
+--tag tf-priv-aux-s0 --seed 0 --actor transformer --critic privileged --aux-coef 0.5 --lr 1e-4
+--tag tf-priv-aux-s1 --seed 1 --actor transformer --critic privileged --aux-coef 0.5 --lr 1e-4
+--tag tf-plain-s0 --seed 0 --actor transformer --lr 1e-4
+--tag gru-priv-s0 --seed 0 --critic privileged
+--tag gru-priv-s1 --seed 1 --critic privileged
+--tag gru-aux-s0 --seed 0 --aux-coef 0.5
+--tag gru-aux-s1 --seed 1 --aux-coef 0.5
+--tag gru-priv-aux-s0 --seed 0 --critic privileged --aux-coef 0.5
+--tag gru-priv-aux-s1 --seed 1 --critic privileged --aux-coef 0.5
