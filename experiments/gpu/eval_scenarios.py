@@ -12,6 +12,7 @@ import torch
 
 from common import NOMINAL, RESULTS, WIDE, evaluate, point, test_scenarios
 from rl4greencrab.agents.gpu_ppo import GPUPPO
+from rl4greencrab.agents.gpu_rppo import GPURecurrentPPO, RecurrentActor
 from rl4greencrab.agents.gpu_td3 import GPUTD3, mlp
 from rl4greencrab.envs.gpu_wrappers import HistoryObs
 
@@ -22,6 +23,8 @@ def load(tag):
     args = json.load(open(os.path.join(RESULTS, "agents", tag + ".json")))
     path = os.path.join(RESULTS, "agents", tag + ".pt")
     ckpt = torch.load(path, map_location="cuda", weights_only=False)
+    if ckpt.get("recurrent"):
+        return args, GPURecurrentPPO.load_policy(path)
     if "actor" in ckpt:  # TD3
         actor = mlp(ckpt["obs_dim"], list(ckpt["hp"]["net_arch"]), 2, torch.nn.Tanh()).cuda()
         actor.load_state_dict(ckpt["actor"])
@@ -41,6 +44,9 @@ def policy_for(args, net):
     def make_wrap(e):
         holder["env"] = wrap(e) if wrap else e
         return holder["env"]
+
+    if isinstance(net, torch.nn.Module):  # recurrent policy: stateful, reset at episode start
+        return RecurrentActor(net, flatten=lambda o: holder["env"].flatten_obs(o)), make_wrap, extra
 
     @torch.no_grad()
     def pol(o):

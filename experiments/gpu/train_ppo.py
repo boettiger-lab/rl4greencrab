@@ -9,6 +9,7 @@ import torch
 
 from common import NOMINAL, RESULTS, WIDE, evaluate, interp_ranges, make_env, point, test_scenarios
 from rl4greencrab.agents.gpu_ppo import GPUPPO
+from rl4greencrab.agents.gpu_rppo import GPURecurrentPPO, RecurrentActor
 from rl4greencrab.envs.gpu_wrappers import HistoryObs
 
 ap = argparse.ArgumentParser()
@@ -26,6 +27,8 @@ ap.add_argument("--epochs", type=int, default=10)
 ap.add_argument("--lr", type=float, default=3e-4)
 ap.add_argument("--anneal", action="store_true")
 ap.add_argument("--squash", action="store_true", help="tanh-squashed Gaussian actions")
+ap.add_argument("--recurrent", action="store_true", help="GRU policy (GPURecurrentPPO); --net sets GRU hidden size")
+ap.add_argument("--seq-minibatches", type=int, default=8)
 ap.add_argument("--gamma", type=float, default=0.99)
 ap.add_argument("--lam", type=float, default=0.95)
 ap.add_argument("--ent", type=float, default=0.0)
@@ -49,12 +52,22 @@ if args.oracle:
 wrap = (lambda e: HistoryObs(e, args.hist)) if args.hist else None
 env = make_env(args.obs, num_envs=args.n_envs, seed=args.seed, **overrides)
 env = wrap(env) if wrap else env
-model = GPUPPO(env, seed=args.seed, learning_rate=args.lr, n_steps=args.n_steps, batch_size=args.batch_size,
+if args.recurrent:
+    model = GPURecurrentPPO(env, seed=args.seed, learning_rate=args.lr, n_epochs=args.epochs, gamma=args.gamma,
+                            gae_lambda=args.lam, ent_coef=args.ent, anneal_lr=args.anneal,
+                            n_seq_minibatches=args.seq_minibatches,
+                            policy_kwargs=dict(hidden=int(args.net.split(",")[0])))
+else:
+  model = GPUPPO(env, seed=args.seed, learning_rate=args.lr, n_steps=args.n_steps, batch_size=args.batch_size,
                n_epochs=args.epochs, gamma=args.gamma, gae_lambda=args.lam, ent_coef=args.ent, anneal_lr=args.anneal, squash=args.squash,
                policy_kwargs=dict(net_arch=[int(h) for h in args.net.split(",")], activation=args.act))
 
+
 curve, next_eval, t0 = [], [0.0], time.time()
-policy = lambda o: model.predict(o if torch.is_tensor(o) else model.env.flatten_obs(o), flat=True)[0]
+if args.recurrent:
+    policy = RecurrentActor(model.policy, flatten=model.env.flatten_obs)
+else:
+    policy = lambda o: model.predict(o if torch.is_tensor(o) else model.env.flatten_obs(o), flat=True)[0]
 best = [-float("inf")]
 
 
@@ -78,7 +91,7 @@ def cb(m):
 
 
 cb(model)
-steps_per_update = args.n_steps * args.n_envs
+steps_per_update = (env.Tmax + 1 if args.recurrent else args.n_steps) * args.n_envs
 log_interval = 1 if args.curriculum > 0 else max(1, int(args.eval_every // steps_per_update))
 model.learn(int(args.steps), log_interval=log_interval, verbose=0, callback=cb)
 next_eval[0] = 0

@@ -1,0 +1,6 @@
+--tag rob-wide-s2 --seed 2 --scenario wide
+--tag rob-wide-s3 --seed 3 --scenario wide
+--tag rob-oracle-s2 --seed 2 --scenario wide --oracle
+--tag rob-oracle-s3 --seed 3 --scenario wide --oracle
+--tag rob-wide-h16-s0 --seed 0 --scenario wide --hist 16
+--tag rob-wide-h16-s1 --seed 1 --scenario wide --hist 16

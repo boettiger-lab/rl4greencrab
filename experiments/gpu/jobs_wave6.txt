@@ -1,0 +1,6 @@
+--tag rppo-wide-s0 --seed 0 --scenario wide
+--tag rppo-wide-s1 --seed 1 --scenario wide
+--tag rppo-wide-mb32-s0 --seed 0 --scenario wide --seq-minibatches 32
+--tag rppo-wide-mb32-s1 --seed 1 --scenario wide --seq-minibatches 32
+--tag rppo-oracle-s0 --seed 0 --scenario wide --oracle
+--tag rppo-nominal-s0 --seed 0 --scenario nominal
