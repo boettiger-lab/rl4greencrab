@@ -99,3 +99,18 @@ def test_gpu_ppo_train_save_load(tmp_path):
     # the loaded agent drives the CPU gymnasium env through the existing tools
     returns = simulator(TwoActNormalized(cfg), agent).simulate(reps=2)
     assert len(returns) == 2 and np.all(np.isfinite(returns))
+
+
+@pytest.mark.parametrize("normalized", [True, False])
+def test_month_sequence_matches_cpu(normalized):
+    cfg = {"random_start": True, "observation_type": "count-biomass-time", "param_df": param_df}
+    cpu = TwoActNormalized(cfg) if normalized else twoActEnv(cfg)
+    g = TwoActGPU(cfg, num_envs=2, device=DEVICE, seed=0, normalized=normalized)
+    o_cpu, _ = cpu.reset()
+    o_gpu, _ = g.reset()
+    cpu_months, gpu_months = [o_cpu["months"]], [o_gpu["months"][0].item()]
+    action = np.zeros(2, dtype=np.float32)
+    for _ in range(30):
+        cpu_months.append(cpu.step(action)[0]["months"])
+        gpu_months.append(g.step(torch.zeros(2, 2, device=g.device))[0]["months"][0].item())
+    assert cpu_months == gpu_months

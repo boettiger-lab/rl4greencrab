@@ -85,7 +85,8 @@ class GPUPPO:
         self.tensorboard_log = tensorboard_log
         self.num_timesteps = 0
 
-    def learn(self, total_timesteps, tb_log_name="GPUPPO", log_interval=1, verbose=1):
+    def learn(self, total_timesteps, tb_log_name="GPUPPO", log_interval=1, verbose=1, callback=None):
+        """`callback(model)` is called every `log_interval` updates (e.g. for held-out evaluation)."""
         env, hp, pol = self.env, self.hp, self.policy
         T, B = hp["n_steps"], env.num_envs
         writer = None
@@ -178,6 +179,8 @@ class GPUPPO:
                 if verbose:
                     print(f"[{self.num_timesteps:>11,d}] ep_rew_mean {ep_mean:8.3f}  "
                           f"std {pol.log_std.exp().mean().item():.3f}  {sps:,.0f} steps/s", flush=True)
+                if callback is not None:
+                    callback(self)
         if writer:
             writer.close()
         return self

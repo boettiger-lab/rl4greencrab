@@ -173,17 +173,22 @@ class TwoActGPU:
         next_pop = next_pop + (self.curr_month == 5).unsqueeze(-1) * self.recruit_sizes
         self.pop = next_pop.clamp(min=0)
 
-        # observation (month is the month just trapped, as in the CPU env)
+        # observation; month is set below, after the month advances
         crab_counts = removed.sum(-1)
         biomass_caught = (removed * self.biomass_size).sum(-1)
         mean_biomass = torch.where(crab_counts > 0, biomass_caught / crab_counts.clamp(min=1), 0.0)
-        obs = self._make_obs(removed, crab_counts, mean_biomass, a, self.curr_month)
+        obs = self._make_obs(removed, crab_counts, mean_biomass, a)
 
         reward = self._reward(a)
 
+        self.curr_month_prev = self.curr_month
         self.month_passed += 1
-        self.curr_month += 1
+        self.curr_month = self.curr_month + 1
         self._overwinter(self.curr_month > 10)
+        if self.has_time:
+            # twoActEnv reports the month just trapped; TwoActNormalized builds its obs
+            # after the base step, so it reports the upcoming month (5, ..., 10, 4)
+            obs["months"] = (self.curr_month if self.normalized else self.curr_month_prev).clone()
 
         done = self.month_passed > self.Tmax
         info = {}
@@ -309,7 +314,7 @@ class TwoActGPU:
     # observations
     # ------------------------------------------------------------------ #
 
-    def _make_obs(self, removed, crab_counts, mean_biomass, a, month):
+    def _make_obs(self, removed, crab_counts, mean_biomass, a):
         t = self.observation_type
         if self.normalized:
             effort = a.sum(-1, keepdim=True)
@@ -331,10 +336,7 @@ class TwoActGPU:
             crabs = bio
         else:
             crabs = count
-        obs = {"crabs": crabs.to(self.dtype)}
-        if self.has_time:
-            obs["months"] = month.clone()
-        return obs
+        return {"crabs": crabs.to(self.dtype)}
 
     def _initial_obs(self):
         fill = -1.0 if self.normalized else 0.0
