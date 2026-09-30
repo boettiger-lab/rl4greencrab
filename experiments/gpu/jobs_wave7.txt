@@ -1,0 +1,27 @@
+--tag rppo32-wide-long-s2 --seed 2 --scenario wide --steps 3e8
+--tag rppo32-nominal-s0 --seed 0 --scenario nominal --steps 1.5e8
+--tag rppo32-oracle-s0 --seed 0 --scenario wide --oracle --steps 1.5e8
+--tag rspec-s01 --seed 0 --test-scenario 1 --steps 7.5e7
+--tag rspec-s02 --seed 0 --test-scenario 2 --steps 7.5e7
+--tag rspec-s03 --seed 0 --test-scenario 3 --steps 7.5e7
+--tag rspec-s04 --seed 0 --test-scenario 4 --steps 7.5e7
+--tag rspec-s05 --seed 0 --test-scenario 5 --steps 7.5e7
+--tag rspec-s06 --seed 0 --test-scenario 6 --steps 7.5e7
+--tag rspec-s07 --seed 0 --test-scenario 7 --steps 7.5e7
+--tag rspec-s08 --seed 0 --test-scenario 8 --steps 7.5e7
+--tag rspec-s09 --seed 0 --test-scenario 9 --steps 7.5e7
+--tag rspec-s10 --seed 0 --test-scenario 10 --steps 7.5e7
+--tag rspec-s11 --seed 0 --test-scenario 11 --steps 7.5e7
+--tag rspec-s12 --seed 0 --test-scenario 12 --steps 7.5e7
+--tag rspec-s13 --seed 0 --test-scenario 13 --steps 7.5e7
+--tag rspec-s14 --seed 0 --test-scenario 14 --steps 7.5e7
+--tag rspec-s15 --seed 0 --test-scenario 15 --steps 7.5e7
+--tag rspec-s16 --seed 0 --test-scenario 16 --steps 7.5e7
+--tag rspec-s17 --seed 0 --test-scenario 17 --steps 7.5e7
+--tag rspec-s18 --seed 0 --test-scenario 18 --steps 7.5e7
+--tag rspec-s19 --seed 0 --test-scenario 19 --steps 7.5e7
+--tag rspec-s20 --seed 0 --test-scenario 20 --steps 7.5e7
+--tag rspec-s21 --seed 0 --test-scenario 21 --steps 7.5e7
+--tag rspec-s22 --seed 0 --test-scenario 22 --steps 7.5e7
+--tag rspec-s23 --seed 0 --test-scenario 23 --steps 7.5e7
+--tag rspec-s24 --seed 0 --test-scenario 24 --steps 7.5e7
