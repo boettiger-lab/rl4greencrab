@@ -107,10 +107,19 @@ class GatedBlock(nn.Module):
         y, _ = self.attn(h, h, h, attn_mask=mask, need_weights=False)
         return self._post(x, y)
 
-    def step(self, x, cache):
-        """Incremental causal step: x (B, 1, d) is the newest position, cache (B, t, d) this layer's inputs so far."""
-        kv = self.ln1(cache)
-        y, _ = self.attn(self.ln1(x), kv, kv, need_weights=False)
+    def step(self, x, K, V, t):
+        """
+        Incremental causal step for position t: x (B, 1, d). K, V (B, heads, max_len, d/heads) are
+        preallocated projected keys/values for this layer; position t is written in place, so memory
+        stays constant over the episode. Uses the same weights as the full-sequence path.
+        """
+        B, _, d = x.shape
+        H = self.attn.num_heads
+        q, k, v = nn.functional.linear(self.ln1(x), self.attn.in_proj_weight, self.attn.in_proj_bias).chunk(3, -1)
+        split = lambda z: z.view(B, 1, H, d // H).transpose(1, 2)  # (B, H, 1, dh)
+        K[:, :, t:t + 1], V[:, :, t:t + 1] = split(k), split(v)
+        y = nn.functional.scaled_dot_product_attention(split(q), K[:, :, :t + 1], V[:, :, :t + 1])
+        y = self.attn.out_proj(y.transpose(1, 2).reshape(B, 1, d))
         return self._post(x, y)
 
     def _post(self, x, y):
@@ -132,8 +141,10 @@ class TransformerNet(nn.Module):
         _init_linear(list(self.head), out_gain)
 
     def init_state(self, B, device):
-        # per-layer inputs at all positions so far (earlier positions never change under a causal mask)
-        return tuple(torch.zeros(B, 0, self.pos.shape[1], device=device) for _ in self.blocks)
+        # (t, per-layer preallocated keys/values); earlier positions never change under a causal mask
+        d = self.pos.shape[1]
+        kv = lambda blk: torch.zeros(B, blk.attn.num_heads, self.max_len, d // blk.attn.num_heads, device=device)
+        return (0, tuple((kv(b), kv(b)) for b in self.blocks))
 
     def _encode(self, x):
         """x: (B, T, D) -> features (B, T, d)"""
@@ -149,14 +160,11 @@ class TransformerNet(nn.Module):
         return self.head(feats), feats, None
 
     def step(self, x, state):
-        t = state[0].shape[1]
+        t, kvs = state
         h = (self.inp(x) + self.pos[t]).unsqueeze(1)
-        new = []
-        for blk, cache in zip(self.blocks, state):
-            cache = torch.cat([cache, h], 1)
-            new.append(cache)
-            h = blk.step(h, cache)
-        return self.head(self.ln(h[:, 0])), tuple(new)
+        for blk, (K, V) in zip(self.blocks, kvs):
+            h = blk.step(h, K, V, t)
+        return self.head(self.ln(h[:, 0])), (t + 1, kvs)
 
 
 class PrivilegedCritic(nn.Module):
