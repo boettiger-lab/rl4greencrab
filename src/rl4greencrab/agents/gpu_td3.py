@@ -14,6 +14,8 @@ import time
 import torch
 import torch.nn as nn
 
+from rl4greencrab.utils.precision import configure_tf32
+
 DEFAULTS = dict(
     learning_rate=3e-4,
     buffer_size=2_000_000,
@@ -29,6 +31,7 @@ DEFAULTS = dict(
     noise_max=0.4,
     learning_starts=10,     # env steps (per env) before updating
     net_arch=(256, 256),
+    tf32="auto",
 )
 
 
@@ -57,7 +60,7 @@ class Critic(nn.Module):
 class GPUTD3:
     def __init__(self, env, seed=None, **hyperparams):
         self.env, self.device = env, env.device
-        torch.set_float32_matmul_precision("high")  # TF32 matmuls for the large-batch updates
+        self.tf32_enabled = configure_tf32(self.hp["tf32"], env.device)  # TF32 for the large-batch updates if supported
         self.hp = hp = {**DEFAULTS, **hyperparams}
         if seed is not None:
             torch.manual_seed(seed)

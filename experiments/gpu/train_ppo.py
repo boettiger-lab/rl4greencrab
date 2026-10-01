@@ -49,10 +49,11 @@ ap.add_argument("--curriculum", type=float, default=0.0,
 ap.add_argument("--oracle", action="store_true", help="agent observes the scenario parameters")
 ap.add_argument("--test-scenario", type=int, default=None, help="train a specialist on test_scenarios()[i]")
 args = ap.parse_args()
+# defaults from the speedup benchmark; "auto" turns a mode on only where the GPU supports it
 if args.tf32 is None:
-    args.tf32 = args.recurrent
+    args.tf32 = "auto" if args.recurrent else False
 if args.cuda_graph is None:
-    args.cuda_graph = not args.recurrent
+    args.cuda_graph = False if args.recurrent else "auto"
 
 overrides = json.loads(args.env_json)
 if args.scenario:
@@ -104,6 +105,8 @@ def cb(m):
     pd.DataFrame(curve).to_csv(os.path.join(RESULTS, "curves", f"{args.tag}.csv"), index=False)
 
 
+from rl4greencrab.utils.precision import device_capabilities
+print(f"{args.tag}: {device_capabilities(env.device)}; tf32={model.tf32_enabled}, cuda_graph={bool(env.cuda_graph)}", flush=True)
 cb(model)
 steps_per_update = (env.Tmax + 1 if args.recurrent else args.n_steps) * args.n_envs
 log_interval = 1 if args.curriculum > 0 else max(1, int(args.eval_every // steps_per_update))
@@ -112,5 +115,7 @@ next_eval[0] = 0
 cb(model)
 os.makedirs(os.path.join(RESULTS, "agents"), exist_ok=True)
 model.save(os.path.join(RESULTS, "agents", args.tag))
+args.tf32_enabled = model.tf32_enabled
+args.cuda_graph_enabled = bool(env.cuda_graph)
 json.dump(vars(args), open(os.path.join(RESULTS, "agents", args.tag + ".json"), "w"))
 json.dump(vars(args), open(os.path.join(RESULTS, "agents", args.tag + "-best.json"), "w"))

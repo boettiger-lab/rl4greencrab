@@ -26,10 +26,13 @@ Differences from the gymnasium envs:
 """
 
 import math
+import warnings
 
 import numpy as np
 import pandas as pd
 import torch
+
+from rl4greencrab.utils.precision import resolve
 
 PARAM_COLS = [
     "growth_k", "growth_xinf", "growth_sd", "growth_A", "growth_ds",
@@ -75,8 +78,10 @@ class TwoActGPU:
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.dtype = dtype
         self.normalized = normalized
-        # capture the per-step dynamics in a CUDA graph (removes kernel-launch overhead)
-        self.cuda_graph = bool(cuda_graph) and self.device.type == "cuda"
+        # capture the per-step dynamics in a CUDA graph (removes kernel-launch overhead);
+        # True, False or "auto". Falls back to eager steps on CPU or if capture fails.
+        self.cuda_graph = resolve(cuda_graph, self.device.type == "cuda" and torch.cuda.is_available(),
+                                  "CUDA graphs", str(self.device))
         self._graph, self._graph_calls = None, 0
 
         self.gen = torch.Generator(device=self.device)
@@ -264,8 +269,14 @@ class TwoActGPU:
                 return out
             self._g_action = action.clone()
             g = torch.cuda.CUDAGraph()
-            with torch.cuda.graph(g):
-                self._g_out = self._dynamics(self._g_action)
+            try:
+                with torch.cuda.graph(g):
+                    self._g_out = self._dynamics(self._g_action)
+            except Exception as e:  # capture records only, so env state is unchanged on failure
+                warnings.warn(f"CUDA graph capture failed ({type(e).__name__}: {e}); using eager steps", stacklevel=3)
+                self.cuda_graph = False
+                torch.cuda.synchronize(self.device)
+                return self._dynamics(action)
             self._graph = g
         self._g_action.copy_(action)
         self._graph.replay()

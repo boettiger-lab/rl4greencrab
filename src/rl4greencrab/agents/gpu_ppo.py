@@ -19,6 +19,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from rl4greencrab.utils.precision import configure_tf32
+
 from rl4greencrab.envs.gpu_env import TwoActGPU, N_MONTHS
 
 DEFAULTS = dict(
@@ -35,7 +37,7 @@ DEFAULTS = dict(
     target_kl=None,
     anneal_lr=False,      # linearly decay the learning rate to 0 over `learn()`
     squash=False,         # act with tanh(u), u ~ Gaussian, instead of clipping u to [-1, 1]
-    tf32=False,           # allow TF32 tensor-core matmuls in the networks
+    tf32=False,           # TF32 tensor cores for the networks: True, False or "auto" (on if the GPU supports it)
 )
 
 ACTIVATIONS = {"Tanh": nn.Tanh, "ReLU": nn.ReLU, "Sigmoid": nn.Sigmoid}
@@ -79,10 +81,9 @@ class GPUPPO:
         self.env = env
         self.device = env.device
         self.hp = {**DEFAULTS, **hyperparams}
-        if self.hp.get("tf32"):
-            # TF32 tensor cores for the networks; the simulator does not use matmul, so it is unaffected
-            torch.backends.cuda.matmul.allow_tf32 = True
-            torch.backends.cudnn.allow_tf32 = True
+        # TF32 tensor cores for the networks if requested and supported (falls back to fp32);
+        # the simulator's own matmuls always run in full fp32
+        self.tf32_enabled = configure_tf32(self.hp.get("tf32", False), env.device)
         if seed is not None:
             torch.manual_seed(seed)
         policy_kwargs = dict(policy_kwargs or {})

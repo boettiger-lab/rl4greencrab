@@ -130,3 +130,49 @@ def test_cuda_graph_matches_eager():
             total += r
         out.append(total.cpu())
     assert torch.equal(out[0], out[1])
+
+
+def test_precision_fallbacks_on_cpu():
+    from rl4greencrab.utils.precision import configure_tf32, device_capabilities
+    assert device_capabilities("cpu")["tf32"] is False
+    assert configure_tf32("auto", "cpu") is False
+    with pytest.warns(UserWarning, match="TF32 requested"):
+        assert configure_tf32(True, "cpu") is False
+    cfg = {"random_start": True, "observation_type": "count", "param_df": param_df}
+    with pytest.warns(UserWarning, match="CUDA graphs requested"):
+        g = TwoActGPU(cfg, num_envs=4, device="cpu", seed=0, cuda_graph=True)
+    assert g.cuda_graph is False
+    g.reset()
+    g.step(torch.zeros(4, 2))
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs a GPU")
+def test_cuda_graph_capture_failure_falls_back(monkeypatch):
+    cfg = {"random_start": True, "observation_type": "count-time", "param_df": param_df}
+
+    def broken_graph(*args, **kwargs):
+        raise RuntimeError("simulated capture failure")
+
+    out = []
+    for graph in (False, True):
+        g = TwoActGPU(cfg, num_envs=64, device="cuda", seed=5, cuda_graph=graph)
+        if graph:
+            monkeypatch.setattr(torch.cuda, "graph", broken_graph)
+        obs, _ = g.reset()
+        total = torch.zeros(64, device="cuda")
+        with pytest.warns(UserWarning, match="capture failed") if graph else _nullcontext():
+            for _ in range(101):
+                obs, r, *_ = g.step(torch.zeros(64, 2, device="cuda"))
+                total += r
+        if graph:
+            assert g.cuda_graph is False
+        out.append(total.cpu())
+    assert torch.equal(out[0], out[1])
+
+
+class _nullcontext:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False

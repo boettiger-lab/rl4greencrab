@@ -98,3 +98,9 @@ Differences from the CPU env:
 - One `torch.Generator` (`seed=`) drives all randomness, so trajectories are not draw-for-draw identical to the numpy env, and there is no separate migration RNG.
 - `reset_recruits` (default `True`): every episode starts with zero recruits. The CPU env never clears its recruit vector on `reset()`, so there an episode's first-year recruits leak in from the previous episode's final winter (a bug). `False` reproduces the CPU behavior.
 - Normalized actions are clipped to [-1, 1] inside `step()`.
+
+### Performance modes and hardware fallbacks
+
+- `TwoActGPU(..., cuda_graph=True | False | "auto")` captures the per-step dynamics in a CUDA graph (results are bit-identical to eager stepping). On CPU, or if capture fails, it warns and falls back to eager steps.
+- The PPO/TD3 trainers take `tf32=True | False | "auto"` for the neural networks. TF32 needs compute capability >= 8.0 (Ampere or newer); on older GPUs (e.g. Quadro RTX 8000, sm_75) or CPU a `True` request warns and uses full fp32, and `"auto"` silently does the same. The simulator's own matrix products always run in full fp32.
+- `rl4greencrab.utils.precision.device_capabilities()` reports what the current device supports.
