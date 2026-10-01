@@ -1,0 +1,19 @@
+what,setup,rate
+simulator,"1024 envs, cuda_graph=False",2059885.488004665
+simulator,"1024 envs, cuda_graph=True",2836107.3641872155
+simulator,"4096 envs, cuda_graph=False",4620238.982079457
+simulator,"4096 envs, cuda_graph=True",4730852.081113091
+simulator,"16384 envs, cuda_graph=False",4779821.63636271
+simulator,"16384 envs, cuda_graph=True",4816675.2190307835
+ppo-ff,"cuda_graph=False, tf32=False",408596.61378477793
+ppo-ff,"cuda_graph=True, tf32=False",446377.4111855617
+ppo-ff,"cuda_graph=False, tf32=True",383291.14323531796
+ppo-ff,"cuda_graph=True, tf32=True",371247.88872756535
+ppo-gru,"cuda_graph=False, tf32=False",166003.83569612773
+ppo-gru,"cuda_graph=True, tf32=False",164889.24241013295
+ppo-gru,"cuda_graph=False, tf32=True",195536.7166213453
+ppo-gru,"cuda_graph=True, tf32=True",181081.21996560934
+ppo-transformer,"cuda_graph=False, tf32=False",66444.11346439453
+ppo-transformer,"cuda_graph=True, tf32=False",67524.25411566105
+ppo-transformer,"cuda_graph=False, tf32=True",77755.73316263311
+ppo-transformer,"cuda_graph=True, tf32=True",78306.25365855878

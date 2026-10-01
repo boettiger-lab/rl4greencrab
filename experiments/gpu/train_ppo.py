@@ -33,8 +33,10 @@ ap.add_argument("--actor", default="gru", choices=["gru", "transformer"])
 ap.add_argument("--critic", default="recurrent", choices=["recurrent", "privileged"])
 ap.add_argument("--aux-coef", type=float, default=0.0, help="auxiliary loss: predict privileged state from memory")
 ap.add_argument("--tf", default="64,2,4", help="transformer d_model,layers,heads")
-ap.add_argument("--tf32", action="store_true", help="TF32 tensor cores for the networks")
-ap.add_argument("--cuda-graph", action="store_true", help="capture the simulator step in a CUDA graph")
+ap.add_argument("--tf32", action=argparse.BooleanOptionalAction, default=None,
+                help="TF32 tensor cores for the networks (default: on for recurrent/transformer, where it measured +17%%)")
+ap.add_argument("--cuda-graph", action=argparse.BooleanOptionalAction, default=None,
+                help="capture the simulator step in a CUDA graph (default: on for feed-forward PPO, where it measured +9%%)")
 ap.add_argument("--gamma", type=float, default=0.99)
 ap.add_argument("--lam", type=float, default=0.95)
 ap.add_argument("--ent", type=float, default=0.0)
@@ -47,6 +49,10 @@ ap.add_argument("--curriculum", type=float, default=0.0,
 ap.add_argument("--oracle", action="store_true", help="agent observes the scenario parameters")
 ap.add_argument("--test-scenario", type=int, default=None, help="train a specialist on test_scenarios()[i]")
 args = ap.parse_args()
+if args.tf32 is None:
+    args.tf32 = args.recurrent
+if args.cuda_graph is None:
+    args.cuda_graph = not args.recurrent
 
 overrides = json.loads(args.env_json)
 if args.scenario:

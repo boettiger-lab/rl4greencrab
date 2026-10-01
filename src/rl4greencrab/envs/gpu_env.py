@@ -47,6 +47,17 @@ OBS_TYPES = [
 N_MONTHS = 12  # size of the "months" Discrete space (one-hot width)
 
 
+def _matvec(M, v):
+    """Batched M @ v in full fp32: TF32 settings used for neural networks must not reduce the
+    precision of the population dynamics."""
+    prev = torch.get_float32_matmul_precision()
+    torch.set_float32_matmul_precision("highest")
+    try:
+        return torch.bmm(M, v.unsqueeze(-1)).squeeze(-1)
+    finally:
+        torch.set_float32_matmul_precision(prev)
+
+
 class TwoActGPU:
     def __init__(
         self,
@@ -216,11 +227,9 @@ class TwoActGPU:
         harvest_rate = (1 - torch.exp(-hazard)).clamp(0, 1)
         removed = torch.binomial(torch.floor(self.pop), harvest_rate, generator=self.gen)
 
-        # growth + survival for this month, recruits arrive in May. The projection is an
-        # elementwise multiply-and-sum rather than a matmul so that TF32 matmul settings
-        # used for neural networks never reduce the precision of the population dynamics.
+        # growth + survival for this month, recruits arrive in May
         P = self.proj[self._arange, self.curr_month - 4]
-        next_pop = (P * (self.pop - removed).unsqueeze(-2)).sum(-1)
+        next_pop = _matvec(P, self.pop - removed)
         next_pop = next_pop + (self.curr_month == 5).unsqueeze(-1) * self.recruit_sizes
         self.pop.copy_(next_pop.clamp(min=0))
 
@@ -312,7 +321,7 @@ class TwoActGPU:
         """Apply overwinter survival and draw next year's recruits for envs in `winter`."""
         pop = self.pop
         w = winter.unsqueeze(-1)
-        grown = (self.overwinter * pop.unsqueeze(-2)).sum(-1)
+        grown = _matvec(self.overwinter, pop)
         # zero trials outside winter so those draws are near-free
         new_adults = torch.binomial(
             torch.where(w, torch.floor(grown), 0.0), self.w_mort_exp.expand_as(grown).contiguous(), generator=self.gen
