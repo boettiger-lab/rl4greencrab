@@ -12,15 +12,16 @@ This folder contains the experiments run with the GPU (graphics card) version of
 
 4. **Training length and settings matter more than expected.** With the settings used in the manuscript, PPO peaked within a few million steps and then *degraded*. With a decaying learning rate and keeping the best checkpoint, training is stable and keeps improving to roughly 100 million steps. 10 million steps was not enough with our GPU settings.
 
-5. **Policies trained on one scenario are brittle.** An agent trained only on the manuscript's nominal model is excellent there but performs poorly when the invasion differs (different carrying capacity, migrant pressure, etc.). The more capable the agent (agents with memory), the more brittle it is when trained narrowly.
+5. **Training across the range of plausible invasions (our curriculum approach) trades a small cost for robustness.** The policies differ in how much they assume about the invasion:
+   - A **specialist** assumes the exact scenario is known. It is the best achievable for that scenario: an upper bound, not something a manager could actually use.
+   - An agent trained only on the **nominal** model (as in the manuscript) assumes that scenario. It is excellent when the assumption holds (-5.99 for an agent with memory) but loses 1.6-3.9 reward points per episode on average when the invasion differs (different carrying capacity, migrant pressure, etc.).
+   - A **generalist** assumes only that the invasion lies somewhere in a plausible range. As expected from its weaker assumptions, it gives up a little: ~0.55 points per episode relative to the specialists, and ~0.4 on the nominal scenario relative to the nominal-trained agent. In return it is robust everywhere, and far outperforms fixed schedules.
 
-6. **A single agent can handle a wide range of invasion scenarios.** Trained across a broad range of uncertain conditions, one agent with memory comes within ~0.55 reward points per episode of agents trained separately for each specific scenario, and far outperforms fixed schedules.
+6. **Memory is the most important design choice.** Agents that remember the whole catch history of an episode, rather than reacting only to the latest month's catch, do better everywhere. On the nominal model a memory agent is the best of all (-5.99 vs -6.19 without memory). Across the wide range, memory cuts the average loss relative to scenario specialists from 0.89 to about 0.6. The type of memory mattered little: a transformer (the architecture behind modern language models) did no better than a simpler recurrent network (GRU). Giving the training-only critic access to the true hidden state (a "privileged critic") helped a little more (0.55). Memory also has a downside: trained on the nominal scenario only, memory agents are the most brittle of all (finding 5).
 
-7. **Memory is the most important design choice.** Agents that remember the whole catch history of an episode, rather than reacting only to the latest month's catch, do better everywhere. On the nominal model a memory agent is the best of all (-5.99 vs -6.19 without memory). Across the wide range, memory cuts the average loss relative to scenario specialists from 0.89 to about 0.6. The type of memory mattered little: a transformer (the architecture behind modern language models) did no better than a simpler recurrent network (GRU). Giving the training-only critic access to the true hidden state (a "privileged critic") helped a little more (0.55). Memory also has a downside (finding 5): trained on one scenario, memory agents are the most brittle.
+7. **Training techniques for the generalist made little or no difference.** A staged schedule that starts on the nominal scenario and gradually widens to the full range performed the same as or slightly worse than training on the full range from the start (average loss 0.93 vs 0.90 for otherwise identical runs without memory; 1.22 vs 1.12 with larger networks). Over-sampling the hardest (high-migration) scenarios gave no overall gain either. Neither did larger networks, longer training, giving memory-less agents a short window of recent observations, or an extra training task asking the memory to predict the hidden state.
 
-8. **Curriculum learning did not help.** Starting training on the nominal scenario and gradually widening it to the full range over the first half of training performed the same as or worse than training on the full range from the start (average loss 0.93 vs 0.90 for otherwise identical runs without memory; 1.22 vs 1.12 with larger networks). A second form of curriculum, over-sampling the hardest (high-migration) scenarios, also gave no overall gain. Neither did larger networks, longer training, giving memory-less agents a short window of recent observations, or an extra training task asking the memory to predict the hidden state.
-
-9. **The remaining shortfall is concentrated in high-migration scenarios, and it is a timing problem the agents fail to learn.** Where migrant pressure is very high, the best strategy traps early in the season and nearly stops in September-October (late effort is wasted when a new wave of migrants replaces the removed crabs). The broadly trained agents keep the usual late-season pattern, just with more traps. This is not for lack of information: migrant pressure can be inferred from the catch history within ~3-7 years. Over-sampling these scenarios in training barely helped. A deployable "estimate, then act" design (infer the scenario from catches, then apply a policy trained with known scenarios) improves the worst cases but not the average. Closing this gap remains open.
+8. **The remaining shortfall is concentrated in high-migration scenarios, and it is a timing problem the agents fail to learn.** Where migrant pressure is very high, the best strategy traps early in the season and nearly stops in September-October (late effort is wasted when a new wave of migrants replaces the removed crabs). The broadly trained agents keep the usual late-season pattern, just with more traps. This is not for lack of information: migrant pressure can be inferred from the catch history within ~3-7 years. Over-sampling these scenarios in training barely helped. A deployable "estimate, then act" design (infer the scenario from catches, then apply a policy trained with known scenarios) improves the worst cases but not the average. Closing this gap remains open.
 
 ## Key terms
 
@@ -33,8 +34,8 @@ This folder contains the experiments run with the GPU (graphics card) version of
 | **Seasonal schedule** | A fixed number of traps for each calendar month (same every year), regardless of observations. |
 | **Nominal scenario** | The manuscript's model: carrying capacity 25,000, usual migrant pressure, 0-2,000 initial adults. |
 | **Wide scenarios** | A broad range of invasion conditions (table below), drawn at random each episode. |
-| **Generalist** | An agent trained on the wide range of scenarios. |
-| **Specialist** | An agent trained on one specific scenario only. Used as a yardstick for what is achievable in that scenario. |
+| **Generalist** | An agent trained on the wide range of scenarios, drawn at random each episode. This is our curriculum approach: the agent assumes only that the invasion lies somewhere in that range, rather than assuming specific parameter values. |
+| **Specialist** | An agent trained on one specific scenario only, i.e. assuming that scenario is known exactly. Used as a yardstick (an upper bound) for what is achievable in that scenario. |
 | **Regret** | How much reward a policy loses in a scenario compared with the best specialist for that scenario. 0 = as good as the specialist; -0.5 = half a reward point worse per episode. |
 | **Oracle** | An agent that is *told* the true scenario parameters (carrying capacity, migrant pressure, ...). Not usable in practice; it measures how much is lost by not knowing the scenario. |
 | **Privileged critic** | A training aid. RL training uses a second network (the "critic") that estimates future reward to score the agent's choices. A privileged critic is shown the true hidden state of the simulation during training only. The deployed policy never sees it, so the resulting agent is usable in practice. |
@@ -107,7 +108,7 @@ Each policy was scored on 24 fixed test scenarios drawn from the wide range. "Re
 | Generalist with memory (transformer) | -6.69 | -6.99 | -0.60 | -2.43 |
 | Generalist with memory (GRU) | -6.63 to -6.74 | -7.03 to -7.09 | -0.63 to -0.68 | -2.4 to -2.7 |
 | Generalist without memory | -6.70 | -7.26 | -0.89 | -3.11 |
-| Generalist without memory + curriculum | -6.53 | -7.29 | -0.93 | -3.15 |
+| Generalist without memory, staged widening schedule | -6.53 | -7.29 | -0.93 | -3.15 |
 | Seasonal schedule tuned *for each scenario* | -7.77 | -9.33 | -1.51 | -3.46 |
 | Agent without memory trained on nominal only | -6.19 | -7.73 | -1.58 | -4.60 |
 | **Agent with memory trained on nominal only** | **-5.99** | -9.69 | **-3.85** | -6.41 |
@@ -123,10 +124,10 @@ Each policy was scored on 24 fixed test scenarios drawn from the wide range. "Re
 *Figure 3. Reward lost in each of the 24 test scenarios (columns, sorted by migrant pressure) relative to an agent trained for that scenario. Darker = larger loss; the right-hand numbers are the average loss. The few cases where a policy slightly beat the specialist are shown as 0. Values are in `results/figures/fig3_regret_table.csv`.*
 
 What this shows:
-- **Train on the uncertainty you actually have.** The agent with memory trained only on the nominal model is the best of all on the nominal model, and one of the worst anywhere else (finding 5).
+- **Train on the uncertainty you actually have.** The agent with memory trained only on the nominal model is the best of all on the nominal model, and one of the worst anywhere else (finding 5). The generalists' regret is the price of assuming less, and it is small.
 - **Memory helps most.** Remembering the catch history reduces regret from -0.89 to about -0.6.
 - **A privileged critic helps a little more** (-0.55). It reaches the same performance as training twice as long.
-- **Other tricks did not help:** a curriculum (gradually widening the scenarios during training), larger networks, longer training, transformers instead of GRUs, and an auxiliary task asking the memory to predict the hidden state.
+- **Other training techniques did not help:** a staged schedule gradually widening the scenarios during training, larger networks, longer training, transformers instead of GRUs, and an auxiliary task asking the memory to predict the hidden state.
 - **The oracle reaches -0.21**, so most of the remaining gap concerns *using* scenario information that the oracle is handed directly (section 5).
 
 ### 5. Why do generalists fall short in high-migration scenarios?
