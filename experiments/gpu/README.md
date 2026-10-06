@@ -79,6 +79,10 @@ The best seasonal schedule sets almost no traps from April to July and traps hea
 | GPU PPO, constant learning rate | -6.81 | -6.24 | 2 of 3 replicates degraded badly by 300M |
 | GPU PPO, decaying learning rate | -6.83 | **-6.21** | stable; plateau by ~100M |
 
+![Held-out reward during training on the nominal scenario](results/figures/fig1_training_length.png)
+
+*Figure 1. Held-out reward during training (higher is better). Left: the first 10 million steps. The original settings (blue) learn fast, then collapse. The GPU runs were only evaluated at 0 and ~9.4M steps in this window, so they are shown as points. Right: full runs. With a constant learning rate (orange), two of three replicates degrade after ~150M steps; with a decaying learning rate (green), training is stable. Thin lines are individual replicates, thick lines their mean.*
+
 The original settings learn quickly per step but are unstable; this likely explains part of the large variation between replicate agents in the manuscript. A decaying learning rate plus keeping the best-scoring checkpoint gives reliable training (finding 4).
 
 ### 3. Algorithm and setting variations on the nominal model
@@ -105,6 +109,14 @@ Each policy was scored on 24 fixed test scenarios drawn from the wide range. "Re
 | **Agent with memory trained on nominal only** | **-5.99** | -9.69 | **-3.85** | -6.41 |
 | One seasonal schedule tuned on the wide range | — | -9.33 | -3.24 | -6.28 |
 | One constant policy tuned on the wide range | — | -10.57 | -4.53 | -10.35 |
+
+![Generalist learning curves on the wide scenario range](results/figures/fig2_generalists_wide.png)
+
+*Figure 2. Held-out reward on the wide range of invasion scenarios during training. Memory and a privileged critic each add a step up. The oracle, which is told the scenario, shows how much is lost by having to infer it from catches.*
+
+![Regret heatmap across 24 test scenarios](results/figures/fig3_regret_heatmap.png)
+
+*Figure 3. Reward lost in each of the 24 test scenarios (columns, sorted by migrant pressure) relative to an agent trained for that scenario. Darker = larger loss; the right-hand numbers are the average loss. The few cases where a policy slightly beat the specialist are shown as 0. Values are in `results/figures/fig3_regret_table.csv`.*
 
 What this shows:
 - **Train on the uncertainty you actually have.** The agent with memory trained only on the nominal model is the best of all on the nominal model, and one of the worst anywhere else (finding 5).
@@ -155,6 +167,7 @@ Two optional speed-ups are switched on automatically where they help and the har
 | `scenario_baselines.py` | Best constant and seasonal policies for each test scenario |
 | `eval_scenarios.py`, `analyze_scenarios.py` | Score agents on the test scenarios; regret tables |
 | `behavior_hard.py` | Behavior comparison in high-migration scenarios |
+| `make_figures.py` | Regenerates the figures in `results/figures/` from the results files |
 | `benchmark.py`, `benchmark_speedups.py` | Speed benchmarks |
 | `jobs_*.txt`, `run_jobs.sh` | The exact training runs, launched in parallel |
 | `results/` | All results: `baselines.csv`, `scenario_summary.csv` (main robustness table), `scenario_eval*.csv`, `behavior_hard.csv`, `benchmark*.csv`, and `curves/` (learning curves for every run) |
