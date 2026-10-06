@@ -124,6 +124,7 @@ exec(open(os.path.join(os.path.dirname(__file__), "analyze_scenarios.py")).read(
 rows = [
     ("Oracle, memory (not deployable)", "rppo32-oracle"),
     ("Generalist, memory + privileged critic", "gru-priv"),
+    ("Estimate, then act (deployable)", "estimate-then-act"),
     ("Generalist, memory (GRU)", "rppo-wide-mb32"),
     ("Generalist, no memory", "rob-wide"),
     ("Seasonal schedule tuned per scenario", "seasonal-specialist"),

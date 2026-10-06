@@ -16,7 +16,7 @@ This folder contains the experiments run with the GPU (graphics card) version of
 
 6. **A single agent can handle a wide range of invasion scenarios.** Trained across a broad range of uncertain conditions, one agent with memory comes within ~0.55 reward points per episode of agents trained separately for each specific scenario, and far outperforms fixed schedules.
 
-7. **The remaining shortfall is concentrated in high-migration scenarios, and it is a timing problem.** Where migrant pressure is very high, the best strategy front-loads trapping early in the season. The broadly trained agent instead keeps the usual late-season pattern, just with more traps. The needed information is in the catch data; these scenarios were simply too rare in training. A follow-up that over-samples them is in progress.
+7. **The remaining shortfall is concentrated in high-migration scenarios, and it is a timing problem the agents fail to learn.** Where migrant pressure is very high, the best strategy traps early in the season and nearly stops in September-October (late effort is wasted when a new wave of migrants replaces the removed crabs). The broadly trained agents keep the usual late-season pattern, just with more traps. This is not for lack of information: migrant pressure can be inferred from the catch history within ~3-7 years. Over-sampling these scenarios in training barely helped. A deployable "estimate, then act" design (infer the scenario from catches, then apply a policy trained with known scenarios) improves the worst cases but not the average. Closing this gap remains open.
 
 ## Key terms
 
@@ -123,7 +123,7 @@ What this shows:
 - **Memory helps most.** Remembering the catch history reduces regret from -0.89 to about -0.6.
 - **A privileged critic helps a little more** (-0.55). It reaches the same performance as training twice as long.
 - **Other tricks did not help:** a curriculum (gradually widening the scenarios during training), larger networks, longer training, transformers instead of GRUs, and an auxiliary task asking the memory to predict the hidden state.
-- **About half of the remaining gap is the cost of not knowing the scenario**: the oracle reaches -0.21.
+- **The oracle reaches -0.21**, so most of the remaining gap concerns *using* scenario information that the oracle is handed directly (section 5).
 
 ### 5. Why do generalists fall short in high-migration scenarios?
 
@@ -132,9 +132,31 @@ The four hardest test scenarios all have 3-4x the usual migrant pressure. There 
 - The generalist does **not** under-trap. It sets about as many traps in total as the specialist.
 - It **mis-times** them. Specialists and the oracle trap heavily in April-June and lightly in October. The generalist keeps the nominal pattern (light early, heavy August-October) and just scales it up.
 - The result: in the hardest scenario, the generalist leaves 40-46k crabs where the specialist holds 28-33k.
-- By the later years the catch data clearly shows the high abundance, so the information is available. Scenarios with more than 3x migrant pressure were only ~13% of training episodes, too few to learn a different strategy.
+- More precisely, the decisive difference is the late season: specialists and the oracle nearly stop trapping in September-October under high migration, while every generalist keeps trapping heavily (table below, mean traps per month in years 4-14).
 
-**In progress:** training generalists that over-sample high-migration scenarios (half of episodes from the high-pressure range, or a uniform rather than log-uniform spread of migrant pressure), to test whether this closes the gap without hurting other scenarios.
+| Scenario | Policy | Apr-Jun | Aug | Sep | Oct |
+|---|---|---|---|---|---|
+| 3.3x migration | Generalist | 812 | 5,451 | 4,292 | 2,541 |
+| | Generalist, over-sampled training | 1,357 | 5,953 | 4,911 | 2,318 |
+| | Oracle | 1,479 | 5,243 | 2,798 | 491 |
+| | Specialist | 1,789 | 4,447 | 1,634 | 315 |
+
+We tested three explanations:
+
+1. **Too few high-migration scenarios in training?** Mostly no. Training with 43% instead of 13% high-migration episodes (`mix-himig`, `linmig` runs) moved effort somewhat earlier in the season but did not cut late-season trapping. Loss in the four high-migration scenarios improved only from 1.73 to ~1.55; overall regret was unchanged (-0.54 to -0.56).
+2. **The catch data does not reveal migrant pressure?** No. A separate model trained to infer each scenario parameter from the catch history (`identifiability.py`) recovers migrant pressure well after a few years:
+
+   | Inferred from catches (R²; 1 = perfect) | After 1 yr | 3 yrs | 7 yrs | 14 yrs |
+   |---|---|---|---|---|
+   | Initial adults | 0.99 | 0.99 | 0.99 | 0.99 |
+   | Migrant pressure | 0.00 | 0.71 | 0.95 | 0.97 |
+   | Carrying capacity K | 0.00 | 0.03 | 0.33 | 0.44 |
+   | Local recruitment r | 0.00 | 0.10 | 0.45 | 0.58 |
+
+   Migrants arrive only after the first winter, so year 1 says nothing about them; by year 3 most of the information is there.
+3. **Can we use that information explicitly?** Partly. An "estimate, then act" policy (`estimate_then_act.py`) infers the scenario from catches and feeds the estimate to the oracle policy. It is deployable (it never sees the true scenario). It has the same average regret as the best generalist (-0.56) but a better worst case (-1.79 vs -2.48) and less loss in high-migration scenarios (-1.40 vs -1.73), at a small cost elsewhere (-0.39 vs -0.32). It falls short of the true oracle mainly in the early years, when the estimate is still poor but the policy acts as if it were certain.
+
+**Bottom line:** the information needed to manage high-migration invasions well is in the catch data, but standard RL training does not learn to exploit it, and simple fixes recover only part of the gap. Policies that explicitly account for uncertainty in the scenario estimate are a natural next step.
 
 ### 6. Speed
 
@@ -167,6 +189,8 @@ Two optional speed-ups are switched on automatically where they help and the har
 | `scenario_baselines.py` | Best constant and seasonal policies for each test scenario |
 | `eval_scenarios.py`, `analyze_scenarios.py` | Score agents on the test scenarios; regret tables |
 | `behavior_hard.py` | Behavior comparison in high-migration scenarios |
+| `identifiability.py` | How well each scenario parameter can be inferred from catch history |
+| `estimate_then_act.py` | Deployable policy: scenario estimator + oracle policy |
 | `make_figures.py` | Regenerates the figures in `results/figures/` from the results files |
 | `benchmark.py`, `benchmark_speedups.py` | Speed benchmarks |
 | `jobs_*.txt`, `run_jobs.sh` | The exact training runs, launched in parallel |
