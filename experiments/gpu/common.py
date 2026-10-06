@@ -21,6 +21,11 @@ NOMINAL = {"init_n_adult": [0, 2000], "K": [25000, 25000], "r": [1, 1], "mig_sca
 WIDE = {"init_n_adult": [0, 20000], "K": [10000, 60000, "log"], "r": [0.5, 2.0],
         "mig_scale": [0.1, 5.0, "log"], "p_big": [0.0, 0.5]}
 
+# Oversampling high migrant pressure (the regime where wide-trained generalists fail):
+WIDE_HIMIG = {**WIDE, "mig_scale": [2.5, 5.0, "log"]}
+MIX_HIMIG = [[0.5, WIDE], [0.5, WIDE_HIMIG]]          # half the episodes from the high-migration corner
+WIDE_LINMIG = {**WIDE, "mig_scale": [0.1, 5.0]}        # uniform instead of log-uniform migrant pressure
+
 
 def interp_ranges(a, b, f):
     """Ranges a fraction f of the way from distribution a to b (geometric for log ranges)."""

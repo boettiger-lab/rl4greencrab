@@ -128,6 +128,13 @@ class TwoActGPU:
         self.scenario_defaults = {"K": self.K, "r": self.r, "mig_scale": config.get("mig_scale", 1.0),
                                   "p_big": config.get("p_big", 0.2)}
         self.scenario_ranges = dict(config.get("scenario_ranges", {}))
+        # optional mixture of scenario distributions: [[weight, ranges], ...] (all components must
+        # list the same parameters); overrides scenario_ranges for sampling, e.g. to oversample
+        # hard regions of the scenario space
+        self.scenario_mixture = config.get("scenario_mixture")
+        if self.scenario_mixture:
+            keys = [set(r) for _, r in self.scenario_mixture]
+            assert all(k == keys[0] for k in keys), "mixture components must specify the same parameters"
         # observe_scenario: append the drawn scenario parameters (scaled to [-1, 1]
         # over their ranges) to the observation, as an "oracle" information bound
         self.observe_scenario = config.get("observe_scenario", False)
@@ -395,14 +402,25 @@ class TwoActGPU:
         if self.reset_recruits:
             self.recruit_sizes[idx] = 0
 
+        if self.scenario_mixture:
+            w = torch.tensor([c[0] for c in self.scenario_mixture], dtype=torch.float, device=self.device)
+            comp = torch.multinomial(w, m, replacement=True, generator=self.gen)
+            sampled = set(self.scenario_mixture[0][1])
+        else:
+            sampled = set(self.scenario_ranges)
         for name in self.scenario:
-            if name in self.scenario_ranges:
+            if name in sampled and self.scenario_mixture:
+                v = torch.zeros(m, dtype=self.dtype, device=self.device)
+                for c, (_, ranges) in enumerate(self.scenario_mixture):
+                    v = torch.where(comp == c, self._draw(ranges[name], m), v)
+                self.scenario[name][idx] = v
+            elif name in sampled:
                 self.scenario[name][idx] = self._draw(self.scenario_ranges[name], m)
             elif name != "init_n_adult":
                 self.scenario[name][idx] = float(self.scenario_defaults[name])
 
         # initial adults: lognormal size distribution
-        if "init_n_adult" in self.scenario_ranges:
+        if "init_n_adult" in sampled:
             n_adult = self.scenario["init_n_adult"][idx].double()
         elif self.random_start:
             n_adult = torch.randint(0, self.max_obs + 1, (m,), generator=self.gen, device=self.device).double()

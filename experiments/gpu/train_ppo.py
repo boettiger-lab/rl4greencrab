@@ -7,7 +7,7 @@ import time
 import pandas as pd
 import torch
 
-from common import NOMINAL, RESULTS, WIDE, evaluate, interp_ranges, make_env, point, test_scenarios
+from common import MIX_HIMIG, NOMINAL, RESULTS, WIDE, WIDE_LINMIG, evaluate, interp_ranges, make_env, point, test_scenarios
 from rl4greencrab.agents.gpu_ppo import GPUPPO
 from rl4greencrab.agents.gpu_rppo import GPURecurrentPPO, RecurrentActor
 from rl4greencrab.envs.gpu_wrappers import HistoryObs
@@ -43,7 +43,8 @@ ap.add_argument("--ent", type=float, default=0.0)
 ap.add_argument("--net", default="64,64")
 ap.add_argument("--act", default="Tanh")
 ap.add_argument("--env-json", default="{}", help="extra env config overrides (json)")
-ap.add_argument("--scenario", default=None, choices=[None, "nominal", "wide"], help="training scenario distribution")
+ap.add_argument("--scenario", default=None, choices=[None, "nominal", "wide", "mix-himig", "wide-linmig"],
+                help="training scenario distribution (held-out evaluation always uses WIDE for the non-nominal ones)")
 ap.add_argument("--curriculum", type=float, default=0.0,
                 help="widen scenarios from NOMINAL to WIDE linearly over this fraction of training")
 ap.add_argument("--oracle", action="store_true", help="agent observes the scenario parameters")
@@ -56,12 +57,20 @@ if args.cuda_graph is None:
     args.cuda_graph = False if args.recurrent else "auto"
 
 overrides = json.loads(args.env_json)
-if args.scenario:
+if args.scenario == "mix-himig":
+    overrides.update(scenario_mixture=MIX_HIMIG, scenario_ranges=WIDE, scenario_obs_ranges=WIDE)
+elif args.scenario == "wide-linmig":
+    overrides.update(scenario_ranges=WIDE_LINMIG, scenario_obs_ranges=WIDE)
+elif args.scenario:
     overrides["scenario_ranges"] = WIDE if args.scenario == "wide" else NOMINAL
 if args.test_scenario is not None:
     overrides["scenario_ranges"] = point(test_scenarios()[args.test_scenario])
 if args.oracle:
     overrides.update(observe_scenario=True, scenario_obs_ranges=WIDE)
+# held-out evaluation distribution: the training one, except that sampling-reweighted runs evaluate on WIDE
+eval_overrides = {k: v for k, v in overrides.items() if k != "scenario_mixture"}
+if args.scenario in ("mix-himig", "wide-linmig"):
+    eval_overrides["scenario_ranges"] = WIDE
 wrap = (lambda e: HistoryObs(e, args.hist)) if args.hist else None
 env = make_env(args.obs, num_envs=args.n_envs, seed=args.seed, cuda_graph=args.cuda_graph, **overrides)
 env = wrap(env) if wrap else env
@@ -93,7 +102,7 @@ def cb(m):
     if m.num_timesteps < next_eval[0]:
         return
     next_eval[0] += args.eval_every
-    mean, se, _ = evaluate(policy, args.obs, n=args.eval_n, wrap=wrap, **overrides)
+    mean, se, _ = evaluate(policy, args.obs, n=args.eval_n, wrap=wrap, **eval_overrides)
     curve.append(dict(tag=args.tag, seed=args.seed, steps=m.num_timesteps, eval_mean=mean, eval_se=se,
                       std=m.policy.log_std.exp().mean().item(), wall=time.time() - t0))
     print(f"{args.tag} {m.num_timesteps/1e6:7.1f}M eval {mean:.3f} ± {se:.3f}  ({time.time()-t0:.0f}s)", flush=True)

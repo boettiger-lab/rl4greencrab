@@ -1,0 +1,4 @@
+--tag mix-himig-s0 --seed 0 --scenario mix-himig
+--tag mix-himig-s1 --seed 1 --scenario mix-himig
+--tag linmig-s0 --seed 0 --scenario wide-linmig
+--tag linmig-s1 --seed 1 --scenario wide-linmig
