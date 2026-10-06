@@ -1,0 +1,3 @@
+--tag tf-plain-s1 --seed 1 --actor transformer --lr 1e-4
+--tag gru-priv-s2 --seed 2 --critic privileged
+--tag gru-priv-s3 --seed 3 --critic privileged

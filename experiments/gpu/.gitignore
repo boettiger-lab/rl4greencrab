@@ -2,3 +2,4 @@ results/agents/
 results/logs/
 results/old_batch1/
 results/*.pt
+results/old_wave9/
