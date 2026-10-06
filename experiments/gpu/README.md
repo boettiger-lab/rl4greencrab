@@ -10,7 +10,7 @@ This folder contains the experiments run with the GPU (graphics card) version of
 
 3. **Most of RL's advantage over a constant trapping policy comes from seasonality.** A fixed month-by-month trapping schedule (no observations used) closes most of the gap between the best constant policy and the manuscript's RL agents. Responding to catch data adds a smaller, real improvement on top.
 
-4. **Training length and settings matter more than expected.** With the settings used in the manuscript, PPO peaked within a few million steps and then *degraded*. With a decaying learning rate and keeping the best checkpoint, training is stable and keeps improving to roughly 100 million steps. 10 million steps was not enough with our GPU settings.
+4. **Training length and settings matter more than expected.** With the settings used in the manuscript, PPO peaked within a few million steps and then *degraded*. With a decaying learning rate and keeping the best checkpoint, training is stable and keeps improving to roughly 100 million steps. 10 million steps was not enough with our GPU settings. Trained this way, PPO *without* memory beats the manuscript's agents (same algorithm and observations) by about 1-1.3 reward points per episode on average and 0.4-0.5 points against the best previous replicate, with consistent replicates (section 2).
 
 5. **Training across the range of plausible invasions (our curriculum approach) trades a small cost for robustness.** The policies differ in how much they assume about the invasion:
    - A **specialist** assumes the exact scenario is known. It is the best achievable for that scenario: an upper bound, not something a manager could actually use.
@@ -78,17 +78,33 @@ The best seasonal schedule sets almost no traps from April to July and traps hea
 
 ### 2. How long should we train?
 
-| Training setup | Score at 10M steps | Best score | What happened later |
-|---|---|---|---|
-| Original settings (SB3 PPO, 12 envs) | collapsed (-10.7) | -6.74 (at 6M) | degraded after ~6M steps |
-| GPU PPO, constant learning rate | -6.81 | -6.24 | 2 of 3 replicates degraded badly by 300M |
-| GPU PPO, decaying learning rate | -6.83 | **-6.21** | stable; plateau by ~100M |
+| Training setup | Score at 10M steps | Best checkpoint | Final checkpoint | What happened later |
+|---|---|---|---|---|
+| Original settings (SB3 PPO, 12 envs) | collapsed (-10.7) | -6.74 (at 6M) | -10.7 (10M) | degraded after ~6M steps |
+| GPU PPO, constant learning rate | -6.81 | -6.24 | -7.6 (300M; mean of 3) | 2 of 3 replicates degraded badly |
+| GPU PPO, decaying learning rate | -6.83 | **-6.21** | **-6.23** (150M; mean of 3) | stable; plateau by ~100M |
 
 ![Held-out reward during training on the nominal scenario](results/figures/fig1_training_length.png)
 
 *Figure 1. Held-out reward during training (higher is better). Left: the first 10 million steps. The original settings (blue) learn fast, then collapse. The GPU runs were only evaluated at 0 and ~9.4M steps in this window, so they are shown as points. Right: full runs. With a constant learning rate (orange), two of three replicates degrade after ~150M steps; with a decaying learning rate (green), training is stable. Thin lines are individual replicates, thick lines their mean.*
 
 The original settings learn quickly per step but are unstable; this likely explains part of the large variation between replicate agents in the manuscript. A decaying learning rate plus keeping the best-scoring checkpoint gives reliable training (finding 4).
+
+**Comparison with the manuscript's agents (no memory).** Same algorithm (PPO), same observations (catch per trap, mean biomass of the catch, month), scored on the same held-out simulations:
+
+| | Original model (with the recruit bug) | Corrected model |
+|---|---|---|
+| Manuscript's reported PPO score (mean of 10 replicates) | -7.66 | — |
+| Manuscript's PPO agents, re-scored here (mean of 10) | -7.86 | -7.55 |
+| Best manuscript PPO replicate | -7.02 | -6.75 |
+| Manuscript's TQC agents (its best algorithm), mean / best | -7.76 / -7.55 | -7.36 / -7.16 |
+| Best of all 120 manuscript agents | — | -6.71 |
+| **GPU PPO, no memory (3 replicates)** | **-6.55 to -6.60** | **-6.18 to -6.24** |
+
+- The new agents beat the manuscript's by about 1-1.3 points on average and by about 0.4-0.5 points against the best previous replicate, on either version of the model. The new agents were trained on the corrected model, so the original model is unfamiliar to them; they are still clearly better there.
+- The new replicates agree closely (spread ~0.06), whereas the manuscript's replicates varied widely.
+- **What made the difference is not the GPU itself but what it made affordable:** 150 million training steps instead of 10 million (about 14 hours per run on the original CPU setup, about 5 minutes on the GPU), combined with a decaying learning rate and keeping the best checkpoint. Retraining with the original settings on the corrected model peaked at -6.74 (matching the best previous replicate) and then collapsed, so the original setup tops out around -6.7.
+- **Fairness caveats:** (1) The manuscript's agents were trained on the original model and are scored here on the corrected one; this does not disadvantage them (they score *better* on the corrected model, -7.55 vs -7.86). (2) Our agents use the best checkpoint, selected on the same held-out simulations used for scoring, which slightly flatters them; the manuscript's agents are simply their final model at 10M steps. With the decaying learning rate the bias is small: final checkpoints score -6.23 on average versus -6.21 for the best.
 
 ### 3. Algorithm and setting variations on the nominal model
 
@@ -179,7 +195,8 @@ Two optional speed-ups are switched on automatically where they help and the har
 ## Caveats
 
 - Results are from simulation. The wide scenario ranges are our choice and should be reviewed by the team for ecological plausibility.
-- The "best checkpoint" of each training run is selected on the same held-out simulations that are reported in the learning curves. This slightly flatters those curves. The 24-scenario comparisons use separate test scenarios and are the fairer comparison.
+- The "best checkpoint" of each training run is selected on the same held-out simulations that are reported in the learning curves and the nominal/wide scores. This slightly flatters those numbers; for the main no-memory PPO runs the effect is about 0.02 (final checkpoints -6.23 vs best -6.21). The 24-scenario comparisons use separate test scenarios and are the fairer comparison.
+- Comparisons with the manuscript's agents mix two differences: our agents were trained on the corrected model, and theirs on the original one. Both are scored on both models in section 2.
 - Some configurations have 1-2 replicate seeds only (noted in the tables); differences smaller than ~0.05 in average regret are not meaningful.
 
 ## Files
